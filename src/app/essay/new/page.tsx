@@ -119,7 +119,7 @@ export default function NewEssayPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2">
-          <PenLine className="h-7 w-7 text-indigo-600" />
+          <PenLine className="h-7 w-7 text-brand-600" />
           Submit Essay for Feedback
         </h1>
         <p className="text-slate-500 mt-1">
@@ -144,7 +144,7 @@ export default function NewEssayPage() {
                   onClick={() => setIeltsMode(mode)}
                   className={`flex items-center gap-2 px-5 py-2.5 text-sm font-medium transition-colors ${
                     ieltsMode === mode
-                      ? "bg-indigo-600 text-white"
+                      ? "bg-brand-600 text-white"
                       : "bg-white text-slate-600 hover:bg-slate-50"
                   }`}
                 >
@@ -184,7 +184,7 @@ export default function NewEssayPage() {
         <Card className="border-dashed border-2 border-slate-300">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
-              <ImagePlus className="h-5 w-5 text-indigo-500" />
+              <ImagePlus className="h-5 w-5 text-brand-600" />
               Chart / Graph Image
               <Badge variant="outline" className="text-xs font-normal">Optional</Badge>
             </CardTitle>
@@ -210,7 +210,7 @@ export default function NewEssayPage() {
             ) : (
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full flex flex-col items-center justify-center gap-3 py-10 rounded-lg bg-slate-50 hover:bg-indigo-50 transition-colors cursor-pointer border border-slate-200 hover:border-indigo-300"
+                className="w-full flex flex-col items-center justify-center gap-3 py-10 rounded-lg bg-slate-50 hover:bg-brand-50 transition-colors cursor-pointer border border-slate-200 hover:border-brand-300"
               >
                 <ImagePlus className="h-8 w-8 text-slate-400" />
                 <div className="text-center">

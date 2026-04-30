@@ -20,7 +20,7 @@ export default async function SignInPage({
       <div className="max-w-md w-full space-y-8">
         {/* Logo & Brand */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-600 mb-4">
             <BookOpen className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900">
@@ -32,7 +32,7 @@ export default async function SignInPage({
         </div>
 
         {/* Benefits */}
-        <div className="bg-indigo-50 rounded-xl p-5 space-y-3">
+        <div className="bg-brand-50 rounded-xl p-5 space-y-3">
           {[
             "Real IELTS band scores using official descriptors",
             "Personalized feedback based on your error history",
@@ -40,8 +40,8 @@ export default async function SignInPage({
             "Progress tracking across all 4 IELTS criteria",
           ].map((benefit) => (
             <div key={benefit} className="flex items-start gap-2.5">
-              <CheckCircle className="h-4 w-4 text-indigo-600 shrink-0 mt-0.5" />
-              <span className="text-sm text-indigo-800">{benefit}</span>
+              <CheckCircle className="h-4 w-4 text-brand-600 shrink-0 mt-0.5" />
+              <span className="text-sm text-brand-800">{benefit}</span>
             </div>
           ))}
         </div>

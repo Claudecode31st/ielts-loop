@@ -83,7 +83,7 @@ export default function ProfilePage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2">
-          <User className="h-7 w-7 text-indigo-600" />
+          <User className="h-7 w-7 text-brand-600" />
           My Profile
         </h1>
       </div>
@@ -230,7 +230,7 @@ export default function ProfilePage() {
         {/* Memory Profile */}
         <div className="lg:col-span-2">
           <div className="flex items-center gap-2 mb-4">
-            <Brain className="h-5 w-5 text-indigo-600" />
+            <Brain className="h-5 w-5 text-brand-600" />
             <h2 className="text-lg font-semibold text-slate-900">
               Learning Profile
             </h2>
@@ -239,7 +239,7 @@ export default function ProfilePage() {
             <MemoryInsights memory={memory} />
           ) : (
             <div className="flex items-center justify-center py-16">
-              <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+              <Loader2 className="h-8 w-8 animate-spin text-brand-600" />
             </div>
           )}
         </div>

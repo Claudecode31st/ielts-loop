@@ -19,7 +19,7 @@ export function MemoryInsights({ memory }: MemoryInsightsProps) {
   const categoryColors: Record<string, string> = {
     grammar: "bg-red-100 text-red-700",
     vocabulary: "bg-blue-100 text-blue-700",
-    structure: "bg-purple-100 text-purple-700",
+    structure: "bg-brand-100 text-brand-700",
     coherence: "bg-orange-100 text-orange-700",
   };
 
@@ -38,7 +38,7 @@ export function MemoryInsights({ memory }: MemoryInsightsProps) {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
-              <TrendingUp className="h-5 w-5 text-indigo-600" />
+              <TrendingUp className="h-5 w-5 text-brand-600" />
               Score Trends
             </CardTitle>
           </CardHeader>
@@ -71,7 +71,7 @@ export function MemoryInsights({ memory }: MemoryInsightsProps) {
                   key={label}
                   className="text-center p-3 bg-slate-50 rounded-lg"
                 >
-                  <div className="text-2xl font-bold text-indigo-600">
+                  <div className="text-2xl font-bold text-brand-600">
                     {value}
                   </div>
                   <div className="text-xs text-slate-500 mt-1">{label}</div>
@@ -134,7 +134,7 @@ export function MemoryInsights({ memory }: MemoryInsightsProps) {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Brain className="h-5 w-5 text-indigo-600" />
+              <Brain className="h-5 w-5 text-brand-600" />
               Skill Profile
             </CardTitle>
           </CardHeader>

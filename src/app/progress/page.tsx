@@ -67,7 +67,7 @@ export default async function ProgressPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2">
-          <TrendingUp className="h-7 w-7 text-indigo-600" />
+          <TrendingUp className="h-7 w-7 text-brand-600" />
           Progress Analytics
         </h1>
         <p className="text-slate-500 mt-1">
@@ -87,7 +87,7 @@ export default async function ProgressPage() {
           ].map(({ label, value, highlight }) => {
             const band = parseFloat(value);
             return (
-              <Card key={label} className={highlight ? "ring-2 ring-indigo-500" : ""}>
+              <Card key={label} className={highlight ? "ring-2 ring-brand-500" : ""}>
                 <CardContent className="p-4 text-center">
                   <div
                     className={`text-2xl font-extrabold ${

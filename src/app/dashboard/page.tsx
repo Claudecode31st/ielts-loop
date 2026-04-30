@@ -11,11 +11,17 @@ import {
   PenLine,
   TrendingUp,
   Target,
-  BookOpen,
   Dumbbell,
-  ArrowRight,
   Brain,
   Clock,
+  ScrollText,
+  Sparkles,
+  Crosshair,
+  BarChart3,
+  BookMarked,
+  ChevronRight,
+  Trophy,
+  Zap,
 } from "lucide-react";
 import { getBandColor, getBandBgColor, formatDate } from "@/lib/utils";
 
@@ -101,44 +107,47 @@ export default async function DashboardPage() {
   };
 
   return (
-    <div className="bg-slate-50 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto space-y-8">
 
         {/* ── Welcome Bar ── */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white rounded-2xl border border-slate-200 shadow-sm px-6 py-5">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
-              Welcome back, {firstName} 👋
-            </h1>
-            <p className="text-slate-500 mt-1 text-sm">
-              Band Goal:{" "}
-              <span className="font-semibold text-slate-700">
-                {targetBand.toFixed(1)}
-              </span>{" "}
-              ·{" "}
-              <span className="font-semibold text-slate-700">{totalEssays}</span>{" "}
-              {totalEssays === 1 ? "essay" : "essays"} submitted
-            </p>
+        <div className="bg-white/60 backdrop-blur-xl border border-white/70 shadow-xl shadow-brand-100/30 rounded-2xl border-l-4 border-l-brand-600 px-6 py-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+                Welcome back, {firstName}
+              </h1>
+              <p className="text-slate-500 mt-1 text-sm">
+                Band Goal:{" "}
+                <span className="font-semibold text-slate-700">
+                  {targetBand.toFixed(1)}
+                </span>{" "}
+                ·{" "}
+                <span className="font-semibold text-slate-700">{totalEssays}</span>{" "}
+                {totalEssays === 1 ? "essay" : "essays"} submitted
+              </p>
+            </div>
+            <Link href="/essay/new">
+              <Button
+                size="lg"
+                className="gap-2 bg-gradient-to-r from-brand-600 to-brand-800 hover:from-brand-700 hover:to-brand-800 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/25 transition-all duration-300 shrink-0 border-0"
+              >
+                <PenLine className="h-5 w-5" />
+                Submit New Essay
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </Link>
           </div>
-          <Link href="/essay/new">
-            <Button
-              size="lg"
-              className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-md shrink-0"
-            >
-              <PenLine className="h-5 w-5" />
-              Submit New Essay →
-            </Button>
-          </Link>
         </div>
 
         {/* ── Stats Row ── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {/* Current Band */}
-          <Card className="border-slate-200 shadow-sm">
+          <Card variant="default">
             <CardContent className="p-5">
               <div className="flex items-start justify-between mb-3">
-                <div className="p-2 rounded-xl bg-slate-100">
-                  <TrendingUp className="h-5 w-5 text-slate-500" />
+                <div className="p-2 rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 shadow-md">
+                  <TrendingUp className="h-5 w-5 text-white" />
                 </div>
                 <span className="text-xs text-slate-400">current</span>
               </div>
@@ -150,15 +159,15 @@ export default async function DashboardPage() {
           </Card>
 
           {/* Target Band */}
-          <Card className="border-slate-200 shadow-sm">
+          <Card variant="default">
             <CardContent className="p-5">
               <div className="flex items-start justify-between mb-3">
-                <div className="p-2 rounded-xl bg-indigo-50">
-                  <Target className="h-5 w-5 text-indigo-500" />
+                <div className="p-2 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 shadow-md">
+                  <Target className="h-5 w-5 text-white" />
                 </div>
                 <span className="text-xs text-slate-400">goal</span>
               </div>
-              <div className="text-3xl font-extrabold text-indigo-600">
+              <div className="text-3xl font-extrabold text-brand-600">
                 {targetBand.toFixed(1)}
               </div>
               <p className="text-xs text-slate-500 mt-1">Target Band</p>
@@ -166,11 +175,11 @@ export default async function DashboardPage() {
           </Card>
 
           {/* Essays Submitted */}
-          <Card className="border-slate-200 shadow-sm">
+          <Card variant="default">
             <CardContent className="p-5">
               <div className="flex items-start justify-between mb-3">
-                <div className="p-2 rounded-xl bg-emerald-50">
-                  <BookOpen className="h-5 w-5 text-emerald-500" />
+                <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-md">
+                  <ScrollText className="h-5 w-5 text-white" />
                 </div>
                 <span className="text-xs text-slate-400">total</span>
               </div>
@@ -182,11 +191,11 @@ export default async function DashboardPage() {
           </Card>
 
           {/* Top Error */}
-          <Card className="border-slate-200 shadow-sm">
+          <Card variant="default">
             <CardContent className="p-5">
               <div className="flex items-start justify-between mb-3">
-                <div className="p-2 rounded-xl bg-red-50">
-                  <Brain className="h-5 w-5 text-red-400" />
+                <div className="p-2 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 shadow-md">
+                  <Zap className="h-5 w-5 text-white" />
                 </div>
                 <span className="text-xs text-slate-400">#1</span>
               </div>
@@ -205,45 +214,47 @@ export default async function DashboardPage() {
           <div className="lg:col-span-2 space-y-6">
 
             {/* Writing Memory — Error Profile */}
-            <Card className="border-purple-200 shadow-sm overflow-hidden">
-              <CardHeader className="pb-3 border-b border-purple-100 bg-purple-50/60">
+            <Card variant="glass" className="overflow-hidden">
+              <CardHeader className="pb-3 border-b border-brand-100/60">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Brain className="h-5 w-5 text-purple-600" />
-                    <CardTitle className="text-base font-bold text-purple-900">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-1.5 rounded-lg bg-gradient-to-br from-brand-600 to-brand-700 shadow-sm">
+                      <Brain className="h-4 w-4 text-white" />
+                    </div>
+                    <CardTitle className="text-base font-bold text-brand-900">
                       Writing Memory — Your Error Profile
                     </CardTitle>
                   </div>
                   <Link
                     href="/progress"
-                    className="text-xs text-purple-600 hover:underline flex items-center gap-1"
+                    className="text-xs text-brand-600 hover:text-brand-800 flex items-center gap-1 transition-colors"
                   >
-                    View full memory <ArrowRight className="h-3 w-3" />
+                    View full memory <ChevronRight className="h-3 w-3" />
                   </Link>
                 </div>
               </CardHeader>
               <CardContent className="p-0">
                 {topErrors.length === 0 ? (
                   <div className="py-10 text-center px-6">
-                    <Brain className="h-10 w-10 text-purple-200 mx-auto mb-3" />
+                    <Brain className="h-10 w-10 text-brand-200 mx-auto mb-3" />
                     <p className="text-slate-500 text-sm">
                       Submit your first essay to build your memory profile
                     </p>
                     <Link href="/essay/new" className="mt-3 inline-block">
-                      <Button variant="outline" size="sm" className="border-purple-300 text-purple-700 hover:bg-purple-50">
-                        Submit first essay →
+                      <Button variant="outline" size="sm" className="border-brand-300 text-brand-700 hover:bg-brand-50 rounded-xl">
+                        Submit first essay
                       </Button>
                     </Link>
                   </div>
                 ) : (
-                  <div className="divide-y divide-slate-100">
+                  <div className="divide-y divide-white/40">
                     {topErrors.map((error, idx) => {
                       const colors = getCategoryColors(error.errorCategory);
                       const maxFreq = topErrors[0].frequency ?? 1;
                       const freq = error.frequency ?? 0;
                       const barWidth = maxFreq > 0 ? Math.round((freq / maxFreq) * 100) : 0;
                       return (
-                        <div key={error.id} className="flex items-center gap-4 px-5 py-3 hover:bg-slate-50 transition-colors">
+                        <div key={error.id} className="flex items-center gap-4 px-5 py-3 hover:bg-brand-50/30 transition-all duration-200">
                           <span className="text-xs font-bold text-slate-400 w-4 shrink-0">
                             {idx + 1}
                           </span>
@@ -251,9 +262,9 @@ export default async function DashboardPage() {
                             <p className="text-sm font-medium text-slate-800 truncate">
                               {error.errorType}
                             </p>
-                            <div className="mt-1.5 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div className="mt-1.5 h-1.5 w-full bg-slate-100/80 rounded-full overflow-hidden">
                               <div
-                                className={`h-1.5 rounded-full ${colors.bar} transition-all`}
+                                className={`h-1.5 rounded-full ${colors.bar} transition-all duration-300`}
                                 style={{ width: `${barWidth}%` }}
                               />
                             </div>
@@ -275,48 +286,52 @@ export default async function DashboardPage() {
             </Card>
 
             {/* Recent Essays */}
-            <Card className="border-slate-200 shadow-sm">
-              <CardHeader className="pb-3 border-b border-slate-100">
+            <Card variant="glass">
+              <CardHeader className="pb-3 border-b border-white/40">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base font-bold text-slate-900">
-                    Recent Essays
-                  </CardTitle>
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-1.5 rounded-lg bg-gradient-to-br from-brand-600 to-brand-700 shadow-sm">
+                      <ScrollText className="h-4 w-4 text-white" />
+                    </div>
+                    <CardTitle className="text-base font-bold text-slate-900">
+                      Recent Essays
+                    </CardTitle>
+                  </div>
                   <Link
                     href="/essays"
-                    className="text-xs text-indigo-600 hover:underline flex items-center gap-1"
+                    className="text-xs text-brand-600 hover:text-brand-800 flex items-center gap-1 transition-colors"
                   >
-                    View all <ArrowRight className="h-3 w-3" />
+                    View all <ChevronRight className="h-3 w-3" />
                   </Link>
                 </div>
               </CardHeader>
               <CardContent className="p-0">
                 {recentEssays.length === 0 ? (
                   <div className="py-12 text-center px-6">
-                    <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-                      <BookOpen className="h-8 w-8 text-slate-300" />
+                    <div className="w-16 h-16 rounded-full bg-brand-50 flex items-center justify-center mx-auto mb-4">
+                      <ScrollText className="h-8 w-8 text-brand-200" />
                     </div>
                     <p className="text-slate-700 font-medium mb-1">
                       No essays yet
                     </p>
                     <p className="text-slate-400 text-sm mb-4">
-                      Submit your first essay and get your IELTS band score in
-                      seconds.
+                      Submit your first essay and get your IELTS band score in seconds.
                     </p>
                     <Link href="/essay/new">
-                      <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                        Submit your first essay →
+                      <Button size="sm" className="bg-gradient-to-r from-brand-600 to-brand-800 text-white rounded-xl border-0">
+                        Submit your first essay
                       </Button>
                     </Link>
                   </div>
                 ) : (
-                  <div className="divide-y divide-slate-100">
+                  <div className="divide-y divide-white/40">
                     {recentEssays.map((essay) => {
                       const band = essay.overallBand
                         ? parseFloat(String(essay.overallBand))
                         : null;
                       return (
                         <Link key={essay.id} href={`/essay/${essay.id}`}>
-                          <div className="flex items-start gap-4 px-5 py-4 hover:bg-slate-50 transition-colors cursor-pointer">
+                          <div className="flex items-start gap-4 px-5 py-4 hover:bg-brand-50/50 rounded-xl transition-all duration-200 cursor-pointer">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
                                 <Badge
@@ -357,11 +372,16 @@ export default async function DashboardPage() {
             </Card>
 
             {/* Top Score Blockers */}
-            <Card className="border-slate-200 shadow-sm">
-              <CardHeader className="pb-3 border-b border-slate-100">
-                <CardTitle className="text-base font-bold text-slate-900">
-                  Top Score Blockers
-                </CardTitle>
+            <Card variant="glass">
+              <CardHeader className="pb-3 border-b border-white/40">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-rose-500 to-rose-600 shadow-sm">
+                    <Target className="h-4 w-4 text-white" />
+                  </div>
+                  <CardTitle className="text-base font-bold text-slate-900">
+                    Top Score Blockers
+                  </CardTitle>
+                </div>
               </CardHeader>
               <CardContent className="p-5 space-y-3">
                 {topErrors.length === 0 ? (
@@ -386,9 +406,9 @@ export default async function DashboardPage() {
                     return (
                       <div
                         key={error.id}
-                        className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100"
+                        className="flex items-start gap-3 p-3 rounded-xl bg-white/50 border border-white/60 shadow-sm"
                       >
-                        <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-700 shrink-0 mt-0.5">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-600 to-brand-800 flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5 shadow-sm">
                           {idx + 1}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -423,11 +443,16 @@ export default async function DashboardPage() {
           <div className="space-y-6">
 
             {/* Band Progress */}
-            <Card className="border-slate-200 shadow-sm">
-              <CardHeader className="pb-3 border-b border-slate-100">
-                <CardTitle className="text-base font-bold text-slate-900">
-                  Band Progress
-                </CardTitle>
+            <Card variant="glass">
+              <CardHeader className="pb-3 border-b border-white/40">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-brand-600 to-brand-800 shadow-sm">
+                    <BarChart3 className="h-4 w-4 text-white" />
+                  </div>
+                  <CardTitle className="text-base font-bold text-slate-900">
+                    Band Progress
+                  </CardTitle>
+                </div>
               </CardHeader>
               <CardContent className="p-5">
                 {/* Current band large number */}
@@ -453,22 +478,16 @@ export default async function DashboardPage() {
                     <span>Band {targetBand.toFixed(1)}</span>
                     <span>9</span>
                   </div>
-                  <div className="relative h-3 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="relative h-3 bg-slate-100/80 rounded-full overflow-hidden">
                     {/* Target marker */}
                     <div
-                      className="absolute top-0 h-full w-0.5 bg-indigo-300 z-10"
+                      className="absolute top-0 h-full w-0.5 bg-brand-300 z-10"
                       style={{ left: `${(targetBand / 9) * 100}%` }}
                     />
                     {/* Current band fill */}
                     {currentBand != null && (
                       <div
-                        className={`h-full rounded-full ${
-                          currentBand >= 7
-                            ? "bg-emerald-500"
-                            : currentBand >= 6
-                            ? "bg-amber-500"
-                            : "bg-red-500"
-                        } transition-all`}
+                        className="h-full rounded-full bg-gradient-to-r from-brand-600 to-brand-700 transition-all duration-500"
                         style={{ width: `${(currentBand / 9) * 100}%` }}
                       />
                     )}
@@ -499,7 +518,7 @@ export default async function DashboardPage() {
                             className="flex-1 flex flex-col items-center gap-1"
                           >
                             <div
-                              className={`w-full rounded-t ${colorClass}`}
+                              className={`w-full rounded-t ${colorClass} transition-all duration-300`}
                               style={{ height: `${heightPct}%` }}
                             />
                             <span className="text-xs text-slate-400">
@@ -515,14 +534,16 @@ export default async function DashboardPage() {
             </Card>
 
             {/* Personalized Coaching */}
-            <Card className="border-purple-200 shadow-sm overflow-hidden">
-              <div className="bg-gradient-to-br from-purple-600 to-indigo-700 p-5">
-                <div className="text-3xl mb-3">🧠</div>
-                <h3 className="text-white font-bold text-base mb-2">
-                  Personalized Coaching
-                </h3>
+            <div className="bg-gradient-to-br from-brand-600 to-brand-800 text-white border-0 shadow-2xl shadow-brand-500/30 rounded-2xl overflow-hidden">
+              <div className="p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="h-5 w-5 text-brand-200" />
+                  <h3 className="text-white font-bold text-base">
+                    Personalized Coaching
+                  </h3>
+                </div>
                 {totalEssays > 0 && topError ? (
-                  <p className="text-purple-200 text-sm leading-relaxed">
+                  <p className="text-brand-200 text-sm leading-relaxed">
                     Based on your last{" "}
                     <span className="font-semibold text-white">
                       {totalEssays}
@@ -535,7 +556,7 @@ export default async function DashboardPage() {
                     . Focus here first.
                   </p>
                 ) : (
-                  <p className="text-purple-200 text-sm leading-relaxed">
+                  <p className="text-brand-200 text-sm leading-relaxed">
                     Submit your first essay and I&apos;ll build a personalized
                     improvement plan for you.
                   </p>
@@ -543,61 +564,63 @@ export default async function DashboardPage() {
                 <Link href="/exercises" className="mt-4 inline-block">
                   <Button
                     size="sm"
-                    className="bg-white text-purple-700 hover:bg-purple-50 font-semibold"
+                    className="bg-white text-brand-700 hover:bg-brand-50 font-semibold rounded-xl border-0"
                   >
-                    Start practicing →
+                    Start practicing
+                    <ChevronRight className="h-4 w-4 ml-1" />
                   </Button>
                 </Link>
               </div>
-            </Card>
+            </div>
 
             {/* Quick Actions */}
-            <Card className="border-slate-200 shadow-sm">
-              <CardHeader className="pb-3 border-b border-slate-100">
-                <CardTitle className="text-sm font-bold text-slate-700 uppercase tracking-wide">
-                  Quick Actions
-                </CardTitle>
+            <Card variant="glass">
+              <CardHeader className="pb-3 border-b border-white/40">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-slate-500 to-slate-600 shadow-sm">
+                    <Zap className="h-4 w-4 text-white" />
+                  </div>
+                  <CardTitle className="text-sm font-bold text-slate-700 uppercase tracking-wide">
+                    Quick Actions
+                  </CardTitle>
+                </div>
               </CardHeader>
               <CardContent className="p-4 space-y-2">
                 <Link href="/essay/new" className="block">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full justify-start gap-2 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700"
-                  >
-                    <PenLine className="h-4 w-4 text-indigo-500" />
+                  <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white/50 border border-white/60 hover:bg-brand-50/60 hover:border-brand-200 text-slate-700 hover:text-brand-700 transition-all duration-200 text-sm font-medium">
+                    <PenLine className="h-4 w-4 text-brand-600 shrink-0" />
                     Submit New Essay
-                  </Button>
+                    <ChevronRight className="h-4 w-4 ml-auto text-slate-300" />
+                  </button>
                 </Link>
                 <Link href="/exercises" className="block">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full justify-start gap-2 border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700"
-                  >
-                    <Dumbbell className="h-4 w-4 text-emerald-500" />
+                  <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white/50 border border-white/60 hover:bg-emerald-50/60 hover:border-emerald-200 text-slate-700 hover:text-emerald-700 transition-all duration-200 text-sm font-medium">
+                    <Dumbbell className="h-4 w-4 text-emerald-500 shrink-0" />
                     Practice Exercises
-                  </Button>
+                    <ChevronRight className="h-4 w-4 ml-auto text-slate-300" />
+                  </button>
                 </Link>
                 <Link href="/progress" className="block">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full justify-start gap-2 border-slate-200 hover:border-amber-300 hover:bg-amber-50 text-slate-700 hover:text-amber-700"
-                  >
-                    <TrendingUp className="h-4 w-4 text-amber-500" />
+                  <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white/50 border border-white/60 hover:bg-amber-50/60 hover:border-amber-200 text-slate-700 hover:text-amber-700 transition-all duration-200 text-sm font-medium">
+                    <TrendingUp className="h-4 w-4 text-amber-500 shrink-0" />
                     View Progress
-                  </Button>
+                    <ChevronRight className="h-4 w-4 ml-auto text-slate-300" />
+                  </button>
                 </Link>
               </CardContent>
             </Card>
 
             {/* This Week's Focus */}
-            <Card className="border-slate-200 shadow-sm">
-              <CardHeader className="pb-3 border-b border-slate-100">
-                <CardTitle className="text-sm font-bold text-slate-700 uppercase tracking-wide">
-                  This Week&apos;s Focus
-                </CardTitle>
+            <Card variant="glass">
+              <CardHeader className="pb-3 border-b border-white/40">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-teal-500 to-teal-600 shadow-sm">
+                    <Crosshair className="h-4 w-4 text-white" />
+                  </div>
+                  <CardTitle className="text-sm font-bold text-slate-700 uppercase tracking-wide">
+                    This Week&apos;s Focus
+                  </CardTitle>
+                </div>
               </CardHeader>
               <CardContent className="p-4 space-y-3">
                 {focusCategories.length === 0 ? (

@@ -17,7 +17,7 @@ interface ScoreChartProps {
 }
 
 const lines = [
-  { key: "overallBand", label: "Overall", color: "#4F46E5" },
+  { key: "overallBand", label: "Overall", color: "#C7002B" },
   { key: "taskAchievement", label: "Task Achievement", color: "#10B981" },
   { key: "coherenceCohesion", label: "Coherence & Cohesion", color: "#F59E0B" },
   { key: "lexicalResource", label: "Lexical Resource", color: "#3B82F6" },

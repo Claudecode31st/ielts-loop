@@ -21,7 +21,7 @@ export function ExerciseCard({ exercise, onComplete }: ExerciseCardProps) {
   const exerciseTypeColors: Record<string, string> = {
     grammar: "bg-red-100 text-red-700",
     vocabulary: "bg-blue-100 text-blue-700",
-    structure: "bg-purple-100 text-purple-700",
+    structure: "bg-brand-100 text-brand-700",
     coherence: "bg-orange-100 text-orange-700",
   };
 
@@ -136,7 +136,7 @@ export function ExerciseCard({ exercise, onComplete }: ExerciseCardProps) {
                                 : isWrongOpt
                                 ? "border-red-400 bg-red-50 text-red-800"
                                 : isSelected
-                                ? "border-indigo-400 bg-indigo-50 text-indigo-800"
+                                ? "border-brand-400 bg-brand-50 text-brand-800"
                                 : "border-slate-200 hover:bg-slate-50 text-slate-700"
                             }`}
                           >
@@ -166,8 +166,8 @@ export function ExerciseCard({ exercise, onComplete }: ExerciseCardProps) {
             )}
 
             {(submitted || exercise.isCompleted) && score !== null && (
-              <div className="p-3 bg-indigo-50 rounded-lg text-center">
-                <p className="text-sm font-semibold text-indigo-800">
+              <div className="p-3 bg-brand-50 rounded-lg text-center">
+                <p className="text-sm font-semibold text-brand-800">
                   Score: {score}% —{" "}
                   {score >= 80
                     ? "Excellent work!"

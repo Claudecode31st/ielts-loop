@@ -28,7 +28,7 @@ export default async function EssaysPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2">
-            <BookOpen className="h-7 w-7 text-indigo-600" />
+            <BookOpen className="h-7 w-7 text-brand-600" />
             Essay History
           </h1>
           <p className="text-slate-500 mt-1">
@@ -70,7 +70,7 @@ export default async function EssaysPage() {
 
             return (
               <Link key={essay.id} href={`/essay/${essay.id}`}>
-                <Card className="hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer">
+                <Card className="hover:border-brand-300 hover:shadow-md transition-all cursor-pointer">
                   <CardContent className="p-5">
                     <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                       {/* Overall Band */}

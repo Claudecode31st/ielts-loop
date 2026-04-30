@@ -34,7 +34,7 @@ export function EssayFeedback({ essay, recurringErrors = [] }: EssayFeedbackProp
   const categoryColors: Record<string, string> = {
     grammar: "bg-red-100 text-red-700",
     vocabulary: "bg-blue-100 text-blue-700",
-    structure: "bg-purple-100 text-purple-700",
+    structure: "bg-brand-100 text-brand-700",
     coherence: "bg-orange-100 text-orange-700",
   };
 
@@ -47,7 +47,7 @@ export function EssayFeedback({ essay, recurringErrors = [] }: EssayFeedbackProp
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <BookOpen className="h-5 w-5 text-indigo-600" />
+            <BookOpen className="h-5 w-5 text-brand-600" />
             Examiner&apos;s Assessment
           </CardTitle>
         </CardHeader>
@@ -56,8 +56,8 @@ export function EssayFeedback({ essay, recurringErrors = [] }: EssayFeedbackProp
             {essay.examinerComments}
           </p>
           {(feedback as unknown as { memorableInsight?: string })?.memorableInsight && (
-            <div className="mt-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
-              <p className="text-indigo-800 text-sm font-medium">
+            <div className="mt-4 p-4 bg-brand-50 rounded-lg border border-brand-200">
+              <p className="text-brand-800 text-sm font-medium">
                 Key Insight: {(feedback as unknown as { memorableInsight?: string }).memorableInsight}
               </p>
             </div>
@@ -263,13 +263,13 @@ export function EssayFeedback({ essay, recurringErrors = [] }: EssayFeedbackProp
 
               {/* Examiner Notes Tab */}
               <TabsContent value="notes" className="mt-4">
-                <div className="flex items-start gap-3 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
-                  <AlignLeft className="h-5 w-5 text-indigo-600 shrink-0 mt-0.5" />
+                <div className="flex items-start gap-3 p-4 bg-brand-50 rounded-lg border border-brand-200">
+                  <AlignLeft className="h-5 w-5 text-brand-600 shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="text-sm font-semibold text-indigo-800 mb-2">
+                    <h4 className="text-sm font-semibold text-brand-800 mb-2">
                       Examiner Notes
                     </h4>
-                    <p className="text-sm text-indigo-700 whitespace-pre-line leading-relaxed">
+                    <p className="text-sm text-brand-700 whitespace-pre-line leading-relaxed">
                       {essay.examinerComments}
                     </p>
                   </div>
