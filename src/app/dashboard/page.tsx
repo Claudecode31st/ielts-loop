@@ -256,33 +256,47 @@ export default async function DashboardPage() {
                   <div className="divide-y divide-white/40">
                     {topErrors.map((error, idx) => {
                       const colors = getCategoryColors(error.errorCategory);
-                      const maxFreq = topErrors[0].frequency ?? 1;
-                      const freq = error.frequency ?? 0;
-                      const barWidth = maxFreq > 0 ? Math.round((freq / maxFreq) * 100) : 0;
+                      const freq = error.frequency ?? 1;
+                      // Absolute scale: 1 essay = 20%, 5+ essays = 100%
+                      const barWidth = Math.min(100, Math.max(8, (freq / 5) * 100));
+                      const severityLabel = freq >= 5 ? "High" : freq >= 3 ? "Medium" : freq >= 2 ? "Low" : null;
+                      const severityStyle = freq >= 5
+                        ? "bg-red-100 text-red-600"
+                        : freq >= 3
+                        ? "bg-amber-100 text-amber-600"
+                        : "bg-slate-100 text-slate-500";
                       return (
-                        <div key={error.id} className="flex items-center gap-4 px-5 py-3 hover:bg-brand-50/30 transition-all duration-200">
-                          <span className="text-xs font-bold text-slate-400 w-4 shrink-0">
+                        <div key={error.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-brand-50/30 transition-all duration-200">
+                          {/* Rank */}
+                          <span className="text-xs font-bold text-slate-300 w-4 shrink-0 text-center">
                             {idx + 1}
                           </span>
+                          {/* Name + bar */}
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-slate-800 truncate">
-                              {error.errorType}
-                            </p>
-                            <div className="mt-1.5 h-1.5 w-full bg-slate-100/80 rounded-full overflow-hidden">
+                            <div className="flex items-center gap-2 mb-1.5">
+                              <p className="text-sm font-semibold text-slate-800 truncate capitalize">
+                                {error.errorType}
+                              </p>
+                              <span className={`shrink-0 text-[10px] font-bold px-1.5 py-px rounded-full ${colors.bg} ${colors.text}`}>
+                                {getCategoryLabel(error.errorCategory)}
+                              </span>
+                            </div>
+                            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                               <div
-                                className={`h-1.5 rounded-full ${colors.bar} transition-all duration-300`}
+                                className={`h-1.5 rounded-full ${colors.bar} transition-all duration-500`}
                                 style={{ width: `${barWidth}%` }}
                               />
                             </div>
                           </div>
-                          <span
-                            className={`shrink-0 text-xs font-bold px-2 py-0.5 rounded-full ${colors.bg} ${colors.text}`}
-                          >
-                            {getCategoryLabel(error.errorCategory)}
-                          </span>
-                          <span className="shrink-0 text-xs font-bold text-slate-500 w-10 text-right">
-                            ×{freq}
-                          </span>
+                          {/* Frequency + severity */}
+                          <div className="shrink-0 text-right space-y-0.5">
+                            <div className="text-sm font-bold text-slate-600">×{freq}</div>
+                            {severityLabel && (
+                              <div className={`text-[10px] font-semibold px-1.5 py-px rounded-full ${severityStyle}`}>
+                                {severityLabel}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       );
                     })}
