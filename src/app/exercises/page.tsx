@@ -67,7 +67,11 @@ export default function ExercisesPage() {
   }
 
   async function handleComplete(id: string, score: number) {
-    setActiveExerciseId(null); // release the lock
+    setActiveExerciseId(null); // release the lock regardless
+
+    // score = -1 means the user quit — don't mark as complete
+    if (score < 0) return;
+
     try {
       await fetch(`/api/exercises/${id}/complete`, {
         method: "POST",

@@ -13,6 +13,7 @@ import {
   BookOpen,
   Sparkles,
   Lock,
+  X,
 } from "lucide-react";
 import type { Exercise } from "@/types";
 
@@ -106,6 +107,15 @@ export function ExerciseCard({
     setSelectedAnswer(null);
     setAllAnswers({});
     setCardState("playing");
+  }
+
+  function exitQuiz() {
+    setCardState("idle");
+    setCurrentQ(0);
+    setSelectedAnswer(null);
+    setAllAnswers({});
+    // Release the active lock in the parent
+    onComplete?.(exercise.id, -1); // -1 = aborted, parent clears activeId
   }
 
   function selectAnswer(opt: string) {
@@ -211,9 +221,18 @@ export function ExerciseCard({
                   {exercise.content?.title ?? "Exercise"}
                 </span>
               </div>
-              <span className="text-xs font-bold text-slate-400 shrink-0 tabular-nums">
-                {currentQ + 1} / {questions.length}
-              </span>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs font-bold text-slate-400 tabular-nums">
+                  {currentQ + 1} / {questions.length}
+                </span>
+                <button
+                  onClick={exitQuiz}
+                  title="Exit exercise"
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
 
             {/* Progress bar */}
