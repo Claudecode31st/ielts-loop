@@ -20,10 +20,35 @@ export async function updateStudentMemory(
 ): Promise<void> {
   const { detailedFeedback, scores } = analysisResult;
 
-  // Update error patterns
+  // Deduplicate errors within this essay by (normalizedType + category).
+  // Claude may return multiple instances of the same pattern; we only count
+  // each distinct error type once per essay submission.
+  type DeduplicatedError = {
+    normalizedType: string;
+    category: string;
+    explanation: string;
+    text: string;
+    correction: string;
+  };
+  const seenKeys = new Set<string>();
+  const deduplicatedErrors: DeduplicatedError[] = [];
   for (const error of detailedFeedback.errors) {
     const normalizedType = normalizeErrorType(error.explanation, error.category);
+    const key = `${normalizedType}||${error.category}`;
+    if (!seenKeys.has(key)) {
+      seenKeys.add(key);
+      deduplicatedErrors.push({
+        normalizedType,
+        category: error.category,
+        explanation: error.explanation,
+        text: error.text,
+        correction: error.correction,
+      });
+    }
+  }
 
+  // Update error patterns (one increment per essay, not per occurrence)
+  for (const error of deduplicatedErrors) {
     const existing = await db
       .select()
       .from(errorPatterns)
@@ -31,7 +56,7 @@ export async function updateStudentMemory(
       .then((rows) =>
         rows.find(
           (r) =>
-            r.errorType === normalizedType &&
+            r.errorType === error.normalizedType &&
             r.errorCategory === error.category
         )
       );
@@ -56,7 +81,7 @@ export async function updateStudentMemory(
     } else {
       await db.insert(errorPatterns).values({
         userId,
-        errorType: normalizedType,
+        errorType: error.normalizedType,
         errorCategory: error.category as ErrorCategory,
         description: error.explanation,
         frequency: 1,
@@ -290,23 +315,40 @@ export async function getStudentMemoryContext(
 function normalizeErrorType(explanation: string, category: string): string {
   const lower = explanation.toLowerCase();
 
-  // Grammar patterns
-  if (lower.includes("article") || lower.includes(" a ") || lower.includes(" an ") || lower.includes(" the ")) {
+  // ── Grammar patterns ──
+  // Only match "article" when the explanation explicitly discusses article errors
+  if (
+    lower.includes("article") &&
+    (lower.includes("missing") || lower.includes("incorrect") || lower.includes("wrong") ||
+     lower.includes("omit") || lower.includes("should use") || lower.includes("needs") ||
+     lower.includes("error") || lower.includes("instead"))
+  ) {
     return "article usage";
   }
-  if (lower.includes("subject-verb") || lower.includes("subject verb") || lower.includes("agreement")) {
+  if (
+    lower.includes("subject-verb") ||
+    lower.includes("subject verb") ||
+    (lower.includes("agreement") && (lower.includes("verb") || lower.includes("subject")))
+  ) {
     return "subject-verb agreement";
   }
-  if (lower.includes("tense") || lower.includes("past") || lower.includes("present") || lower.includes("future")) {
+  if (
+    lower.includes("tense") ||
+    (lower.includes("past tense") || lower.includes("present tense") || lower.includes("future tense"))
+  ) {
     return "tense consistency";
   }
-  if (lower.includes("preposition") || lower.includes("in the") || lower.includes("on the") || lower.includes("at the")) {
+  if (lower.includes("preposition") || lower.includes("prepositional phrase")) {
     return "preposition usage";
   }
-  if (lower.includes("plural") || lower.includes("singular")) {
+  if (
+    (lower.includes("plural") && lower.includes("singular")) ||
+    (lower.includes("plural") && (lower.includes("noun") || lower.includes("should be"))) ||
+    (lower.includes("singular") && (lower.includes("noun") || lower.includes("should be")))
+  ) {
     return "noun number agreement";
   }
-  if (lower.includes("relative clause") || lower.includes("which") || lower.includes("who") || lower.includes("that")) {
+  if (lower.includes("relative clause") || (lower.includes("clause") && lower.includes("relative"))) {
     return "relative clause";
   }
   if (lower.includes("comma") || lower.includes("semicolon") || lower.includes("punctuation")) {
@@ -315,30 +357,74 @@ function normalizeErrorType(explanation: string, category: string): string {
   if (lower.includes("parallel") || lower.includes("parallelism")) {
     return "parallel structure";
   }
+  if (lower.includes("sentence fragment") || lower.includes("run-on") || lower.includes("run on sentence")) {
+    return "sentence structure";
+  }
+  if (lower.includes("conditional") || lower.includes("if clause") || lower.includes("hypothetical")) {
+    return "conditional sentences";
+  }
+  if (lower.includes("passive voice") || lower.includes("active voice")) {
+    return "active/passive voice";
+  }
 
-  // Vocabulary patterns
-  if (lower.includes("collocation") || lower.includes("word combination")) {
+  // ── Vocabulary patterns ──
+  if (lower.includes("collocation") || lower.includes("word combination") || lower.includes("words go together")) {
     return "collocation error";
   }
-  if (lower.includes("word choice") || lower.includes("inappropriate word")) {
+  if (
+    lower.includes("word choice") ||
+    lower.includes("inappropriate word") ||
+    lower.includes("wrong word") ||
+    lower.includes("better word") ||
+    lower.includes("incorrect word")
+  ) {
     return "inappropriate word choice";
   }
-  if (lower.includes("repetiti") || lower.includes("overused")) {
+  if (
+    lower.includes("repetiti") ||
+    lower.includes("overused") ||
+    lower.includes("used too many times") ||
+    lower.includes("use a variety") ||
+    lower.includes("keep repeating")
+  ) {
     return "vocabulary repetition";
   }
-  if (lower.includes("formal") || lower.includes("informal") || lower.includes("register")) {
+  if (lower.includes("formal") || lower.includes("informal") || lower.includes("register") || lower.includes("academic tone")) {
     return "register/formality";
   }
+  if (lower.includes("spelling") || lower.includes("misspell")) {
+    return "spelling error";
+  }
+  if (lower.includes("idiomatic") || lower.includes("idiom")) {
+    return "idiomatic expression";
+  }
 
-  // Structure patterns
-  if (lower.includes("transition") || lower.includes("linking") || lower.includes("connective")) {
+  // ── Structure / coherence patterns ──
+  if (
+    lower.includes("transition") ||
+    lower.includes("linking word") ||
+    lower.includes("connective") ||
+    lower.includes("discourse marker") ||
+    lower.includes("cohesive device")
+  ) {
     return "cohesive device misuse";
   }
-  if (lower.includes("paragraph") || lower.includes("topic sentence")) {
+  if (lower.includes("paragraph") || lower.includes("topic sentence") || lower.includes("main idea")) {
     return "paragraph structure";
   }
+  if (
+    lower.includes("introduction") ||
+    lower.includes("conclusion") ||
+    lower.includes("thesis statement") ||
+    lower.includes("essay structure")
+  ) {
+    return "essay structure";
+  }
+  if (lower.includes("argument") || lower.includes("position") || lower.includes("viewpoint") || lower.includes("opinion")) {
+    return "argument development";
+  }
 
-  // Default: use category + first few words of explanation
-  const words = explanation.split(" ").slice(0, 3).join(" ");
+  // Default: use category + first 4 words of explanation (capped at 50 chars)
+  const words = explanation.split(" ").slice(0, 4).join(" ");
   return `${category}: ${words}`.toLowerCase().slice(0, 50);
 }

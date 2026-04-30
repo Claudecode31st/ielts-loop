@@ -95,16 +95,18 @@ export default async function DashboardPage() {
     .map((e) => (e.overallBand ? parseFloat(String(e.overallBand)) : null))
     .reverse();
 
-  // Weekly focus areas based on top error categories
-  const focusCategories = Array.from(
-    new Set(topErrors.slice(0, 3).map((e) => e.errorCategory))
-  );
-  const focusAreaMap: Record<string, { name: string; minutes: number }> = {
-    grammar: { name: "Grammar Accuracy", minutes: 20 },
-    vocabulary: { name: "Lexical Resource", minutes: 15 },
-    structure: { name: "Coherence & Cohesion", minutes: 15 },
-    task: { name: "Task Achievement", minutes: 20 },
-  };
+  // This Week's Focus — derived from the student's top 3 recurring errors.
+  // Each item shows the actual error type and a practice time weighted by frequency.
+  const weekFocusItems = topErrors.slice(0, 3).map((error) => {
+    const freq = error.frequency ?? 1;
+    // More frequent = more practice minutes (10–30 min range)
+    const minutes = Math.min(30, Math.max(10, freq * 5));
+    return {
+      errorType: error.errorType,
+      errorCategory: error.errorCategory,
+      minutes,
+    };
+  });
 
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
@@ -623,32 +625,24 @@ export default async function DashboardPage() {
                 </div>
               </CardHeader>
               <CardContent className="p-4 space-y-3">
-                {focusCategories.length === 0 ? (
-                  <div className="space-y-2">
-                    {[
-                      { name: "Practise using linking words", color: "bg-blue-500", minutes: 10 },
-                      { name: "Review article usage rules", color: "bg-red-500", minutes: 15 },
-                      { name: "Read a model Task 2 answer", color: "bg-emerald-500", minutes: 20 },
-                    ].map(({ name, color, minutes }) => (
-                      <div key={name} className="flex items-center gap-3">
-                        <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${color}`} />
-                        <span className="text-sm text-slate-700 flex-1">{name}</span>
-                        <span className="text-xs text-slate-400 shrink-0">{minutes} min</span>
-                      </div>
-                    ))}
-                  </div>
+                {weekFocusItems.length === 0 ? (
+                  <p className="text-sm text-slate-400 py-2 text-center">
+                    Submit an essay to get your personalised focus plan.
+                  </p>
                 ) : (
-                  focusCategories.map((cat) => {
-                    const area = focusAreaMap[cat] ?? { name: cat, minutes: 15 };
-                    const colors = getCategoryColors(cat);
+                  weekFocusItems.map(({ errorType, errorCategory, minutes }) => {
+                    const colors = getCategoryColors(errorCategory);
+                    // Capitalise the error type for display
+                    const displayName =
+                      errorType.charAt(0).toUpperCase() + errorType.slice(1);
                     return (
-                      <div key={cat} className="flex items-center gap-3">
+                      <div key={errorType} className="flex items-center gap-3">
                         <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${colors.bar}`} />
-                        <span className="text-sm text-slate-700 flex-1">
-                          {area.name}
+                        <span className="text-sm text-slate-700 flex-1 leading-tight">
+                          {displayName}
                         </span>
                         <span className="text-xs text-slate-400 shrink-0">
-                          {area.minutes} min
+                          {minutes} min
                         </span>
                       </div>
                     );
