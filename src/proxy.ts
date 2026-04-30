@@ -8,7 +8,8 @@ export const proxy = auth((req) => {
   const publicRoutes = ["/", "/auth/signin", "/auth/error"];
   const isPublicRoute =
     publicRoutes.includes(pathname) ||
-    pathname.startsWith("/api/auth");
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/debug-auth");
 
   if (!req.auth && !isPublicRoute) {
     const signInUrl = new URL("/auth/signin", req.nextUrl.origin);
