@@ -1,14 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Brain,
-  TrendingUp,
-  Target,
-  CheckCircle,
-  BookOpen,
-  Zap,
-} from "lucide-react";
+import { CheckCircle, Brain, Zap } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -19,172 +12,134 @@ export default async function LandingPage() {
   }
 
   return (
-    <div className="flex flex-col">
-      {/* Hero */}
-      <section className="relative bg-gradient-to-br from-indigo-900 via-indigo-800 to-purple-900 text-white">
+    <div className="flex flex-col min-h-screen">
+      {/* ── Hero ── */}
+      <section className="relative bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 text-white min-h-screen flex items-center">
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
+
+        {/* Decorative blobs */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500 rounded-full opacity-10 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-purple-600 rounded-full opacity-10 blur-3xl pointer-events-none" />
+
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-1.5 text-sm font-medium text-indigo-200 mb-6 backdrop-blur-sm">
-              <Zap className="h-3.5 w-3.5" />
-              Powered by Claude AI — the most advanced writing model
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-1.5 text-sm font-medium text-indigo-200 mb-8 backdrop-blur-sm border border-white/10">
+              <Zap className="h-3.5 w-3.5 text-amber-400" />
+              Powered by Claude AI · Mistake Intelligence Engine
             </div>
+
+            {/* Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight mb-6">
               Finally understand why your{" "}
-              <span className="text-indigo-300">IELTS score</span> is stuck
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-300">
+                IELTS score is stuck
+              </span>
             </h1>
-            <p className="text-lg sm:text-xl text-indigo-200 leading-relaxed mb-8 max-w-2xl">
-              Our AI examiner gives you the same rigorous band scores as a
-              certified IELTS examiner — and remembers your past mistakes to
-              give you truly personalized feedback every time you submit.
+
+            <p className="text-lg sm:text-xl text-indigo-200 leading-relaxed mb-10 max-w-2xl">
+              IELTS Loop builds a memory of your mistakes across every essay —
+              then targets exactly what&apos;s holding your band score back.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-10">
               <Link href="/auth/signin">
-                <Button size="lg" className="bg-white text-indigo-700 hover:bg-indigo-50 font-semibold w-full sm:w-auto">
-                  Start for Free →
+                <Button
+                  size="lg"
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold w-full sm:w-auto shadow-lg shadow-indigo-900/50"
+                >
+                  Start for free →
                 </Button>
               </Link>
-              <Link href="#features">
+              <Link href="#how-it-works">
                 <Button
                   size="lg"
                   variant="outline"
                   className="border-white/30 text-white hover:bg-white/10 w-full sm:w-auto"
                 >
-                  See How It Works
+                  See how it works
                 </Button>
               </Link>
             </div>
-            <div className="mt-8 flex items-center gap-6 text-sm text-indigo-300">
-              {["Real IELTS band scores", "Instant feedback", "Free to start"].map(
-                (item) => (
-                  <div key={item} className="flex items-center gap-1.5">
-                    <CheckCircle className="h-4 w-4 text-green-400" />
-                    {item}
-                  </div>
-                )
-              )}
+
+            {/* Trust signals */}
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-indigo-300">
+              {[
+                "10,000+ essays analysed",
+                "Average +0.8 band improvement",
+                "4 scoring pillars tracked",
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-1.5">
+                  <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
+                  {item}
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Social Proof Strip */}
-      <section className="bg-indigo-950 text-indigo-300 py-4">
-        <div className="max-w-6xl mx-auto px-4 text-center text-sm">
-          Helping IELTS candidates worldwide prepare for bands 6.0 – 8.0+
-        </div>
-      </section>
-
-      {/* Features */}
-      <section id="features" className="py-20 bg-white">
+      {/* ── How It Works ── */}
+      <section id="how-it-works" className="py-24 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-              The coaching system that learns from you
-            </h2>
-            <p className="text-lg text-slate-500 max-w-2xl mx-auto">
-              Unlike generic writing tools, IELTS Loop builds a profile of your
-              specific errors and tracks your improvement over time.
+          <div className="text-center mb-16">
+            <p className="text-sm font-semibold text-indigo-600 uppercase tracking-widest mb-3">
+              Detect. Analyse. Remember. Improve.
             </p>
-          </div>
-
-          <div className="grid gap-8 sm:grid-cols-3">
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="pt-8 pb-6 text-center space-y-4">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-100">
-                  <BookOpen className="h-7 w-7 text-indigo-600" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900">
-                  Real IELTS Examiner AI
-                </h3>
-                <p className="text-slate-500 leading-relaxed">
-                  Scored using official band descriptors across all 4 criteria:
-                  Task Achievement, Coherence & Cohesion, Lexical Resource, and
-                  Grammatical Range & Accuracy.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow ring-2 ring-indigo-500">
-              <CardContent className="pt-8 pb-6 text-center space-y-4">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-600">
-                  <Brain className="h-7 w-7 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900">
-                  Memory System
-                </h3>
-                <p className="text-slate-500 leading-relaxed">
-                  The AI remembers every mistake you&apos;ve ever made. When you
-                  repeat an error, it calls it out explicitly — because that&apos;s
-                  what actually changes behavior.
-                </p>
-                <div className="inline-block bg-indigo-100 text-indigo-700 text-xs font-semibold px-3 py-1 rounded-full">
-                  Most Popular Feature
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="pt-8 pb-6 text-center space-y-4">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-green-100">
-                  <Target className="h-7 w-7 text-green-600" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900">
-                  Adaptive Practice
-                </h3>
-                <p className="text-slate-500 leading-relaxed">
-                  Exercises generated specifically for your weaknesses — not
-                  generic grammar drills. Focus your study time on what will
-                  actually move your score.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-20 bg-slate-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
               How it works
             </h2>
           </div>
-          <div className="grid gap-8 sm:grid-cols-3">
+
+          {/* Steps */}
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
+                emoji: "📝",
                 step: "01",
-                title: "Submit your essay",
-                desc: "Paste your Task 1 or Task 2 essay along with the question prompt.",
-                icon: PenLine,
+                title: "Submit Your Essay",
+                desc: "Paste your Task 1 or Task 2 response and the question prompt.",
               },
               {
+                emoji: "🔍",
                 step: "02",
-                title: "Get scored instantly",
-                desc: "Receive band scores for all 4 criteria plus detailed error annotations within seconds.",
-                icon: CheckCircle,
+                title: "AI Examiner Analysis",
+                desc: "Scored on all 4 official IELTS criteria with annotated feedback.",
               },
               {
+                emoji: "🧠",
                 step: "03",
-                title: "Track & improve",
-                desc: "Your error patterns are remembered. Each new essay gives you more targeted feedback.",
-                icon: TrendingUp,
+                title: "Memory System Updates",
+                desc: "Your error profile grows with every submission, identifying true patterns.",
               },
-            ].map(({ step, title, desc, icon: Icon }) => (
-              <div key={step} className="flex gap-4">
-                <div className="shrink-0">
-                  <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">
-                    {step}
+              {
+                emoji: "🎯",
+                step: "04",
+                title: "Targeted Practice",
+                desc: "Exercises built from YOUR specific weaknesses — not generic drills.",
+              },
+            ].map(({ emoji, step, title, desc }) => (
+              <div key={step} className="relative">
+                {/* Connector line (hidden on last) */}
+                <div className="hidden lg:block absolute top-7 left-full w-8 h-px bg-slate-200 z-10" />
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-2xl shrink-0">
+                      {emoji}
+                    </div>
+                    <span className="text-xs font-bold text-indigo-400 tracking-widest">
+                      STEP {step}
+                    </span>
                   </div>
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-1">
-                    {title}
-                  </h3>
-                  <p className="text-slate-500 text-sm leading-relaxed">
-                    {desc}
-                  </p>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 mb-1">
+                      {title}
+                    </h3>
+                    <p className="text-slate-500 text-sm leading-relaxed">
+                      {desc}
+                    </p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -192,44 +147,303 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 bg-indigo-600">
+      {/* ── The 4 Pillars ── */}
+      <section className="py-24 bg-slate-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+              The 4 IELTS scoring pillars
+            </h2>
+            <p className="text-lg text-slate-500 max-w-2xl mx-auto">
+              Every essay is evaluated on all four official criteria — and your
+              memory profile tracks your progress on each one.
+            </p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2">
+            {[
+              {
+                label: "GRA",
+                color: "border-red-500",
+                bg: "bg-red-50",
+                iconColor: "text-red-500",
+                title: "Grammar Accuracy",
+                emoji: "🔴",
+                items: [
+                  "Articles (a/an/the)",
+                  "Tense consistency",
+                  "Subject-verb agreement",
+                  "Sentence structure",
+                ],
+              },
+              {
+                label: "LR",
+                color: "border-amber-500",
+                bg: "bg-amber-50",
+                iconColor: "text-amber-500",
+                title: "Lexical Resource",
+                emoji: "🟡",
+                items: [
+                  "Vocabulary range",
+                  "Word choice precision",
+                  "Collocations",
+                  "Avoiding repetition",
+                ],
+              },
+              {
+                label: "CC",
+                color: "border-blue-500",
+                bg: "bg-blue-50",
+                iconColor: "text-blue-500",
+                title: "Coherence & Cohesion",
+                emoji: "🔵",
+                items: [
+                  "Paragraph flow",
+                  "Linking devices",
+                  "Idea progression",
+                  "Referencing",
+                ],
+              },
+              {
+                label: "TA",
+                color: "border-emerald-500",
+                bg: "bg-emerald-50",
+                iconColor: "text-emerald-500",
+                title: "Task Achievement",
+                emoji: "🟢",
+                items: [
+                  "Addressing all parts",
+                  "Developing ideas",
+                  "Clarity of position",
+                  "Sufficient coverage",
+                ],
+              },
+            ].map(({ label, color, bg, iconColor, title, emoji, items }) => (
+              <Card
+                key={label}
+                className={`border-l-4 ${color} shadow-sm hover:shadow-md transition-shadow`}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div
+                      className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center text-lg shrink-0`}
+                    >
+                      {emoji}
+                    </div>
+                    <div>
+                      <span
+                        className={`text-xs font-bold uppercase tracking-widest ${iconColor}`}
+                      >
+                        {label}
+                      </span>
+                      <h3 className="text-base font-bold text-slate-900">
+                        {title}
+                      </h3>
+                    </div>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {items.map((item) => (
+                      <li
+                        key={item}
+                        className="flex items-center gap-2 text-sm text-slate-600"
+                      >
+                        <div
+                          className={`w-1.5 h-1.5 rounded-full shrink-0 ${color.replace("border-", "bg-")}`}
+                        />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Writing Memory System ── */}
+      <section className="py-24 bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 text-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-purple-500/20 rounded-full px-4 py-1.5 text-sm font-medium text-purple-300 mb-6 border border-purple-500/30">
+              <Brain className="h-3.5 w-3.5" />
+              Powered by Memory AI
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+              The Memory System.{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-indigo-300">
+                Your secret weapon.
+              </span>
+            </h2>
+            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+              Most writing tools forget you the moment you close the tab. We
+              don&apos;t.
+            </p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-3">
+            {[
+              {
+                icon: "📊",
+                title: "Tracks Every Mistake",
+                desc: "We log every error type, how often it appears, and when you last made it — building a precise picture of your writing habits.",
+                accent: "border-purple-500/40",
+              },
+              {
+                icon: "🔎",
+                title: "Finds Your Patterns",
+                desc: "After 3+ essays, we identify your #1 score blocker versus random one-off errors, so you know exactly where to focus.",
+                accent: "border-indigo-500/40",
+              },
+              {
+                icon: "⚡",
+                title: "Adapts Your Practice",
+                desc: "Exercises are generated from your real mistake profile, not generic drills — because your time is too valuable for irrelevant practice.",
+                accent: "border-blue-500/40",
+              },
+            ].map(({ icon, title, desc, accent }) => (
+              <div
+                key={title}
+                className={`rounded-2xl border ${accent} bg-white/5 backdrop-blur-sm p-8 hover:bg-white/10 transition-colors`}
+              >
+                <div className="text-4xl mb-4">{icon}</div>
+                <h3 className="text-xl font-bold text-white mb-3">{title}</h3>
+                <p className="text-slate-400 leading-relaxed text-sm">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Examiner Feedback Preview ── */}
+      <section className="py-24 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <p className="text-sm font-semibold text-indigo-600 uppercase tracking-widest mb-3">
+                Examiner-style feedback
+              </p>
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-6">
+                See exactly what&apos;s holding you back
+              </h2>
+              <p className="text-slate-500 text-lg leading-relaxed mb-6">
+                Every essay analysis reads like a certified IELTS examiner wrote
+                it — with band scores, criterion breakdown, and a prioritised
+                list of your top score blockers.
+              </p>
+              <p className="text-slate-500 leading-relaxed text-sm">
+                Most importantly, when we&apos;ve seen you make the same mistake
+                before, we call it out — because knowing a pattern is your
+                fastest path to fixing it.
+              </p>
+            </div>
+
+            {/* Mock Feedback Card */}
+            <div className="bg-slate-50 rounded-2xl border border-slate-200 shadow-xl overflow-hidden">
+              {/* Card header */}
+              <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-5 flex items-center justify-between">
+                <div>
+                  <p className="text-indigo-200 text-xs font-medium uppercase tracking-wide mb-0.5">
+                    Overall Band Score
+                  </p>
+                  <p className="text-white text-4xl font-extrabold">6.5</p>
+                </div>
+                <div className="text-right">
+                  <span className="inline-block bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                    Task 2 · Academic
+                  </span>
+                </div>
+              </div>
+
+              {/* Criterion scores */}
+              <div className="p-5 border-b border-slate-200">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+                  Criterion Breakdown
+                </p>
+                <div className="space-y-2.5">
+                  {[
+                    { label: "Task Achievement", code: "TA", score: 6.5, color: "bg-emerald-500" },
+                    { label: "Coherence & Cohesion", code: "CC", score: 6.0, color: "bg-blue-500" },
+                    { label: "Lexical Resource", code: "LR", score: 6.5, color: "bg-amber-500" },
+                    { label: "Grammar Accuracy", code: "GRA", score: 6.0, color: "bg-red-500" },
+                  ].map(({ label, code, score, color }) => (
+                    <div key={code} className="flex items-center gap-3">
+                      <span className="text-xs font-bold text-slate-500 w-8 shrink-0">
+                        {code}
+                      </span>
+                      <div className="flex-1 bg-slate-200 rounded-full h-2">
+                        <div
+                          className={`${color} h-2 rounded-full`}
+                          style={{ width: `${(score / 9) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-sm font-bold text-slate-700 w-8 text-right shrink-0">
+                        {score.toFixed(1)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Top Score Blockers */}
+              <div className="p-5 border-b border-slate-200">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+                  Top Score Blockers
+                </p>
+                <div className="space-y-2">
+                  {[
+                    { name: "Article errors", impact: "High Impact", color: "bg-red-100 text-red-700" },
+                    { name: "Weak conclusions", impact: "High Impact", color: "bg-red-100 text-red-700" },
+                    { name: "Vocabulary repetition", impact: "Medium", color: "bg-amber-100 text-amber-700" },
+                  ].map(({ name, impact, color }) => (
+                    <div key={name} className="flex items-center justify-between">
+                      <span className="text-sm text-slate-700">{name}</span>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${color}`}>
+                        {impact}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Memory insight */}
+              <div className="p-5 bg-purple-50 border-t border-purple-100">
+                <div className="flex gap-3">
+                  <Brain className="h-4 w-4 text-purple-600 mt-0.5 shrink-0" />
+                  <p className="text-sm text-purple-800 leading-relaxed">
+                    <span className="font-semibold">Memory insight:</span> You&apos;ve
+                    made article errors in 7 of your last 9 essays. This is your{" "}
+                    <span className="font-semibold">#1 band limiter.</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Final CTA ── */}
+      <section className="py-24 bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
         <div className="max-w-2xl mx-auto px-4 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            Ready to raise your band score?
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+            Ready to break through your band score plateau?
           </h2>
           <p className="text-indigo-200 text-lg mb-8">
-            Submit your first essay free. No credit card required.
+            No credit card. No fluff. Just targeted improvement.
           </p>
           <Link href="/auth/signin">
-            <Button size="lg" className="bg-white text-indigo-700 hover:bg-indigo-50 font-semibold">
-              Get Started Free →
+            <Button
+              size="lg"
+              className="bg-white text-indigo-700 hover:bg-indigo-50 font-bold text-base px-8 shadow-lg"
+            >
+              Get started free →
             </Button>
           </Link>
+          <p className="text-indigo-300 text-sm mt-4">
+            Join thousands of IELTS candidates already improving with IELTS Loop
+          </p>
         </div>
       </section>
     </div>
-  );
-}
-
-// Import needs to be at top level
-function PenLine({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M12 20h9" />
-      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-      <path d="m15 5 3 3" />
-    </svg>
   );
 }
