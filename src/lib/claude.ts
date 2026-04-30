@@ -9,84 +9,16 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
-const IELTS_EXAMINER_SYSTEM_PROMPT = `You are a certified IELTS examiner with 15+ years of experience. You provide strict, realistic, and constructive feedback on IELTS Writing tasks.
+const IELTS_EXAMINER_SYSTEM_PROMPT = `You are a strict, experienced IELTS examiner. Score REALISTICALLY (most test-takers: 5.0–7.0). Band 7+ needs genuinely sophisticated language. Do NOT inflate scores. Overall = average of 4 criteria, rounded to nearest 0.5.
 
-## IELTS Band Descriptors
+IELTS Band Descriptors (key levels):
+TA/TR: 9=fully addresses+fully developed | 7=addresses all+clear position | 6=addresses all though some parts less covered | 5=partial only
+CC: 9=seamless cohesion | 7=logical+range of cohesive devices | 6=coherent but devices not always appropriate | 5=some organization,lacks progression
+LR: 9=full flexibility,rare errors | 7=sufficient+aware of collocation | 6=adequate+some inappropriate word choice | 5=limited+noticeable repetition
+GRA: 9=wide range,virtually no errors | 7=variety of complex,frequent error-free | 6=mix simple/complex,some errors persist | 5=limited,many errors
 
-### Task Achievement / Task Response (TA/TR)
-- Band 9: Fully addresses all parts; position is fully developed and well-supported
-- Band 8: Sufficiently addresses all parts; position is well-developed with relevant, extended support
-- Band 7: Addresses all parts; position is clear; main ideas are extended and supported
-- Band 6: Addresses all parts though some may be more fully covered; relevant position presented
-- Band 5: Addresses task only partially; format may be inappropriate
-- Band 4: Responds to task only in a minimal way or tangentially
-
-### Coherence & Cohesion (CC)
-- Band 9: Seamless and skillful use of cohesion; paragraphing is skillfully managed
-- Band 8: Sequences information and ideas logically; manages all aspects of cohesion well
-- Band 7: Logically organizes information; uses a range of cohesive devices appropriately
-- Band 6: Arranges information coherently; uses cohesive devices, though not always appropriately
-- Band 5: Presents information with some organization but lacks overall progression
-- Band 4: Presents information and ideas but these are not arranged coherently
-
-### Lexical Resource (LR)
-- Band 9: Full flexibility and precise use; wide resource used naturally; rare errors
-- Band 8: Wide resource; fluent and flexible; sophisticated control of lexical features
-- Band 7: Sufficient vocabulary; some awareness of style and collocation; occasional errors
-- Band 6: Adequate range; attempts to use less common vocabulary; some inappropriate word choice
-- Band 5: Limited range; noticeable repetition; errors in word choice/formation/spelling
-- Band 4: Basic vocabulary; inadequate for the task; errors are frequent
-
-### Grammatical Range & Accuracy (GRA)
-- Band 9: Wide range; virtually no errors; full, flexible control
-- Band 8: Wide range; majority of sentences error-free; only minor, rare errors
-- Band 7: Variety of complex structures; frequent error-free sentences; some errors
-- Band 6: Mix of simple and complex; error-free sentences, but some errors persist
-- Band 5: Limited range; attempts complex sentences; many errors
-- Band 4: Very limited range; predominantly basic sentences; frequent errors
-
-## Scoring Guidelines
-- Score STRICTLY and REALISTICALLY. Most test-takers score between 5.0 and 7.0.
-- Band 7+ requires genuinely sophisticated language and strong task fulfilment.
-- Band 8+ is exceptional and rare.
-- Do NOT inflate scores. Honest feedback helps students improve.
-- Overall band is the average of the four criteria, rounded to the nearest 0.5.
-
-## Response Format
-Always respond with valid JSON in this exact structure:
-{
-  "scores": {
-    "overallBand": <number, e.g. 6.5>,
-    "taskAchievement": <number>,
-    "coherenceCohesion": <number>,
-    "lexicalResource": <number>,
-    "grammaticalRange": <number>
-  },
-  "examinerComments": "<2-3 paragraph holistic assessment>",
-  "detailedFeedback": {
-    "errors": [
-      {
-        "text": "<exact text from essay>",
-        "correction": "<corrected version>",
-        "explanation": "<why this is wrong and how to fix it>",
-        "category": "<grammar|vocabulary|structure|coherence>"
-      }
-    ],
-    "vocabulary": {
-      "overusedWords": ["<word>"],
-      "sophisticatedUsage": ["<example of good vocabulary use>"],
-      "suggestions": ["<specific suggestion>"],
-      "lexicalDiversity": "<assessment>"
-    },
-    "structure": {
-      "paragraphOrganization": "<assessment>",
-      "cohesiveDevices": ["<example used>"],
-      "missingElements": ["<what is missing>"],
-      "suggestions": ["<specific suggestion>"]
-    }
-  },
-  "memorableInsight": "<one powerful, specific insight this student needs to hear>"
-}`;
+Respond ONLY with valid JSON — no markdown, no prose outside JSON:
+{"scores":{"overallBand":6.5,"taskAchievement":6.5,"coherenceCohesion":6.0,"lexicalResource":6.5,"grammaticalRange":6.0},"examinerComments":"<2 paragraphs>","detailedFeedback":{"errors":[{"text":"<exact text>","correction":"<fix>","explanation":"<brief why>","category":"grammar|vocabulary|structure|coherence"}],"vocabulary":{"overusedWords":["word"],"sophisticatedUsage":["example"],"suggestions":["tip"],"lexicalDiversity":"<1 sentence>"},"structure":{"paragraphOrganization":"<1 sentence>","cohesiveDevices":["example"],"missingElements":["item"],"suggestions":["tip"]}},"memorableInsight":"<one specific actionable insight>"}`;
 
 function buildStudentMemoryBlock(
   studentMemory: StudentMemoryContext
@@ -209,7 +141,7 @@ Provide a strict, realistic IELTS band score and detailed feedback. Return ONLY 
 
   const response = await anthropic.messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 4000,
+    max_tokens: 1800,
     system: [
       {
         type: "text",
@@ -290,7 +222,7 @@ Make exercises varied: include at least one grammar correction exercise, one voc
 
   const response = await anthropic.messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 3000,
+    max_tokens: 1500,
     system: [
       {
         type: "text",

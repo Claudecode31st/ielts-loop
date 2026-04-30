@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+
+export const maxDuration = 60; // Vercel hobby plan max
 import { essays } from "@/lib/db/schema";
 import { analyzeEssay } from "@/lib/claude";
 import { updateStudentMemory, getStudentMemoryContext } from "@/lib/memory";
