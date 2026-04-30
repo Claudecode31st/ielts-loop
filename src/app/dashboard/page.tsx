@@ -24,6 +24,7 @@ import {
   Zap,
 } from "lucide-react";
 import { getBandColor, getBandBgColor, formatDate } from "@/lib/utils";
+import { RebuildMemoryButton } from "@/components/rebuild-memory-button";
 
 // Map errorCategory strings to IELTS pillar codes
 function getCategoryLabel(cat: string): string {
@@ -227,12 +228,15 @@ export default async function DashboardPage() {
                       Writing Memory — Your Error Profile
                     </CardTitle>
                   </div>
-                  <Link
-                    href="/progress"
-                    className="text-xs text-brand-600 hover:text-brand-800 flex items-center gap-1 transition-colors"
-                  >
-                    View full memory <ChevronRight className="h-3 w-3" />
-                  </Link>
+                  <div className="flex items-center gap-3">
+                    <RebuildMemoryButton />
+                    <Link
+                      href="/progress"
+                      className="text-xs text-brand-600 hover:text-brand-800 flex items-center gap-1 transition-colors"
+                    >
+                      View full memory <ChevronRight className="h-3 w-3" />
+                    </Link>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="p-0">
