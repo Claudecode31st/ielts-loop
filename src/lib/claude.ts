@@ -165,21 +165,47 @@ export async function analyzeEssay(params: {
   essay: string;
   prompt: string;
   taskType: "task1" | "task2";
+  ieltsMode?: "academic" | "general";
   studentMemory: StudentMemoryContext;
+  imageBase64?: string;
+  imageMime?: string;
 }): Promise<AnalysisResult> {
-  const { essay, prompt, taskType, studentMemory } = params;
+  const { essay, prompt, taskType, ieltsMode = "academic", studentMemory, imageBase64, imageMime = "image/jpeg" } = params;
 
   const studentMemoryContent = buildStudentMemoryBlock(studentMemory);
 
-  const userMessage = `Please analyze this IELTS Writing ${taskType === "task1" ? "Task 1" : "Task 2"} essay.
+  const taskLabel = taskType === "task1"
+    ? `Task 1 (${ieltsMode === "academic" ? "Academic — describe a chart/graph/diagram" : "General Training — write a letter"})`
+    : "Task 2 (Essay)";
+
+  const textPrompt = `Please analyze this IELTS Writing ${taskLabel} response.
 
 ## Task Prompt
 ${prompt}
 
 ## Student's Essay
 ${essay}
+${imageBase64 ? "\n[A chart/graph image has been provided above. Use it to assess how accurately the student described the visual data.]" : ""}
 
 Provide a strict, realistic IELTS band score and detailed feedback. Return ONLY valid JSON, no markdown code blocks.`;
+
+  // Build user message content — include image if provided
+  type AllowedMime = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+  const safeMime: AllowedMime = (["image/jpeg","image/png","image/gif","image/webp"].includes(imageMime)
+    ? imageMime : "image/jpeg") as AllowedMime;
+
+  type ContentBlock =
+    | { type: "text"; text: string }
+    | { type: "image"; source: { type: "base64"; media_type: AllowedMime; data: string } };
+
+  const userContent: ContentBlock[] = [];
+  if (imageBase64) {
+    userContent.push({
+      type: "image",
+      source: { type: "base64", media_type: safeMime, data: imageBase64 },
+    });
+  }
+  userContent.push({ type: "text", text: textPrompt });
 
   const response = await anthropic.messages.create({
     model: "claude-sonnet-4-6",
@@ -198,7 +224,7 @@ Provide a strict, realistic IELTS band score and detailed feedback. Return ONLY 
     messages: [
       {
         role: "user",
-        content: userMessage,
+        content: userContent,
       },
     ],
   });

@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { essay, prompt, taskType } = body;
+    const { essay, prompt, taskType, ieltsMode, imageBase64, imageMime } = body;
 
     if (!essay || !prompt || !taskType) {
       return NextResponse.json(
@@ -49,7 +49,10 @@ export async function POST(req: NextRequest) {
       essay,
       prompt,
       taskType,
+      ieltsMode: ieltsMode ?? "academic",
       studentMemory,
+      imageBase64: imageBase64 ?? undefined,
+      imageMime: imageMime ?? "image/jpeg",
     });
 
     // Save essay to DB
