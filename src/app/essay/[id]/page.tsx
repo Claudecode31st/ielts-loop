@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
+
 import { ArrowLeft, Clock, FileText } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import type { Essay, ErrorPattern, DetailedFeedback } from "@/types";
@@ -134,20 +135,8 @@ export default async function EssayDetailPage({
         </CardContent>
       </Card>
 
-      {/* Feedback */}
+      {/* Feedback — essay is shown first inside EssayFeedback */}
       <EssayFeedback essay={typedEssay} recurringErrors={typedErrors} />
-
-      {/* Original Essay */}
-      <Card>
-        <CardContent className="p-4">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
-            Your Essay ({essay.wordCount} words)
-          </p>
-          <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-line border-l-2 border-slate-200 pl-4">
-            {essay.content}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
