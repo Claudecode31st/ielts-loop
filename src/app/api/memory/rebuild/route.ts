@@ -6,6 +6,7 @@ import {
   errorPatterns,
   vocabularyStats,
   studentMemory,
+  users,
 } from "@/lib/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { updateStudentMemory } from "@/lib/memory";
@@ -30,10 +31,12 @@ export async function POST(req: NextRequest) {
 
     const userId = session.user.id;
 
-    // 1. Wipe existing (broken) memory data
+    // 1. Wipe existing (broken) memory data and reset essay counter to 0
+    // so updateStudentMemory can recount correctly from scratch
     await db.delete(errorPatterns).where(eq(errorPatterns.userId, userId));
     await db.delete(vocabularyStats).where(eq(vocabularyStats.userId, userId));
     await db.delete(studentMemory).where(eq(studentMemory.userId, userId));
+    await db.update(users).set({ totalEssays: 0 }).where(eq(users.id, userId));
 
     // 2. Fetch all of the user's essays (oldest first so memory builds naturally)
     const userEssays = await db
