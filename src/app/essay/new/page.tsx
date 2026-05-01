@@ -10,8 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import {
   AlertCircle, Loader2, PenLine, Info,
   ImagePlus, X, GraduationCap, BookOpen,
-  Clock, AlertTriangle, EyeOff, Sparkles,
+  Clock, AlertTriangle, EyeOff, Sparkles, Zap,
 } from "lucide-react";
+import { GuidePanel } from "@/components/guide-panel";
+import type { GuideSuggestion } from "@/components/guide-panel";
 import { countWords } from "@/lib/utils";
 import type { TaskType } from "@/types";
 import { EssayLimitBanner } from "@/components/essay-limit-banner";
@@ -46,6 +48,12 @@ export default function NewEssayPage() {
   const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [promptUsage, setPromptUsage] = useState<{ used: number; limit: number | null } | null>(null);
+  const [guideMode, setGuideMode] = useState(false);
+  const [guideSuggestions, setGuideSuggestions] = useState<GuideSuggestion[]>([]);
+  const [guideLoading, setGuideLoading] = useState(false);
+  const [isProUser, setIsProUser] = useState(false);
+  const lastAnalysedWordCount = useRef(0);
+  const guideDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -57,6 +65,10 @@ export default function NewEssayPage() {
     fetch("/api/prompt")
       .then((r) => r.json())
       .then((data) => setPromptUsage({ used: data.used, limit: data.limit }))
+      .catch(() => {});
+    fetch("/api/usage")
+      .then((r) => r.json())
+      .then((data) => setIsProUser(data.plan === "pro"))
       .catch(() => {});
   }, []);
 
@@ -106,6 +118,32 @@ export default function NewEssayPage() {
     setImageBase64(null); setImagePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }, []);
+
+  // Guide mode: debounced analysis triggered by essay changes
+  const triggerGuideAnalysis = useCallback((essayText: string) => {
+    if (!guideMode) return;
+    const words = essayText.trim().split(/\s+/).filter(Boolean).length;
+    if (Math.abs(words - lastAnalysedWordCount.current) < 10) return; // need 10+ new words
+
+    if (guideDebounceRef.current) clearTimeout(guideDebounceRef.current);
+    guideDebounceRef.current = setTimeout(async () => {
+      setGuideLoading(true);
+      try {
+        const res = await fetch("/api/guide", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ essay: essayText, prompt, taskType, ieltsMode }),
+        });
+        const data = await res.json();
+        if (res.ok && data.suggestions) {
+          setGuideSuggestions(data.suggestions);
+          lastAnalysedWordCount.current = words;
+        }
+      } catch { /* silent */ } finally {
+        setGuideLoading(false);
+      }
+    }, 4000); // 4 seconds after typing stops
+  }, [guideMode, prompt, taskType, ieltsMode]);
 
   // Warn before switching if a prompt was already generated
   const confirmSwitch = useCallback((onConfirm: () => void) => {
@@ -387,23 +425,60 @@ export default function NewEssayPage() {
       </div>
 
       {/* Essay */}
+      {/* Essay + Guide Mode */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
+        {/* Header row: label + word count + guide toggle */}
+        <div className="flex items-center justify-between gap-2">
           <Label htmlFor="essay" className="text-sm font-semibold text-slate-700">Your Essay *</Label>
-          <div className="flex items-center gap-2">
-            <span className={`text-sm font-medium ${isGood ? "text-green-600" : isUnderMin ? "text-amber-500" : "text-slate-500"}`}>{wordCount} words</span>
-            <Badge variant={isGood ? "success" : isUnderMin ? "warning" : "outline"} className="text-xs">
-              {isGood ? "Good length" : isUnderMin ? `Min ${minWords} recommended` : `Aim for ${recWords}+`}
-            </Badge>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className={`text-sm font-medium ${isGood ? "text-green-600" : isUnderMin ? "text-amber-500" : "text-slate-500"}`}>{wordCount} words</span>
+              <Badge variant={isGood ? "success" : isUnderMin ? "warning" : "outline"} className="text-xs">
+                {isGood ? "Good length" : isUnderMin ? `Min ${minWords} recommended` : `Aim for ${recWords}+`}
+              </Badge>
+            </div>
+            {/* Guide mode toggle */}
+            <button
+              type="button"
+              onClick={() => { setGuideMode((m) => !m); setGuideSuggestions([]); lastAnalysedWordCount.current = 0; }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-200 ${
+                guideMode
+                  ? "bg-brand-600 text-white border-brand-600 shadow-sm"
+                  : "bg-white text-slate-600 border-slate-200 hover:border-brand-300 hover:text-brand-700"
+              }`}
+            >
+              <Zap className="h-3.5 w-3.5" />
+              Guide Mode
+            </button>
           </div>
         </div>
+
+        {/* Progress bar */}
         <div className="w-full bg-slate-200 rounded-full h-1.5">
           <div className={`h-1.5 rounded-full transition-all duration-300 ${isGood ? "bg-green-500" : isUnderMin ? "bg-amber-400" : "bg-slate-300"}`}
             style={{ width: `${Math.min((wordCount / recWords) * 100, 100)}%` }} />
         </div>
-        <Textarea id="essay" value={essay} onChange={(e) => { setEssay(e.target.value); setShowWordWarning(false); }}
-          placeholder={taskType === "task1" ? (ieltsMode === "academic" ? "The chart illustrates…" : "Dear Sir or Madam,\n\nI am writing to…") : "In recent decades…"}
-          className="min-h-[350px] resize-y text-sm leading-relaxed" />
+
+        {/* 2-column layout when guide mode is on */}
+        <div className={`flex gap-4 items-start transition-all duration-300`}>
+          <div className={`flex-1 min-w-0 transition-all duration-300`}>
+            <Textarea id="essay" value={essay} onChange={(e) => { setEssay(e.target.value); setShowWordWarning(false); triggerGuideAnalysis(e.target.value); }}
+              placeholder={taskType === "task1" ? (ieltsMode === "academic" ? "The chart illustrates…" : "Dear Sir or Madam,\n\nI am writing to…") : "In recent decades…"}
+              className="min-h-[350px] resize-y text-sm leading-relaxed w-full" />
+          </div>
+
+          {/* Guide panel — slides in when guide mode is on */}
+          {guideMode && (
+            <div className="w-72 shrink-0 bg-white rounded-2xl border border-[var(--border)] shadow-sm p-4 self-stretch min-h-[350px] flex flex-col">
+              <GuidePanel
+                suggestions={guideSuggestions}
+                isLoading={guideLoading}
+                wordCount={wordCount}
+                isProUser={isProUser}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Word count soft warning */}
