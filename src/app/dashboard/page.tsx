@@ -4,12 +4,14 @@ import { db } from "@/lib/db";
 import { essays, users, errorPatterns } from "@/lib/db/schema";
 import { eq, desc, count } from "drizzle-orm";
 import Link from "next/link";
+import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   PenLine, TrendingUp, Target, Dumbbell, Brain, Clock,
   ScrollText, Sparkles, Crosshair, BarChart3, ChevronRight, Zap,
 } from "lucide-react";
-import { getBandColor, getBandBgColor, formatDate } from "@/lib/utils";
+import { getBandColor, formatDate } from "@/lib/utils";
 import { RebuildMemoryButton } from "@/components/rebuild-memory-button";
 
 function getCategoryLabel(cat: string) {
@@ -31,77 +33,51 @@ function getCategoryBadge(cat: string) {
   return "bg-emerald-50 text-emerald-600";
 }
 
-export default async function DashboardPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/auth/signin");
-
+// ── Async data component (streams in after shell) ──────────────────────────
+async function DashboardContent({ userId }: { userId: string }) {
   const [[userData], recentEssays, topErrors, [{ totalEssays }]] = await Promise.all([
-    db.select().from(users).where(eq(users.id, session.user.id)).limit(1),
-    db.select().from(essays).where(eq(essays.userId, session.user.id)).orderBy(desc(essays.submittedAt)).limit(4),
-    db.select().from(errorPatterns).where(eq(errorPatterns.userId, session.user.id)).orderBy(desc(errorPatterns.frequency)).limit(5),
-    db.select({ totalEssays: count() }).from(essays).where(eq(essays.userId, session.user.id)),
+    db.select().from(users).where(eq(users.id, userId)).limit(1),
+    db.select().from(essays).where(eq(essays.userId, userId)).orderBy(desc(essays.submittedAt)).limit(4),
+    db.select().from(errorPatterns).where(eq(errorPatterns.userId, userId)).orderBy(desc(errorPatterns.frequency)).limit(5),
+    db.select({ totalEssays: count() }).from(essays).where(eq(essays.userId, userId)),
   ]);
 
-  const firstName = session.user.name?.split(" ")[0] || "there";
   const currentBand = userData?.currentBand ? parseFloat(String(userData.currentBand)) : null;
   const targetBand = userData?.targetBand ? parseFloat(String(userData.targetBand)) : 7.0;
   const topError = topErrors[0];
   const bandColorClass = currentBand ? getBandColor(currentBand) : "text-slate-400";
   const gapToTarget = currentBand != null ? Math.max(0, targetBand - currentBand) : null;
-
   const lastFourBands = recentEssays.slice(0, 4).map((e) => (
     e.overallBand ? parseFloat(String(e.overallBand)) : null
   )).reverse();
-
   const weekFocusItems = topErrors.slice(0, 3).map((error) => {
     const freq = error.frequency ?? 1;
     return { errorType: error.errorType, errorCategory: error.errorCategory, minutes: Math.min(30, Math.max(10, freq * 5)) };
   });
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-
-      {/* ── Welcome Bar ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-900">
-            Welcome back, {firstName}
-          </h1>
-          <p className="text-sm text-slate-500 mt-0.5">
-            Band Goal <span className="font-medium text-slate-700">{targetBand.toFixed(1)}</span>
-            {" · "}
-            <span className="font-medium text-slate-700">{totalEssays}</span>{" "}
-            {totalEssays === 1 ? "essay" : "essays"} submitted
-          </p>
-        </div>
-        <Link href="/essay/new">
-          <Button className="gap-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg h-9 px-4 text-sm border-0 shrink-0">
-            <PenLine className="h-4 w-4" />
-            Submit Essay
-          </Button>
-        </Link>
-      </div>
+    <>
+      {/* Sub-header with essay count */}
+      <p className="text-sm text-slate-500 -mt-3">
+        Band Goal <span className="font-medium text-slate-700">{targetBand.toFixed(1)}</span>
+        {" · "}
+        <span className="font-medium text-slate-700">{totalEssays}</span>{" "}
+        {totalEssays === 1 ? "essay" : "essays"} submitted
+      </p>
 
       {/* ── Stats Row ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {/* Current Band */}
         <div className="bg-white border border-[var(--border)] rounded-xl p-4 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
           <p className="text-xs text-slate-400 mb-2">Current Band</p>
-          <div className={`text-2xl font-bold ${bandColorClass}`}>
-            {currentBand != null ? currentBand.toFixed(1) : "–"}
-          </div>
+          <div className={`text-2xl font-bold ${bandColorClass}`}>{currentBand != null ? currentBand.toFixed(1) : "–"}</div>
           <div className="flex items-center gap-1 mt-1">
             <TrendingUp className="h-3 w-3 text-slate-300" />
             <span className="text-[11px] text-slate-400">overall</span>
           </div>
         </div>
-
-        {/* Target Band */}
         <div className="bg-white border border-[var(--border)] rounded-xl p-4 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
           <p className="text-xs text-slate-400 mb-2">Target Band</p>
-          <div className="text-2xl font-bold text-brand-600">
-            {targetBand.toFixed(1)}
-          </div>
+          <div className="text-2xl font-bold text-brand-600">{targetBand.toFixed(1)}</div>
           <div className="flex items-center gap-1 mt-1">
             <Target className="h-3 w-3 text-slate-300" />
             <span className="text-[11px] text-slate-400">
@@ -109,8 +85,6 @@ export default async function DashboardPage() {
             </span>
           </div>
         </div>
-
-        {/* Essays */}
         <div className="bg-white border border-[var(--border)] rounded-xl p-4 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
           <p className="text-xs text-slate-400 mb-2">Essays</p>
           <div className="text-2xl font-bold text-slate-800">{totalEssays}</div>
@@ -119,8 +93,6 @@ export default async function DashboardPage() {
             <span className="text-[11px] text-slate-400">submitted</span>
           </div>
         </div>
-
-        {/* Top Error */}
         <div className="bg-white border border-[var(--border)] rounded-xl p-4 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
           <p className="text-xs text-slate-400 mb-2">Top Error</p>
           <div className="text-sm font-semibold text-slate-800 leading-tight min-h-[28px] flex items-center">
@@ -135,10 +107,8 @@ export default async function DashboardPage() {
 
       {/* ── Main Grid ── */}
       <div className="grid gap-4 lg:grid-cols-3">
-
         {/* LEFT col (2/3) */}
         <div className="lg:col-span-2 space-y-4">
-
           {/* Writing Memory */}
           <div className="bg-white border border-[var(--border)] rounded-xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden">
             <div className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
@@ -153,7 +123,6 @@ export default async function DashboardPage() {
                 </Link>
               </div>
             </div>
-
             {topErrors.length === 0 ? (
               <div className="py-10 text-center px-6">
                 <Brain className="h-8 w-8 text-slate-200 mx-auto mb-3" />
@@ -200,7 +169,6 @@ export default async function DashboardPage() {
                 View all <ChevronRight className="h-3 w-3" />
               </Link>
             </div>
-
             {recentEssays.length === 0 ? (
               <div className="py-10 text-center px-6">
                 <ScrollText className="h-8 w-8 text-slate-200 mx-auto mb-3" />
@@ -281,7 +249,6 @@ export default async function DashboardPage() {
 
         {/* RIGHT col (1/3) */}
         <div className="space-y-4">
-
           {/* Band Progress */}
           <div className="bg-white border border-[var(--border)] rounded-xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
             <div className="px-4 py-3 border-b border-[var(--border)] flex items-center gap-2">
@@ -301,13 +268,9 @@ export default async function DashboardPage() {
                     : "Submit an essay to get your score"}
                 </p>
               </div>
-
-              {/* Progress bar */}
               <div className="mb-4">
                 <div className="flex justify-between text-[10px] text-slate-400 mb-1">
-                  <span>0</span>
-                  <span>Target {targetBand.toFixed(1)}</span>
-                  <span>9</span>
+                  <span>0</span><span>Target {targetBand.toFixed(1)}</span><span>9</span>
                 </div>
                 <div className="relative h-2 bg-slate-100 rounded-full overflow-hidden">
                   <div className="absolute top-0 h-full w-px bg-slate-300 z-10" style={{ left: `${(targetBand / 9) * 100}%` }} />
@@ -316,8 +279,6 @@ export default async function DashboardPage() {
                   )}
                 </div>
               </div>
-
-              {/* Mini bar chart */}
               {lastFourBands.some((b) => b != null) && (
                 <div>
                   <p className="text-[10px] text-slate-400 mb-2">Last {lastFourBands.length} essays</p>
@@ -347,11 +308,9 @@ export default async function DashboardPage() {
               </div>
               {totalEssays > 0 && topError ? (
                 <p className="text-slate-400 text-xs leading-relaxed">
-                  Based on{" "}
-                  <span className="text-white font-medium">{totalEssays}</span>{" "}
+                  Based on <span className="text-white font-medium">{totalEssays}</span>{" "}
                   {totalEssays === 1 ? "essay" : "essays"}, your biggest limiter is{" "}
-                  <span className="text-brand-400 font-medium">{topError.errorType}</span>.
-                  Focus here first.
+                  <span className="text-brand-400 font-medium">{topError.errorType}</span>. Focus here first.
                 </p>
               ) : (
                 <p className="text-slate-400 text-xs leading-relaxed">
@@ -406,6 +365,95 @@ export default async function DashboardPage() {
           </div>
         </div>
       </div>
+    </>
+  );
+}
+
+// ── Inline skeleton for the data section ──────────────────────────────────
+function DashboardContentSkeleton() {
+  return (
+    <>
+      <Skeleton className="h-4 w-48 -mt-3" />
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="bg-white border border-[var(--border)] rounded-xl p-4 space-y-2">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-7 w-12" />
+            <Skeleton className="h-3 w-16" />
+          </div>
+        ))}
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-4">
+          <div className="bg-white border border-[var(--border)] rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-[var(--border)]"><Skeleton className="h-4 w-32" /></div>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-2.5 border-b border-[var(--border)] last:border-0">
+                <Skeleton className="h-3 w-3 rounded-full" />
+                <div className="flex-1 space-y-1"><Skeleton className="h-3.5 w-36" /><Skeleton className="h-1 w-full rounded-full" /></div>
+                <Skeleton className="h-3 w-6" />
+              </div>
+            ))}
+          </div>
+          <div className="bg-white border border-[var(--border)] rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-[var(--border)]"><Skeleton className="h-4 w-28" /></div>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-start gap-3 px-4 py-3 border-b border-[var(--border)] last:border-0">
+                <div className="flex-1 space-y-1.5">
+                  <div className="flex gap-1.5"><Skeleton className="h-4 w-14 rounded" /><Skeleton className="h-4 w-20 rounded" /></div>
+                  <Skeleton className="h-3.5 w-full" />
+                </div>
+                <Skeleton className="h-6 w-10 shrink-0" />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="space-y-4">
+          <div className="bg-white border border-[var(--border)] rounded-xl">
+            <div className="px-4 py-3 border-b border-[var(--border)]"><Skeleton className="h-4 w-28" /></div>
+            <div className="p-4 space-y-3">
+              <Skeleton className="h-12 w-20 mx-auto rounded-lg" />
+              <Skeleton className="h-3 w-40 mx-auto" />
+              <Skeleton className="h-2 w-full rounded-full" />
+            </div>
+          </div>
+          <Skeleton className="h-28 w-full rounded-xl" />
+          <div className="bg-white border border-[var(--border)] rounded-xl p-2 space-y-0.5">
+            {Array.from({ length: 3 }).map((_, i) => (<Skeleton key={i} className="h-9 w-full rounded-lg" />))}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Page shell (renders immediately on auth, no DB needed) ─────────────────
+export default async function DashboardPage() {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/auth/signin");
+
+  const firstName = session.user.name?.split(" ")[0] || "there";
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+      {/* Welcome bar renders immediately from JWT — no DB needed */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-lg font-semibold text-slate-900">Welcome back, {firstName}</h1>
+          {/* Sub-header (essay count etc.) streams in below */}
+        </div>
+        <Link href="/essay/new">
+          <Button className="gap-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg h-9 px-4 text-sm border-0 shrink-0">
+            <PenLine className="h-4 w-4" />
+            Submit Essay
+          </Button>
+        </Link>
+      </div>
+
+      {/* Data streams in — shows inline skeleton while loading */}
+      <Suspense fallback={<DashboardContentSkeleton />}>
+        <DashboardContent userId={session.user.id} />
+      </Suspense>
     </div>
   );
 }
