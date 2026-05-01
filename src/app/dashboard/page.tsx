@@ -431,7 +431,13 @@ export default async function DashboardPage() {
       {/* Welcome bar renders immediately from JWT — no DB needed */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Welcome back, {firstName} 👋</h1>
+          <h1 className="text-2xl font-bold text-slate-900">
+            Welcome back,{" "}
+            <span className="relative inline-block">
+              {firstName}
+              <span className="absolute left-0 -bottom-0.5 w-full h-0.5 rounded-full bg-brand-600" />
+            </span>
+          </h1>
         </div>
         <Link href="/essay/new">
           <Button className="gap-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg h-9 px-4 text-sm border-0 shrink-0">
