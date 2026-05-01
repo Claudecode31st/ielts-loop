@@ -32,6 +32,8 @@ export const users = pgTable("users", {
   planExpiresAt: timestamp("plan_expires_at", { mode: "date" }),
   promptCount: integer("prompt_count").default(0),
   promptMonthKey: text("prompt_month_key"), // "YYYY-MM"
+  guideCallCount: integer("guide_call_count").default(0),
+  guideCallDayKey: text("guide_call_day_key"), // "YYYY-MM-DD"
 });
 
 export const accounts = pgTable(
