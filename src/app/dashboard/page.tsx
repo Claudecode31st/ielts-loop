@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   PenLine, TrendingUp, TrendingDown, Minus,
   Target, BookOpen, Brain, Clock,
-  ScrollText, Sparkles, ChevronRight, ArrowRight,
+  ScrollText, Sparkles, ChevronRight, ArrowRight, AlertTriangle,
 } from "lucide-react";
 import { getBandColor, formatDate } from "@/lib/utils";
 import { RebuildMemoryButton } from "@/components/rebuild-memory-button";
@@ -145,7 +145,7 @@ async function DashboardContent({ userId }: { userId: string }) {
           <div className="bg-white border border-[var(--border)] rounded-2xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden">
             <div className="px-5 py-3.5 border-b border-[var(--border)] flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Brain className="h-4 w-4 text-brand-600" />
+                <AlertTriangle className="h-4 w-4 text-amber-500" />
                 <div>
                   <span className="text-sm font-semibold text-slate-800">Your Score Blockers</span>
                   <span className="text-[11px] text-slate-400 ml-2 hidden sm:inline">patterns found across your essays</span>
@@ -161,8 +161,8 @@ async function DashboardContent({ userId }: { userId: string }) {
 
             {topErrors.length === 0 ? (
               <div className="py-14 text-center px-6">
-                <div className="w-12 h-12 rounded-full bg-brand-50 flex items-center justify-center mx-auto mb-3">
-                  <Brain className="h-6 w-6 text-brand-400" />
+                <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-3">
+                  <AlertTriangle className="h-6 w-6 text-amber-400" />
                 </div>
                 <p className="text-sm font-semibold text-slate-700 mb-1">No patterns found yet</p>
                 <p className="text-xs text-slate-400 mb-4 max-w-xs mx-auto">
@@ -394,23 +394,58 @@ async function DashboardContent({ userId }: { userId: string }) {
               </Link>
             </div>
 
-            <div className="p-2">
-              {[
-                { href: "/essay/new",  icon: PenLine,    label: "Submit Essay",        color: "text-brand-600",   bg: "bg-brand-50"   },
-                { href: "/exercises",  icon: BookOpen,   label: "Practice Exercises",  color: "text-emerald-600", bg: "bg-emerald-50" },
-                { href: "/progress",   icon: TrendingUp, label: "View Full Progress",   color: "text-amber-600",   bg: "bg-amber-50"   },
-                { href: "/profile",    icon: Target,     label: "Update Target Band",   color: "text-slate-500",   bg: "bg-slate-50"   },
-              ].map(({ href, icon: Icon, label, color, bg }) => (
-                <Link key={href} href={href}
-                  className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors group">
-                  <div className={`w-7 h-7 rounded-lg ${bg} flex items-center justify-center shrink-0`}>
-                    <Icon className={`h-3.5 w-3.5 ${color}`} />
+            {/* Last essay criteria breakdown */}
+            {(() => {
+              const le = recentEssays[0];
+              const criteria = le ? [
+                { label: "Task Achievement",    abbr: "TA",  score: le.taskAchievement },
+                { label: "Coherence & Cohesion", abbr: "CC", score: le.coherenceCohesion },
+                { label: "Lexical Resource",    abbr: "LR",  score: le.lexicalResource },
+                { label: "Grammatical Range",   abbr: "GR",  score: le.grammaticalRange },
+              ].filter(c => c.score != null) : [];
+
+              if (criteria.length === 0) {
+                return (
+                  <div className="px-4 py-6 text-center">
+                    <p className="text-xs text-slate-300">Submit an essay to see your score breakdown</p>
                   </div>
-                  <span className="text-sm text-slate-600 group-hover:text-slate-900 flex-1">{label}</span>
-                  <ChevronRight className="h-3.5 w-3.5 text-slate-200 group-hover:text-slate-400" />
-                </Link>
-              ))}
-            </div>
+                );
+              }
+
+              const scores = criteria.map(c => parseFloat(String(c.score)));
+              const minScore = Math.min(...scores);
+
+              return (
+                <div className="p-4 space-y-1">
+                  <div className="flex items-center justify-between mb-2.5">
+                    <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Last Essay Breakdown</p>
+                    <Link href={`/essay/${le!.id}`} className="text-[11px] text-brand-600 hover:text-brand-700 font-medium flex items-center gap-0.5">
+                      Full feedback <ChevronRight className="h-2.5 w-2.5" />
+                    </Link>
+                  </div>
+                  {criteria.map(({ label, abbr, score }) => {
+                    const s = parseFloat(String(score));
+                    const isLowest = s === minScore;
+                    const barColor = s >= 7 ? "bg-emerald-400" : s >= 6 ? "bg-amber-400" : "bg-red-400";
+                    const textColor = s >= 7 ? "text-emerald-600" : s >= 6 ? "text-amber-600" : "text-red-500";
+                    return (
+                      <div key={abbr} className={`flex items-center gap-2.5 py-1.5 px-2 rounded-lg ${isLowest ? "bg-red-50/60" : ""}`}>
+                        <span className={`text-[10px] font-bold w-6 shrink-0 ${isLowest ? "text-red-500" : "text-slate-400"}`}>{abbr}</span>
+                        <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full ${barColor} transition-all duration-500`}
+                            style={{ width: `${(s / 9) * 100}%` }} />
+                        </div>
+                        <span className={`text-xs font-bold tabular-nums w-7 text-right ${textColor}`}>{s.toFixed(1)}</span>
+                        {isLowest && <span className="text-[9px] font-bold text-red-400 bg-red-100 px-1 py-px rounded shrink-0">Weakest</span>}
+                      </div>
+                    );
+                  })}
+                  <p className="text-[10px] text-slate-400 mt-2 leading-relaxed">
+                    Focus on your weakest criterion first — each 0.5 gain compounds across all 4 bands.
+                  </p>
+                </div>
+              );
+            })()}
           </div>
 
         </div>
