@@ -15,6 +15,8 @@ import {
 import { countWords } from "@/lib/utils";
 import type { TaskType } from "@/types";
 import { EssayLimitBanner } from "@/components/essay-limit-banner";
+import { GeneratedChart } from "@/components/generated-chart";
+import type { ChartData } from "@/components/generated-chart";
 
 const MIN_WORDS = { task1: 150, task2: 250 };
 const RECOMMENDED_WORDS = { task1: 180, task2: 280 };
@@ -42,6 +44,7 @@ export default function NewEssayPage() {
   const [showWordWarning, setShowWordWarning] = useState(false);
   const [usageData, setUsageData] = useState<UsageData | null>(null);
   const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
+  const [chartData, setChartData] = useState<ChartData | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -111,6 +114,7 @@ export default function NewEssayPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setPrompt(data.prompt);
+      setChartData(data.chartData ?? null);
     } catch {
       setError("Failed to generate prompt. Please try again.");
     } finally {
@@ -269,7 +273,7 @@ export default function NewEssayPage() {
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">IELTS Type</p>
             <div className="flex rounded-xl border border-slate-200 overflow-hidden w-fit">
               {(["academic", "general"] as IeltsMode[]).map((mode) => (
-                <button key={mode} onClick={() => setIeltsMode(mode)}
+                <button key={mode} onClick={() => { setIeltsMode(mode); setChartData(null); }}
                   className={`flex items-center gap-2 px-5 py-2.5 text-sm font-medium transition-all duration-200 ${ieltsMode === mode ? "bg-brand-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}`}>
                   {mode === "academic" ? <><GraduationCap className="h-4 w-4" /> Academic</> : <><BookOpen className="h-4 w-4" /> General Training</>}
                 </button>
@@ -280,7 +284,7 @@ export default function NewEssayPage() {
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Task</p>
             <div className="flex rounded-xl border border-slate-200 overflow-hidden w-fit">
               {(["task1", "task2"] as TaskType[]).map((type) => (
-                <button key={type} onClick={() => { setTaskType(type); setShowWordWarning(false); }}
+                <button key={type} onClick={() => { setTaskType(type); setShowWordWarning(false); setChartData(null); }}
                   className={`px-6 py-2.5 text-sm font-medium transition-all duration-200 ${taskType === type ? "bg-brand-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}`}>
                   {type === "task1" ? "Task 1" : "Task 2"}
                 </button>
@@ -348,6 +352,14 @@ export default function NewEssayPage() {
         </div>
         <Textarea id="prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)}
           placeholder={taskPromptPlaceholders[taskType]} className="min-h-[120px] resize-y text-sm" />
+
+        {/* Generated chart for Task 1 Academic */}
+        {chartData && (
+          <div className="mt-3 p-4 bg-white rounded-xl border border-[var(--border)] shadow-sm">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Generated Chart</p>
+            <GeneratedChart data={chartData} />
+          </div>
+        )}
       </div>
 
       {/* Essay */}
