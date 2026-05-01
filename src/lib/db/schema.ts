@@ -30,6 +30,8 @@ export const users = pgTable("users", {
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
   planExpiresAt: timestamp("plan_expires_at", { mode: "date" }),
+  promptCount: integer("prompt_count").default(0),
+  promptMonthKey: text("prompt_month_key"), // "YYYY-MM"
 });
 
 export const accounts = pgTable(

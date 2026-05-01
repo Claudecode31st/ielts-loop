@@ -45,6 +45,7 @@ export default function NewEssayPage() {
   const [usageData, setUsageData] = useState<UsageData | null>(null);
   const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
   const [chartData, setChartData] = useState<ChartData | null>(null);
+  const [promptUsage, setPromptUsage] = useState<{ used: number; limit: number | null } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -52,7 +53,11 @@ export default function NewEssayPage() {
     fetch("/api/usage")
       .then((r) => r.json())
       .then((data: UsageData) => setUsageData(data))
-      .catch(() => {/* ignore — usage display is non-critical */});
+      .catch(() => {});
+    fetch("/api/prompt")
+      .then((r) => r.json())
+      .then((data) => setPromptUsage({ used: data.used, limit: data.limit }))
+      .catch(() => {});
   }, []);
 
   const wordCount = countWords(essay);
@@ -120,9 +125,11 @@ export default function NewEssayPage() {
         body: JSON.stringify({ taskType, ieltsMode }),
       });
       const data = await res.json();
+      if (res.status === 429) { setError(data.error); return; }
       if (!res.ok) throw new Error(data.error);
       setPrompt(data.prompt);
       setChartData(data.chartData ?? null);
+      if (data.used != null) setPromptUsage({ used: data.used, limit: data.limit });
     } catch {
       setError("Failed to generate prompt. Please try again.");
     } finally {
@@ -358,7 +365,13 @@ export default function NewEssayPage() {
                 : <><Sparkles className="h-3.5 w-3.5" />Generate Prompt</>
               }
             </Button>
-            <p className="text-[10px] text-slate-400">Unlimited · free to generate</p>
+            {promptUsage && (
+              <p className="text-[10px] text-slate-400">
+                {promptUsage.limit === null
+                  ? "Unlimited (Pro)"
+                  : `${promptUsage.used} / ${promptUsage.limit} this month`}
+              </p>
+            )}
           </div>
         </div>
         <Textarea id="prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)}

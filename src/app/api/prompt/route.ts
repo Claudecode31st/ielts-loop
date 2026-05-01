@@ -1,8 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { users } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 import Anthropic from "@anthropic-ai/sdk";
 
 const anthropic = new Anthropic();
+
+const FREE_MONTHLY_PROMPTS = 10;
+// Pro has no prompt limit
+
+function currentMonthKey() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+export async function GET(_req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const [user] = await db
+    .select({ plan: users.plan, planExpiresAt: users.planExpiresAt, promptCount: users.promptCount, promptMonthKey: users.promptMonthKey })
+    .from(users)
+    .where(eq(users.id, session.user.id))
+    .limit(1);
+
+  const isActivePro =
+    user?.plan === "pro" &&
+    (user.planExpiresAt == null || user.planExpiresAt > new Date());
+
+  const monthKey = currentMonthKey();
+  const used = user?.promptMonthKey === monthKey ? (user.promptCount ?? 0) : 0;
+  const limit = isActivePro ? null : FREE_MONTHLY_PROMPTS; // null = unlimited
+
+  return NextResponse.json({ used, limit, plan: isActivePro ? "pro" : "free" });
+}
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -10,10 +44,41 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // ── Check & enforce limit ──────────────────────────────────────────────
+  const [user] = await db
+    .select({ plan: users.plan, planExpiresAt: users.planExpiresAt, promptCount: users.promptCount, promptMonthKey: users.promptMonthKey })
+    .from(users)
+    .where(eq(users.id, session.user.id))
+    .limit(1);
+
+  const isActivePro =
+    user?.plan === "pro" &&
+    (user.planExpiresAt == null || user.planExpiresAt > new Date());
+
+  const monthKey = currentMonthKey();
+  const sameMonth = user?.promptMonthKey === monthKey;
+  const used = sameMonth ? (user?.promptCount ?? 0) : 0;
+
+  if (!isActivePro && used >= FREE_MONTHLY_PROMPTS) {
+    return NextResponse.json(
+      { error: `Free plan allows ${FREE_MONTHLY_PROMPTS} prompt generations per month. Upgrade to Pro for unlimited.`, limitReached: true },
+      { status: 429 }
+    );
+  }
+
+  // ── Increment counter ──────────────────────────────────────────────────
+  await db
+    .update(users)
+    .set({ promptCount: used + 1, promptMonthKey: monthKey })
+    .where(eq(users.id, session.user.id));
+
   const { taskType, ieltsMode } = await req.json() as {
     taskType: "task1" | "task2";
     ieltsMode: "academic" | "general";
   };
+
+  const newUsed = used + 1;
+  const limit = isActivePro ? null : FREE_MONTHLY_PROMPTS;
 
   // ── Task 1 Academic: generate prompt + chart data ──────────────────────
   if (taskType === "task1" && ieltsMode === "academic") {
@@ -54,65 +119,56 @@ Rules:
     });
 
     const content = response.content[0];
-    if (content.type !== "text") {
-      return NextResponse.json({ error: "Unexpected response" }, { status: 500 });
-    }
+    if (content.type !== "text") return NextResponse.json({ error: "Unexpected response" }, { status: 500 });
 
     try {
       const json = JSON.parse(
         content.text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim()
       );
-      return NextResponse.json({ prompt: json.prompt, chartData: json.chart });
+      return NextResponse.json({ prompt: json.prompt, chartData: json.chart, used: newUsed, limit });
     } catch {
-      // If JSON parse fails, fall back to text-only prompt
-      return NextResponse.json({ prompt: content.text.trim() });
+      return NextResponse.json({ prompt: content.text.trim(), used: newUsed, limit });
     }
   }
 
-  // ── Task 2 ────────────────────────────────────────────────────────────
+  // ── Task 2 ─────────────────────────────────────────────────────────────
   if (taskType === "task2") {
     const response = await anthropic.messages.create({
       model: "claude-haiku-4-5",
       max_tokens: 300,
       system: "You are an expert IELTS examiner. Generate realistic, exam-style IELTS Task 2 essay questions.",
-      messages: [
-        {
-          role: "user",
-          content: `Generate one realistic IELTS Task 2 essay question.
-
-- Match the style of real Cambridge IELTS exam questions
+      messages: [{
+        role: "user",
+        content: `Generate one realistic IELTS Task 2 essay question.
+- Match real Cambridge IELTS exam style
 - Choose ONE type at random: Opinion, Discussion, Problem-Solution, Advantages-Disadvantages, or Mixed
 - Topic: education, technology, environment, society, work, or health
 - End with the appropriate task instruction
 - Return ONLY the prompt text, nothing else.`,
-        },
-      ],
+      }],
     });
     const content = response.content[0];
     if (content.type !== "text") return NextResponse.json({ error: "Unexpected response" }, { status: 500 });
-    return NextResponse.json({ prompt: content.text.trim() });
+    return NextResponse.json({ prompt: content.text.trim(), used: newUsed, limit });
   }
 
-  // ── Task 1 General Training ───────────────────────────────────────────
+  // ── Task 1 General Training ────────────────────────────────────────────
   const response = await anthropic.messages.create({
     model: "claude-haiku-4-5",
     max_tokens: 300,
     system: "You are an expert IELTS examiner. Generate realistic IELTS General Training Task 1 letter-writing questions.",
-    messages: [
-      {
-        role: "user",
-        content: `Generate one realistic IELTS General Training Task 1 letter question.
-
+    messages: [{
+      role: "user",
+      content: `Generate one realistic IELTS General Training Task 1 letter question.
 - Present a plausible real-life situation requiring a letter
 - Specify the recipient and context clearly
 - Include exactly 3 bullet points of things to address
 - Indicate the register (formal, semi-formal, or informal) through the scenario
 - Start with "You should write at least 150 words." on its own line
 - Return ONLY the prompt text, nothing else.`,
-      },
-    ],
+    }],
   });
   const content = response.content[0];
   if (content.type !== "text") return NextResponse.json({ error: "Unexpected response" }, { status: 500 });
-  return NextResponse.json({ prompt: content.text.trim() });
+  return NextResponse.json({ prompt: content.text.trim(), used: newUsed, limit });
 }
