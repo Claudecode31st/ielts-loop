@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   AlertCircle, Loader2, PenLine, Info,
   ImagePlus, X, GraduationCap, BookOpen,
-  Clock, AlertTriangle, EyeOff,
+  Clock, AlertTriangle, EyeOff, Sparkles,
 } from "lucide-react";
 import { countWords } from "@/lib/utils";
 import type { TaskType } from "@/types";
@@ -41,6 +41,7 @@ export default function NewEssayPage() {
   const [tabWarning, setTabWarning] = useState(false);
   const [showWordWarning, setShowWordWarning] = useState(false);
   const [usageData, setUsageData] = useState<UsageData | null>(null);
+  const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -97,6 +98,25 @@ export default function NewEssayPage() {
     setImageBase64(null); setImagePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }, []);
+
+  const generatePrompt = useCallback(async () => {
+    setIsGeneratingPrompt(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/prompt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ taskType, ieltsMode }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setPrompt(data.prompt);
+    } catch {
+      setError("Failed to generate prompt. Please try again.");
+    } finally {
+      setIsGeneratingPrompt(false);
+    }
+  }, [taskType, ieltsMode]);
 
   const doSubmit = useCallback(async () => {
     setIsSubmitting(true);
@@ -307,8 +327,25 @@ export default function NewEssayPage() {
 
       {/* Task Prompt */}
       <div className="space-y-2">
-        <Label htmlFor="prompt" className="text-sm font-semibold text-slate-700">Task Prompt *</Label>
-        <p className="text-xs text-slate-500">Paste the exact IELTS question or task description here.</p>
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <Label htmlFor="prompt" className="text-sm font-semibold text-slate-700">Task Prompt *</Label>
+            <p className="text-xs text-slate-500 mt-0.5">Paste the exact IELTS question, or generate one to practice with.</p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={generatePrompt}
+            disabled={isGeneratingPrompt}
+            className="shrink-0 gap-1.5 border-brand-200 text-brand-700 hover:bg-brand-50 hover:border-brand-300"
+          >
+            {isGeneratingPrompt
+              ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Generating…</>
+              : <><Sparkles className="h-3.5 w-3.5" />Generate Prompt</>
+            }
+          </Button>
+        </div>
         <Textarea id="prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)}
           placeholder={taskPromptPlaceholders[taskType]} className="min-h-[120px] resize-y text-sm" />
       </div>
