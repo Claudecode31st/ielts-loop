@@ -188,7 +188,7 @@ export function ExerciseCard({
               <Button
                 size="sm"
                 onClick={startQuiz}
-                className={`shrink-0 gap-1.5 bg-gradient-to-r ${style.gradient} hover:opacity-90 text-white border-0 rounded-xl shadow-sm font-semibold`}
+                className="shrink-0 gap-1.5 bg-brand-600 hover:bg-brand-700 text-white border-0 rounded-xl shadow-sm font-semibold"
               >
                 <Play className="h-3.5 w-3.5" />
                 Start
@@ -428,17 +428,15 @@ export function ExerciseCard({
             </div>
           )}
 
-          {/* Try again */}
-          {!exercise.isCompleted && (
-            <Button
-              variant="outline"
-              onClick={startQuiz}
-              className="w-full gap-2 border-slate-200 text-slate-700 hover:bg-brand-50 hover:border-brand-300 hover:text-brand-700 rounded-xl font-semibold"
-            >
-              <RotateCcw className="h-4 w-4" />
-              {isPerfect ? "Practice Again" : "Try Again"}
-            </Button>
-          )}
+          {/* Try again — always available */}
+          <Button
+            variant="outline"
+            onClick={startQuiz}
+            className="w-full gap-2 border-slate-200 text-slate-700 hover:bg-brand-50 hover:border-brand-300 hover:text-brand-700 rounded-xl font-semibold"
+          >
+            <RotateCcw className="h-4 w-4" />
+            {isPerfect ? "Practice Again" : "Try Again"}
+          </Button>
         </div>
       </CardContent>
     </Card>

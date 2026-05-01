@@ -222,7 +222,7 @@ Make exercises varied: include at least one grammar correction exercise, one voc
 
   const response = await anthropic.messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 1500,
+    max_tokens: 3000,
     system: [
       {
         type: "text",
