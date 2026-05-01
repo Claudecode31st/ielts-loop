@@ -14,34 +14,9 @@ import {
 } from "lucide-react";
 import { getBandColor, formatDate } from "@/lib/utils";
 import { RebuildMemoryButton } from "@/components/rebuild-memory-button";
+import { ScoreBlockersList } from "@/components/score-blockers-list";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-function catLabel(cat: string) {
-  return cat === "grammar" ? "GRA" : cat === "vocabulary" ? "LR" : cat === "structure" ? "CC" : "TA";
-}
-function catColor(cat: string) {
-  return cat === "grammar"
-    ? { badge: "bg-red-50 text-red-600 border-red-100", bar: "bg-red-400", dot: "bg-red-400" }
-    : cat === "vocabulary"
-    ? { badge: "bg-amber-50 text-amber-600 border-amber-100", bar: "bg-amber-400", dot: "bg-amber-400" }
-    : cat === "structure"
-    ? { badge: "bg-blue-50 text-blue-600 border-blue-100", bar: "bg-blue-400", dot: "bg-blue-400" }
-    : { badge: "bg-emerald-50 text-emerald-600 border-emerald-100", bar: "bg-emerald-400", dot: "bg-emerald-400" };
-}
-function impactConfig(freq: number) {
-  return freq >= 5
-    ? { label: "High impact", color: "text-red-600 bg-red-50 border-red-100" }
-    : freq >= 3
-    ? { label: "Medium impact", color: "text-amber-600 bg-amber-50 border-amber-100" }
-    : { label: "Low impact", color: "text-slate-500 bg-slate-50 border-slate-200" };
-}
-const ERROR_TIPS: Record<string, string> = {
-  grammar:    "Errors here lower your Grammatical Range & Accuracy band.",
-  vocabulary: "Repetition or weak word choice limits your Lexical Resource band.",
-  structure:  "Weak cohesion reduces your Coherence & Cohesion band.",
-  coherence:  "Poor paragraph flow reduces your Coherence & Cohesion band.",
-};
 
 // ── Data ───────────────────────────────────────────────────────────────────
 
@@ -121,8 +96,13 @@ async function DashboardContent({ userId }: { userId: string }) {
             <>
               <p className="text-sm font-bold text-slate-800 leading-snug capitalize mt-0.5">{topErrors[0].errorType}</p>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className={`text-[10px] font-bold px-1.5 py-px rounded border ${catColor(topErrors[0].errorCategory).badge}`}>
-                  {catLabel(topErrors[0].errorCategory)}
+                <span className={`text-[10px] font-bold px-1.5 py-px rounded border ${
+                  topErrors[0].errorCategory === "grammar"    ? "bg-red-50 text-red-600 border-red-100"
+                  : topErrors[0].errorCategory === "vocabulary" ? "bg-amber-50 text-amber-600 border-amber-100"
+                  : topErrors[0].errorCategory === "structure"  ? "bg-blue-50 text-blue-600 border-blue-100"
+                  : "bg-emerald-50 text-emerald-600 border-emerald-100"
+                }`}>
+                  {topErrors[0].errorCategory === "grammar" ? "GRA" : topErrors[0].errorCategory === "vocabulary" ? "LR" : topErrors[0].errorCategory === "structure" ? "CC" : "TA"}
                 </span>
                 <span className="text-[11px] text-slate-400">seen ×{topErrors[0].frequency ?? 1}</span>
               </div>
@@ -176,46 +156,14 @@ async function DashboardContent({ userId }: { userId: string }) {
                 </Link>
               </div>
             ) : (
-              <div className="divide-y divide-[var(--border)]">
-                {topErrors.map((error, idx) => {
-                  const freq   = error.frequency ?? 1;
-                  // Absolute scale: 1 occurrence = 10%, 10+ = 100%
-                  const barPct = Math.min(100, freq * 10);
-                  const cc     = catColor(error.errorCategory);
-                  const imp    = impactConfig(freq);
-                  const tip    = ERROR_TIPS[error.errorCategory] ?? "This pattern is reducing your overall band score.";
-                  return (
-                    <div key={error.id} className="px-5 py-4 hover:bg-slate-50/60 transition-colors">
-                      <div className="flex items-start gap-3">
-                        {/* Rank */}
-                        <span className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[11px] font-bold text-slate-500 shrink-0 mt-0.5">
-                          {idx + 1}
-                        </span>
-                        <div className="flex-1 min-w-0">
-                          {/* Title row */}
-                          <div className="flex items-center gap-2 flex-wrap mb-1">
-                            <span className="text-sm font-semibold text-slate-800 capitalize">{error.errorType}</span>
-                            <span className={`text-[10px] font-bold px-1.5 py-px rounded border ${cc.badge}`}>{catLabel(error.errorCategory)}</span>
-                            <span className={`text-[10px] font-semibold px-1.5 py-px rounded border ${imp.color}`}>{imp.label}</span>
-                          </div>
-                          {/* Tip */}
-                          <p className="text-[11px] text-slate-400 leading-relaxed mb-2">{tip}</p>
-                          {/* Bar — absolute scale, 10 occurrences = full */}
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                              <div
-                                className={`h-full rounded-full ${cc.bar} transition-all duration-500`}
-                                style={{ width: `${barPct}%` }}
-                              />
-                            </div>
-                            <span className="text-[11px] font-semibold text-slate-500 tabular-nums shrink-0 w-7 text-right">×{freq}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <ScoreBlockersList errors={topErrors.map(e => ({
+                id: e.id,
+                errorType: e.errorType,
+                errorCategory: e.errorCategory,
+                description: e.description,
+                frequency: e.frequency,
+                examples: e.examples as Array<{ essayId: string; text: string; correction: string }> | null,
+              }))} />
             )}
 
             {topErrors.length > 0 && (
