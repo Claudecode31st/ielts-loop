@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ExerciseCard } from "@/components/exercise-card";
 import {
-  Dumbbell,
+  BookOpen,
   Loader2,
   RefreshCw,
   CheckCircle,
@@ -98,7 +98,7 @@ export default function ExercisesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2">
-            <Dumbbell className="h-7 w-7 text-brand-600" />
+            <BookOpen className="h-7 w-7 text-brand-600" />
             Adaptive Exercises
           </h1>
           <p className="text-slate-500 mt-1 text-sm">
@@ -166,7 +166,7 @@ export default function ExercisesPage() {
         /* ── Empty state ─────────────────────────────────────────────── */
         <div className="text-center py-20 space-y-4">
           <div className="w-16 h-16 rounded-2xl bg-brand-50 border border-brand-100 flex items-center justify-center mx-auto">
-            <Dumbbell className="h-8 w-8 text-brand-300" />
+            <BookOpen className="h-8 w-8 text-brand-300" />
           </div>
           <div>
             <p className="text-slate-700 font-semibold">No exercises yet</p>

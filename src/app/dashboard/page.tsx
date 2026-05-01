@@ -8,7 +8,7 @@ import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  PenLine, TrendingUp, Target, Dumbbell, Brain, Clock,
+  PenLine, TrendingUp, Target, BookOpen, Brain, Clock,
   ScrollText, Sparkles, Crosshair, BarChart3, ChevronRight, Zap,
 } from "lucide-react";
 import { getBandColor, formatDate } from "@/lib/utils";
@@ -325,7 +325,7 @@ async function DashboardContent({ userId }: { userId: string }) {
             <div className="p-2 space-y-0.5">
               {[
                 { href: "/essay/new", icon: PenLine, label: "Submit New Essay", color: "text-brand-600" },
-                { href: "/exercises", icon: Dumbbell, label: "Practice Exercises", color: "text-emerald-600" },
+                { href: "/exercises", icon: BookOpen, label: "Practice Exercises", color: "text-emerald-600" },
                 { href: "/progress", icon: TrendingUp, label: "View Progress", color: "text-amber-600" },
               ].map(({ href, icon: Icon, label, color }) => (
                 <Link key={href} href={href} className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors text-sm text-slate-700 hover:text-slate-900">
