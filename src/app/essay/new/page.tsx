@@ -14,10 +14,17 @@ import {
 } from "lucide-react";
 import { countWords } from "@/lib/utils";
 import type { TaskType } from "@/types";
+import { EssayLimitBanner } from "@/components/essay-limit-banner";
 
 const MIN_WORDS = { task1: 150, task2: 250 };
 const RECOMMENDED_WORDS = { task1: 180, task2: 280 };
 type IeltsMode = "academic" | "general";
+
+interface UsageData {
+  used: number;
+  limit: number;
+  plan: string;
+}
 
 export default function NewEssayPage() {
   const router = useRouter();
@@ -33,8 +40,16 @@ export default function NewEssayPage() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [tabWarning, setTabWarning] = useState(false);
   const [showWordWarning, setShowWordWarning] = useState(false);
+  const [usageData, setUsageData] = useState<UsageData | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    fetch("/api/usage")
+      .then((r) => r.json())
+      .then((data: UsageData) => setUsageData(data))
+      .catch(() => {/* ignore — usage display is non-critical */});
+  }, []);
 
   const wordCount = countWords(essay);
   const minWords = MIN_WORDS[taskType];
@@ -198,6 +213,11 @@ export default function NewEssayPage() {
     );
   }
 
+  const isAtLimit =
+    usageData !== null &&
+    usageData.plan !== "pro" &&
+    usageData.used >= usageData.limit;
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Header */}
@@ -208,6 +228,15 @@ export default function NewEssayPage() {
         </h1>
         <p className="text-slate-500 mt-1">Analysed by our AI examiner using official IELTS band descriptors.</p>
       </div>
+
+      {/* Usage banner */}
+      {usageData && (
+        <EssayLimitBanner
+          used={usageData.used}
+          limit={usageData.limit}
+          plan={usageData.plan}
+        />
+      )}
 
       {/* Exam Settings */}
       <Card>
@@ -348,7 +377,12 @@ export default function NewEssayPage() {
       {/* Submit */}
       <div className="flex justify-end gap-3 pb-8">
         <Button variant="outline" onClick={() => router.back()}>Cancel</Button>
-        <Button onClick={handleSubmit} disabled={!prompt.trim() || !essay.trim()} className="min-w-[200px]">
+        <Button
+          onClick={handleSubmit}
+          disabled={!prompt.trim() || !essay.trim() || isAtLimit}
+          className="min-w-[200px]"
+          title={isAtLimit ? "Upgrade to Pro to submit more essays" : undefined}
+        >
           Analyse My Essay →
         </Button>
       </div>

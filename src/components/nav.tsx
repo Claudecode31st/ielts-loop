@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   Infinity, LayoutDashboard, PenLine, Dumbbell,
-  TrendingUp, LogOut, User,
+  TrendingUp, LogOut, User, Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -72,6 +72,17 @@ export function Nav({ user }: NavProps) {
                   </Link>
                 ))}
               </div>
+            )}
+
+            {/* Upgrade link — desktop, logged-in only */}
+            {user && (
+              <Link
+                href="/pricing"
+                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-brand-600 hover:bg-brand-50 transition-colors duration-150 shrink-0"
+              >
+                <Zap className="h-3.5 w-3.5" />
+                Upgrade
+              </Link>
             )}
 
             {/* User area */}

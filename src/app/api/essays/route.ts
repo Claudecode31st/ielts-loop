@@ -7,12 +7,27 @@ import { essays } from "@/lib/db/schema";
 import { analyzeEssay } from "@/lib/claude";
 import { updateStudentMemory, getStudentMemoryContext } from "@/lib/memory";
 import { countWords } from "@/lib/utils";
+import { canSubmitEssay } from "@/lib/usage";
 
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { allowed, used, limit, plan } = await canSubmitEssay(session.user.id);
+    if (!allowed) {
+      return NextResponse.json(
+        {
+          error: "Essay limit reached",
+          used,
+          limit,
+          plan,
+          upgradeUrl: "/pricing",
+        },
+        { status: 402 }
+      );
     }
 
     const body = await req.json();

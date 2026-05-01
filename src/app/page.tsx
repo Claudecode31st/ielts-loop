@@ -439,6 +439,83 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* ── Pricing ── */}
+        <section>
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3">
+              Simple, transparent pricing
+            </h2>
+            <p className="text-slate-500 text-sm max-w-md mx-auto">
+              Start free. Upgrade when you&apos;re serious. Cancel anytime.
+            </p>
+          </div>
+
+          {/* Comparison table */}
+          <div className="bg-white border border-[var(--border)] rounded-xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden mb-6">
+            {/* Header row */}
+            <div className="grid grid-cols-4 border-b border-[var(--border)]">
+              <div className="col-span-2 px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wide" />
+              <div className="px-4 py-4 text-center border-l border-[var(--border)]">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Free</p>
+                <p className="text-xl font-bold text-slate-900 mt-0.5">$0</p>
+              </div>
+              <div className="px-4 py-4 text-center border-l border-[var(--border)] bg-brand-50">
+                <p className="text-xs font-semibold text-brand-600 uppercase tracking-wide">Pro</p>
+                <p className="text-xl font-bold text-slate-900 mt-0.5">$12<span className="text-xs font-normal text-slate-400">/mo</span></p>
+              </div>
+            </div>
+
+            {[
+              { label: "Essays per month",          free: "2",          pro: "Unlimited"     },
+              { label: "Daily essay limit",          free: "2",          pro: "5 per day"     },
+              { label: "AI examiner feedback",       free: true,         pro: true            },
+              { label: "All 4 IELTS criteria scored",free: true,         pro: true            },
+              { label: "Error pattern memory",       free: true,         pro: true            },
+              { label: "Adaptive exercises",         free: true,         pro: true            },
+              { label: "Progress analytics",         free: "Basic",      pro: "Full"          },
+              { label: "Priority AI processing",     free: false,        pro: true            },
+            ].map((row, i) => (
+              <div key={i} className={`grid grid-cols-4 border-b border-[var(--border)] last:border-0 ${i % 2 === 1 ? "bg-slate-50/50" : ""}`}>
+                <div className="col-span-2 px-6 py-3.5 text-sm text-slate-600">{row.label}</div>
+                <div className="px-4 py-3.5 text-center border-l border-[var(--border)] flex items-center justify-center">
+                  {row.free === true  ? <CheckCircle className="h-4 w-4 text-emerald-500" /> :
+                   row.free === false ? <span className="text-slate-200 font-bold text-lg">—</span> :
+                   <span className="text-sm text-slate-500">{row.free}</span>}
+                </div>
+                <div className="px-4 py-3.5 text-center border-l border-[var(--border)] bg-brand-50 flex items-center justify-center">
+                  {row.pro === true  ? <CheckCircle className="h-4 w-4 text-brand-600" /> :
+                   row.pro === false ? <span className="text-slate-200 font-bold text-lg">—</span> :
+                   <span className="text-sm font-medium text-brand-700">{row.pro}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Value context */}
+          <div className="grid sm:grid-cols-3 gap-4 mb-8">
+            {[
+              { label: "IELTS exam fee",     value: "$200–250",  sub: "one time"           },
+              { label: "Human tutor",        value: "$30–80",    sub: "per hour"           },
+              { label: "IELTS Loop Pro",     value: "$12",       sub: "per month", brand: true },
+            ].map(({ label, value, sub, brand }) => (
+              <div key={label} className={`rounded-xl border p-5 text-center ${brand ? "border-brand-200 bg-brand-50" : "border-[var(--border)] bg-white"}`}>
+                <p className="text-xs text-slate-500 mb-1">{label}</p>
+                <p className={`text-2xl font-bold ${brand ? "text-brand-600" : "text-slate-800"}`}>{value}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{sub}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center">
+            <Link href="/auth/signin">
+              <Button className="bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg h-10 px-6 text-sm border-0">
+                Start free — no card needed <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </Link>
+            <p className="text-slate-400 text-xs mt-3">Free forever · Upgrade anytime · Cancel in one click</p>
+          </div>
+        </section>
+
         {/* ── CTA ── */}
         <section className="pb-4">
           <div className="bg-white border border-[var(--border)] rounded-xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] p-12 text-center">

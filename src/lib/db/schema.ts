@@ -26,6 +26,10 @@ export const users = pgTable("users", {
   ),
   currentBand: numeric("current_band", { precision: 2, scale: 1 }),
   totalEssays: integer("total_essays").default(0),
+  plan: text("plan").default("free"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  planExpiresAt: timestamp("plan_expires_at", { mode: "date" }),
 });
 
 export const accounts = pgTable(
