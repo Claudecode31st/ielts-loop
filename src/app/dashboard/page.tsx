@@ -229,62 +229,6 @@ async function DashboardContent({ userId }: { userId: string }) {
             )}
           </div>
 
-          {/* Recent Essays */}
-          <div className="bg-white border border-[var(--border)] rounded-2xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-[var(--border)] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ScrollText className="h-4 w-4 text-brand-600" />
-                <span className="text-sm font-semibold text-slate-800">Recent Essays</span>
-              </div>
-              <Link href="/essays" className="text-xs text-brand-600 hover:text-brand-700 flex items-center gap-0.5 font-medium">
-                View all <ChevronRight className="h-3 w-3" />
-              </Link>
-            </div>
-            {recentEssays.length === 0 ? (
-              <div className="py-14 text-center px-6">
-                <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3">
-                  <ScrollText className="h-6 w-6 text-slate-300" />
-                </div>
-                <p className="text-sm font-semibold text-slate-700 mb-1">No essays yet</p>
-                <p className="text-xs text-slate-400 mb-4">Submit your first essay to get detailed AI feedback.</p>
-                <Link href="/essay/new">
-                  <Button size="sm" className="bg-brand-600 hover:bg-brand-700 text-white border-0 rounded-xl text-xs gap-1.5">
-                    <PenLine className="h-3.5 w-3.5" /> Submit first essay
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="divide-y divide-[var(--border)]">
-                {recentEssays.map((essay) => {
-                  const band = essay.overallBand ? parseFloat(String(essay.overallBand)) : null;
-                  return (
-                    <Link key={essay.id} href={`/essay/${essay.id}`}>
-                      <div className="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50/60 transition-colors cursor-pointer">
-                        <div className="shrink-0 w-12 text-right">
-                          {band != null
-                            ? <span className={`text-2xl font-extrabold tabular-nums ${getBandColor(band)}`}>{band.toFixed(1)}</span>
-                            : <span className="text-lg text-slate-200 font-bold">—</span>}
-                        </div>
-                        <div className="w-px h-8 bg-slate-100 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="text-[11px] font-semibold px-1.5 py-px rounded-md bg-slate-100 text-slate-600">
-                              {essay.taskType === "task1" ? "Task 1" : "Task 2"}
-                            </span>
-                            <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                              <Clock className="h-3 w-3" />{formatDate(essay.submittedAt!)}
-                            </span>
-                          </div>
-                          <p className="text-sm text-slate-700 line-clamp-1">{essay.prompt}</p>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-slate-200 shrink-0" />
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </div>
         </div>
 
         {/* ── Right 1/3 ── */}
@@ -358,6 +302,52 @@ async function DashboardContent({ userId }: { userId: string }) {
               </div>
             );
           })()}
+
+          {/* Recent Essays */}
+          <div className="bg-white border border-[var(--border)] rounded-2xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden">
+            <div className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ScrollText className="h-3.5 w-3.5 text-brand-600" />
+                <span className="text-sm font-semibold text-slate-800">Recent Essays</span>
+              </div>
+              <Link href="/essays" className="text-xs text-brand-600 hover:text-brand-700 flex items-center gap-0.5 font-medium">
+                View all <ChevronRight className="h-3 w-3" />
+              </Link>
+            </div>
+            {recentEssays.length === 0 ? (
+              <div className="py-8 text-center px-4">
+                <p className="text-xs text-slate-400">No essays yet. Submit one to get started.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-[var(--border)]">
+                {recentEssays.slice(0, 3).map((essay) => {
+                  const band = essay.overallBand ? parseFloat(String(essay.overallBand)) : null;
+                  return (
+                    <Link key={essay.id} href={`/essay/${essay.id}`}>
+                      <div className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50/60 transition-colors cursor-pointer">
+                        <div className="shrink-0 w-10 text-right">
+                          {band != null
+                            ? <span className={`text-xl font-extrabold tabular-nums ${getBandColor(band)}`}>{band.toFixed(1)}</span>
+                            : <span className="text-base text-slate-200 font-bold">—</span>}
+                        </div>
+                        <div className="w-px h-7 bg-slate-100 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span className="text-[10px] font-semibold px-1.5 py-px rounded-md bg-slate-100 text-slate-600">
+                              {essay.taskType === "task1" ? "Task 1" : "Task 2"}
+                            </span>
+                            <span className="text-[10px] text-slate-400">{formatDate(essay.submittedAt!)}</span>
+                          </div>
+                          <p className="text-xs text-slate-600 line-clamp-1">{essay.prompt}</p>
+                        </div>
+                        <ChevronRight className="h-3.5 w-3.5 text-slate-200 shrink-0" />
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
           {/* What to Do Next */}
           <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-brand-600 to-brand-700 text-white shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
