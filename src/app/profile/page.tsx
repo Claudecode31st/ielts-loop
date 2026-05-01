@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { User, Target, Brain, LogOut, Trash2, CheckCircle, Loader2 } from "lucide-react";
+import { User, Target, Brain, LogOut, Trash2, CheckCircle, Loader2, CreditCard, Zap } from "lucide-react";
 import { MemoryInsights } from "@/components/memory-insights";
 import type { StudentMemoryContext } from "@/types";
 
@@ -32,13 +32,19 @@ export default function ProfilePage() {
   const [isResetting, setIsResetting] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
+  const [plan, setPlan] = useState<"free" | "pro">("free");
+  const [isPortalLoading, setIsPortalLoading] = useState(false);
 
   useEffect(() => {
     async function loadData() {
-      const res = await fetch("/api/memory");
-      if (res.ok) {
-        const data = await res.json();
-        setMemory(data);
+      const [memRes, usageRes] = await Promise.all([
+        fetch("/api/memory"),
+        fetch("/api/usage"),
+      ]);
+      if (memRes.ok) setMemory(await memRes.json());
+      if (usageRes.ok) {
+        const usage = await usageRes.json();
+        setPlan(usage.plan === "pro" ? "pro" : "free");
       }
     }
     loadData();
@@ -59,6 +65,17 @@ export default function ProfilePage() {
       }
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handleManageBilling() {
+    setIsPortalLoading(true);
+    try {
+      const res = await fetch("/api/stripe/portal", { method: "POST" });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } finally {
+      setIsPortalLoading(false);
     }
   }
 
@@ -118,6 +135,43 @@ export default function ProfilePage() {
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
               </Button>
+            </CardContent>
+          </Card>
+
+          {/* Subscription */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CreditCard className="h-4 w-4 text-brand-600" />
+                Subscription
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-600">Current plan</span>
+                {plan === "pro" ? (
+                  <span className="flex items-center gap-1 text-xs font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">
+                    <Zap className="h-3 w-3" /> Pro
+                  </span>
+                ) : (
+                  <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">Free</span>
+                )}
+              </div>
+              {plan === "pro" ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={handleManageBilling}
+                  disabled={isPortalLoading}
+                >
+                  {isPortalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Manage / Cancel Subscription"}
+                </Button>
+              ) : (
+                <Button size="sm" className="w-full" onClick={() => window.location.href = "/pricing"}>
+                  Upgrade to Pro
+                </Button>
+              )}
             </CardContent>
           </Card>
 
