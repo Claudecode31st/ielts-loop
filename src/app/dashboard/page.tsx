@@ -154,7 +154,7 @@ async function DashboardContent({ userId }: { userId: string }) {
               <div className="flex items-center gap-3">
                 <RebuildMemoryButton />
                 <Link href="/progress" className="text-xs text-brand-600 hover:text-brand-700 flex items-center gap-0.5 font-medium">
-                  Full profile <ChevronRight className="h-3 w-3" />
+                  Progress Analytics <ChevronRight className="h-3 w-3" />
                 </Link>
               </div>
             </div>
