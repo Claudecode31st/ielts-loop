@@ -232,7 +232,7 @@ export default function NewEssayPage() {
             <div className="flex rounded-xl border border-slate-200 overflow-hidden w-fit">
               {(["task1", "task2"] as TaskType[]).map((type) => (
                 <button key={type} onClick={() => { setTaskType(type); setShowWordWarning(false); }}
-                  className={`px-6 py-2.5 text-sm font-medium transition-all duration-200 ${taskType === type ? "bg-slate-800 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}`}>
+                  className={`px-6 py-2.5 text-sm font-medium transition-all duration-200 ${taskType === type ? "bg-brand-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}`}>
                   {type === "task1" ? "Task 1" : "Task 2"}
                 </button>
               ))}
@@ -329,11 +329,11 @@ export default function NewEssayPage() {
       )}
 
       {/* Info */}
-      <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-2xl border border-blue-200">
-        <Info className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
-        <div className="text-sm text-blue-700">
-          <p className="font-medium mb-0.5">Keep this tab open during analysis</p>
-          <p className="text-blue-600">Analysis usually takes 15–25 seconds. Switching tabs may slow it down.</p>
+      <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-[var(--border)]">
+        <Info className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
+        <div className="text-sm text-slate-500">
+          <p className="font-medium mb-0.5 text-slate-600">Keep this tab open during analysis</p>
+          <p>Analysis usually takes 15–25 seconds. Switching tabs may slow it down.</p>
         </div>
       </div>
 
