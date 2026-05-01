@@ -31,7 +31,7 @@ interface UsageData {
 export default function NewEssayPage() {
   const router = useRouter();
   const [ieltsMode, setIeltsMode] = useState<IeltsMode>("academic");
-  const [taskType, setTaskType] = useState<TaskType>("task2");
+  const [taskType, setTaskType] = useState<TaskType>("task1");
   const [prompt, setPrompt] = useState("");
   const [essay, setEssay] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -101,6 +101,14 @@ export default function NewEssayPage() {
     setImageBase64(null); setImagePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }, []);
+
+  // Warn before switching if a prompt was already generated
+  const confirmSwitch = useCallback((onConfirm: () => void) => {
+    if (!prompt.trim()) { onConfirm(); return; }
+    if (window.confirm("Switching will clear the current prompt and chart. Continue?")) {
+      onConfirm();
+    }
+  }, [prompt]);
 
   const generatePrompt = useCallback(async () => {
     setIsGeneratingPrompt(true);
@@ -273,7 +281,7 @@ export default function NewEssayPage() {
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">IELTS Type</p>
             <div className="flex rounded-xl border border-slate-200 overflow-hidden w-fit">
               {(["academic", "general"] as IeltsMode[]).map((mode) => (
-                <button key={mode} onClick={() => { setIeltsMode(mode); setChartData(null); setPrompt(""); }}
+                <button key={mode} onClick={() => confirmSwitch(() => { setIeltsMode(mode); setChartData(null); setPrompt(""); })}
                   className={`flex items-center gap-2 px-5 py-2.5 text-sm font-medium transition-all duration-200 ${ieltsMode === mode ? "bg-brand-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}`}>
                   {mode === "academic" ? <><GraduationCap className="h-4 w-4" /> Academic</> : <><BookOpen className="h-4 w-4" /> General Training</>}
                 </button>
@@ -284,7 +292,7 @@ export default function NewEssayPage() {
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Task</p>
             <div className="flex rounded-xl border border-slate-200 overflow-hidden w-fit">
               {(["task1", "task2"] as TaskType[]).map((type) => (
-                <button key={type} onClick={() => { setTaskType(type); setShowWordWarning(false); setChartData(null); setPrompt(""); }}
+                <button key={type} onClick={() => confirmSwitch(() => { setTaskType(type); setShowWordWarning(false); setChartData(null); setPrompt(""); })}
                   className={`px-6 py-2.5 text-sm font-medium transition-all duration-200 ${taskType === type ? "bg-brand-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}`}>
                   {type === "task1" ? "Task 1" : "Task 2"}
                 </button>
