@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { Nav } from "@/components/nav";
+import { Footer } from "@/components/footer";
 import { auth } from "@/lib/auth";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -19,6 +20,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
+  const isLoggedIn = !!session?.user;
 
   return (
     <html lang="en" className="h-full">
@@ -27,12 +29,11 @@ export default async function RootLayout({
         <SessionProvider session={session}>
           <div className="min-h-full flex flex-col">
             <Nav user={session?.user ?? undefined} />
-            <main className="flex-1">{children}</main>
-            <footer className="border-t border-[var(--border)] py-4 mt-auto">
-              <div className="max-w-6xl mx-auto px-4 text-center text-xs text-slate-400">
-                IELTS Loop — AI-powered writing feedback. Not affiliated with IDP or British Council.
-              </div>
-            </footer>
+            {/* Extra bottom padding on mobile when logged in to clear the bottom nav */}
+            <main className={`flex-1 ${isLoggedIn ? "pb-16 md:pb-0" : ""}`}>
+              {children}
+            </main>
+            <Footer />
           </div>
         </SessionProvider>
       </body>
