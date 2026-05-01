@@ -122,21 +122,26 @@ export async function updateStudentMemory(
     }
   }
 
-  // Compute strength and weakness areas from scores
+  // Compute strength and weakness areas from scores.
+  // Strengths: any criterion >= 7.
+  // Weaknesses: only the bottom 2 criteria by score (avoids flagging everything red
+  // when a beginner scores below 6 on all four, which is uninformative).
   const strengthAreas: string[] = [];
-  const weaknessAreas: string[] = [];
 
-  if (scores.taskAchievement >= 7) strengthAreas.push("Task Achievement");
-  else if (scores.taskAchievement < 6) weaknessAreas.push("Task Achievement");
+  const criteria = [
+    { label: "Task Achievement",          score: scores.taskAchievement },
+    { label: "Coherence & Cohesion",      score: scores.coherenceCohesion },
+    { label: "Lexical Resource",           score: scores.lexicalResource },
+    { label: "Grammatical Range & Accuracy", score: scores.grammaticalRange },
+  ];
 
-  if (scores.coherenceCohesion >= 7) strengthAreas.push("Coherence & Cohesion");
-  else if (scores.coherenceCohesion < 6) weaknessAreas.push("Coherence & Cohesion");
+  for (const { label, score } of criteria) {
+    if (score >= 7) strengthAreas.push(label);
+  }
 
-  if (scores.lexicalResource >= 7) strengthAreas.push("Lexical Resource");
-  else if (scores.lexicalResource < 6) weaknessAreas.push("Lexical Resource");
-
-  if (scores.grammaticalRange >= 7) strengthAreas.push("Grammatical Range & Accuracy");
-  else if (scores.grammaticalRange < 6) weaknessAreas.push("Grammatical Range & Accuracy");
+  // Sort ascending (lowest first) and take at most the bottom 2
+  const sorted = [...criteria].sort((a, b) => a.score - b.score);
+  const weaknessAreas = sorted.slice(0, 2).map((c) => c.label);
 
   // Upsert student memory summary
   const existingMemory = await db

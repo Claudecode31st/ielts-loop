@@ -1,122 +1,140 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle, Brain, Zap, BarChart3, Crosshair, BookMarked, Target, TrendingUp, PenLine, ChevronRight } from "lucide-react";
+import {
+  CheckCircle, Brain, Zap, BarChart3, Crosshair,
+  Target, TrendingUp, PenLine, ChevronRight, Infinity,
+} from "lucide-react";
 
-export default async function LandingPage() {
+export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col">
+
       {/* ── Hero ── */}
-      <section className="relative bg-gradient-to-br from-slate-900 via-brand-950 to-brand-900 text-white min-h-screen flex items-center overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
+      <section className="bg-[var(--bg)] border-b border-[var(--border)]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
 
-        {/* Decorative blobs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-500 rounded-full opacity-10 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-brand-600 rounded-full opacity-10 blur-3xl pointer-events-none" />
-        <div className="absolute top-10 right-10 w-64 h-64 bg-blue-500 rounded-full opacity-5 blur-3xl pointer-events-none" />
-
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 w-full">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="max-w-2xl">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-6 py-2 text-sm font-medium text-brand-200 mb-8">
-                <Zap className="h-3.5 w-3.5 text-amber-400" />
+            {/* Left: copy */}
+            <div>
+              {/* Eyebrow */}
+              <div className="inline-flex items-center gap-2 bg-white border border-[var(--border)] rounded-full px-4 py-1.5 text-xs font-medium text-slate-600 mb-8 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
+                <Zap className="h-3.5 w-3.5 text-amber-500" />
                 Powered by Claude AI · Mistake Intelligence Engine
               </div>
 
-              {/* Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight mb-6">
+              <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 leading-tight tracking-tight mb-5">
                 Finally understand why your{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-300 to-brand-200">
-                  IELTS score is stuck
-                </span>
+                <span className="text-brand-600">IELTS score is stuck</span>
               </h1>
 
-              <p className="text-lg sm:text-xl text-brand-200 leading-relaxed mb-10 max-w-2xl">
+              <p className="text-lg text-slate-500 leading-relaxed mb-8 max-w-lg">
                 IELTS Loop builds a memory of your mistakes across every essay —
                 then targets exactly what&apos;s holding your band score back.
               </p>
 
-              {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-4 mb-10">
+              <div className="flex flex-col sm:flex-row gap-3 mb-8">
                 <Link href="/auth/signin">
-                  <Button
-                    size="lg"
-                    className="bg-gradient-to-r from-brand-600 to-brand-800 hover:from-brand-500 hover:to-brand-700 text-white font-semibold w-full sm:w-auto rounded-xl shadow-2xl shadow-brand-500/30 border-0 transition-all duration-300"
-                  >
+                  <Button className="bg-brand-600 hover:bg-brand-700 text-white border-0 rounded-lg h-10 px-5 font-medium text-sm w-full sm:w-auto">
                     Start for free
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </Button>
                 </Link>
                 <Link href="#how-it-works">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 w-full sm:w-auto rounded-xl transition-all duration-300"
-                  >
+                  <Button variant="outline" className="rounded-lg h-10 px-5 text-sm w-full sm:w-auto border-[var(--border)] text-slate-600 hover:bg-slate-50">
                     See how it works
                   </Button>
                 </Link>
               </div>
 
-              {/* Trust signals */}
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-brand-300">
+              <div className="flex flex-wrap gap-x-5 gap-y-2">
                 {[
-                  "10,000+ essays analysed",
-                  "Average +0.8 band improvement",
-                  "4 scoring pillars tracked",
+                  "No credit card required",
+                  "4 scoring criteria tracked",
+                  "Personalised exercises",
                 ].map((item) => (
-                  <div key={item} className="flex items-center gap-1.5">
-                    <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <div key={item} className="flex items-center gap-1.5 text-sm text-slate-500">
+                    <CheckCircle className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
                     {item}
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Hero mockup card */}
+            {/* Right: app mockup */}
             <div className="hidden lg:block">
-              <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden">
-                <div className="bg-gradient-to-r from-brand-600/80 to-brand-800/80 backdrop-blur-sm p-5 flex items-center justify-between border-b border-white/10">
-                  <div>
-                    <p className="text-brand-200 text-xs font-medium uppercase tracking-wide mb-0.5">
-                      Overall Band Score
-                    </p>
-                    <p className="text-white text-4xl font-extrabold">6.5</p>
+              <div className="bg-white border border-[var(--border)] rounded-xl shadow-[0_4px_24px_0_rgba(0,0,0,0.07)] overflow-hidden">
+                {/* Mock nav bar */}
+                <div className="border-b border-[var(--border)] px-4 h-10 flex items-center gap-4">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-4 h-4 rounded-sm bg-brand-600 flex items-center justify-center">
+                      <Infinity className="h-2.5 w-2.5 text-white" />
+                    </div>
+                    <span className="text-xs font-semibold text-slate-700">IELTSLoop</span>
                   </div>
-                  <div className="text-right">
-                    <span className="inline-block bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full">
-                      Task 2 · Academic
-                    </span>
+                  <div className="flex gap-1 ml-2">
+                    {["Dashboard", "Submit", "Exercises", "Progress"].map((l) => (
+                      <span key={l} className={`text-[11px] px-2.5 py-1 rounded-md ${l === "Dashboard" ? "bg-slate-100 text-slate-800 font-medium" : "text-slate-400"}`}>{l}</span>
+                    ))}
                   </div>
                 </div>
-                <div className="p-5 space-y-3">
+
+                {/* Mock score card */}
+                <div className="p-4 border-b border-[var(--border)]">
+                  <div className="flex items-center gap-4">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-amber-500 tabular-nums">6.5</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">Overall</div>
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      {[
+                        { code: "TA", score: 6.5, color: "bg-emerald-400" },
+                        { code: "CC", score: 6.0, color: "bg-blue-400" },
+                        { code: "LR", score: 6.5, color: "bg-amber-400" },
+                        { code: "GRA", score: 6.0, color: "bg-red-400" },
+                      ].map(({ code, score, color }) => (
+                        <div key={code} className="flex items-center gap-2">
+                          <span className="text-[10px] font-semibold text-slate-400 w-7 shrink-0">{code}</span>
+                          <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div className={`${color} h-full rounded-full`} style={{ width: `${(score / 9) * 100}%` }} />
+                          </div>
+                          <span className="text-[11px] font-bold text-slate-600 w-7 text-right tabular-nums">{score.toFixed(1)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mock error memory */}
+                <div className="p-4 border-b border-[var(--border)]">
+                  <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-2.5">Writing Memory — Error Profile</div>
                   {[
-                    { label: "Task Achievement", code: "TA", score: 6.5, color: "bg-emerald-500" },
-                    { label: "Coherence & Cohesion", code: "CC", score: 6.0, color: "bg-blue-500" },
-                    { label: "Lexical Resource", code: "LR", score: 6.5, color: "bg-amber-500" },
-                    { label: "Grammar Accuracy", code: "GRA", score: 6.0, color: "bg-red-500" },
-                  ].map(({ label, code, score, color }) => (
-                    <div key={code} className="flex items-center gap-3">
-                      <span className="text-xs font-bold text-white/60 w-8 shrink-0">{code}</span>
-                      <div className="flex-1 bg-white/10 rounded-full h-2">
-                        <div
-                          className={`${color} h-2 rounded-full`}
-                          style={{ width: `${(score / 9) * 100}%` }}
-                        />
+                    { name: "Article errors", cat: "GRA", freq: 7, w: 100, bar: "bg-red-400" },
+                    { name: "Weak conclusions", cat: "TA", freq: 4, w: 60, bar: "bg-emerald-400" },
+                    { name: "Vocabulary repetition", cat: "LR", freq: 3, w: 44, bar: "bg-amber-400" },
+                  ].map(({ name, cat, freq, w, bar }) => (
+                    <div key={name} className="flex items-center gap-2 py-1.5 border-b border-[var(--border)] last:border-0">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span className="text-[11px] font-medium text-slate-700 truncate capitalize">{name}</span>
+                          <span className="text-[9px] font-semibold px-1 py-px rounded bg-slate-100 text-slate-500">{cat}</span>
+                        </div>
+                        <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
+                          <div className={`h-1 rounded-full ${bar}`} style={{ width: `${w}%` }} />
+                        </div>
                       </div>
-                      <span className="text-sm font-bold text-white w-8 text-right shrink-0">
-                        {score.toFixed(1)}
-                      </span>
+                      <span className="text-[10px] font-semibold text-slate-400 tabular-nums shrink-0">×{freq}</span>
                     </div>
                   ))}
                 </div>
-                <div className="px-5 pb-5">
-                  <div className="bg-brand-500/20 border border-brand-400/30 rounded-xl p-3 flex gap-2.5">
-                    <Brain className="h-4 w-4 text-brand-300 mt-0.5 shrink-0" />
-                    <p className="text-sm text-brand-200 leading-relaxed">
-                      <span className="font-semibold text-white">Memory insight:</span> Article errors found in 7 of your last 9 essays — your{" "}
-                      <span className="font-semibold text-white">#1 band limiter.</span>
+
+                {/* Mock coaching */}
+                <div className="bg-slate-900 p-4">
+                  <div className="flex items-start gap-2.5">
+                    <Brain className="h-3.5 w-3.5 text-brand-400 mt-0.5 shrink-0" />
+                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                      <span className="font-semibold text-white">AI Coaching: </span>
+                      Article errors appear in 7 of your last 9 essays.
+                      This is your <span className="text-brand-400 font-semibold">#1 band limiter.</span>
                     </p>
                   </div>
                 </div>
@@ -127,386 +145,237 @@ export default async function LandingPage() {
       </section>
 
       {/* ── How It Works ── */}
-      <section id="how-it-works" className="py-24 bg-white/60 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <p className="text-sm font-semibold text-brand-600 uppercase tracking-widest mb-3">
-              Detect. Analyse. Remember. Improve.
-            </p>
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
-              How it works
-            </h2>
+      <section id="how-it-works" className="bg-white border-b border-[var(--border)]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="text-center mb-12">
+            <p className="text-xs font-semibold text-brand-600 uppercase tracking-widest mb-3">Process</p>
+            <h2 className="text-3xl font-bold text-slate-900">How it works</h2>
           </div>
 
-          {/* Steps */}
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              {
-                icon: PenLine,
-                step: "01",
-                title: "Submit Your Essay",
-                desc: "Paste your Task 1 or Task 2 response and the question prompt.",
-                gradient: "from-brand-600 to-brand-700",
-              },
-              {
-                icon: Target,
-                step: "02",
-                title: "AI Examiner Analysis",
-                desc: "Scored on all 4 official IELTS criteria with annotated feedback.",
-                gradient: "from-brand-500 to-brand-600",
-              },
-              {
-                icon: Brain,
-                step: "03",
-                title: "Memory System Updates",
-                desc: "Your error profile grows with every submission, identifying true patterns.",
-                gradient: "from-violet-500 to-violet-600",
-              },
-              {
-                icon: Crosshair,
-                step: "04",
-                title: "Targeted Practice",
-                desc: "Exercises built from YOUR specific weaknesses — not generic drills.",
-                gradient: "from-blue-500 to-blue-600",
-              },
-            ].map(({ icon: Icon, step, title, desc, gradient }) => (
-              <div key={step} className="relative">
-                {/* Connector line */}
-                <div className="hidden lg:block absolute top-7 left-full w-8 h-px bg-brand-200 z-10" />
-                <div className="bg-white/60 backdrop-blur-xl border border-white/70 shadow-xl shadow-brand-100/30 rounded-2xl p-6 hover:shadow-2xl transition-all duration-300">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg shrink-0`}>
-                      <Icon className="h-6 w-6 text-white" />
-                    </div>
-                    <span className="text-xs font-bold text-brand-400 tracking-widest">
-                      STEP {step}
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-1">
-                    {title}
-                  </h3>
-                  <p className="text-slate-500 text-sm leading-relaxed">
-                    {desc}
-                  </p>
+              { icon: PenLine,    step: "01", title: "Submit Essay",       desc: "Paste your Task 1 or Task 2 response with the question prompt.",          color: "text-brand-600 bg-brand-50" },
+              { icon: Target,     step: "02", title: "AI Examination",     desc: "Scored on all 4 official IELTS criteria with annotated inline feedback.",   color: "text-blue-600 bg-blue-50" },
+              { icon: Brain,      step: "03", title: "Memory Updates",     desc: "Your error profile grows with every essay, surfacing real patterns.",        color: "text-violet-600 bg-violet-50" },
+              { icon: Crosshair,  step: "04", title: "Targeted Practice",  desc: "Exercises built from YOUR specific weaknesses — not generic drills.",        color: "text-emerald-600 bg-emerald-50" },
+            ].map(({ icon: Icon, step, title, desc, color }, i) => (
+              <div key={step} className="relative bg-[var(--bg)] border border-[var(--border)] rounded-xl p-5 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
+                {i < 3 && (
+                  <div className="hidden lg:block absolute top-8 -right-2 w-4 h-px bg-slate-200 z-10" />
+                )}
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${color}`}>
+                  <Icon className="h-4 w-4" />
                 </div>
+                <div className="text-[10px] font-bold text-slate-400 tracking-widest mb-1">STEP {step}</div>
+                <h3 className="text-sm font-semibold text-slate-900 mb-1.5">{title}</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── The 4 Pillars ── */}
-      <section className="py-24 bg-gradient-to-br from-slate-50 via-brand-50/30 to-brand-50/20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-              The 4 IELTS scoring pillars
-            </h2>
-            <p className="text-lg text-slate-500 max-w-2xl mx-auto">
-              Every essay is evaluated on all four official criteria — and your
-              memory profile tracks your progress on each one.
+      {/* ── 4 IELTS Pillars ── */}
+      <section className="bg-[var(--bg)] border-b border-[var(--border)]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="text-center mb-12">
+            <p className="text-xs font-semibold text-brand-600 uppercase tracking-widest mb-3">Coverage</p>
+            <h2 className="text-3xl font-bold text-slate-900 mb-3">All 4 IELTS scoring criteria</h2>
+            <p className="text-slate-500 max-w-xl mx-auto text-sm leading-relaxed">
+              Every essay is evaluated on all four official criteria — and your memory profile tracks progress on each one individually.
             </p>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
-                label: "GRA",
-                borderColor: "border-l-red-500",
-                iconGradient: "from-red-500 to-red-600",
-                textColor: "text-red-500",
-                title: "Grammar Accuracy",
-                items: [
-                  "Articles (a/an/the)",
-                  "Tense consistency",
-                  "Subject-verb agreement",
-                  "Sentence structure",
-                ],
-                dotColor: "bg-red-500",
+                code: "GRA", title: "Grammar Accuracy",
+                items: ["Articles (a/an/the)", "Tense consistency", "Subject-verb agreement", "Sentence structure"],
+                accent: "border-t-red-400", icon: "text-red-500 bg-red-50",
               },
               {
-                label: "LR",
-                borderColor: "border-l-amber-500",
-                iconGradient: "from-amber-500 to-amber-600",
-                textColor: "text-amber-500",
-                title: "Lexical Resource",
-                items: [
-                  "Vocabulary range",
-                  "Word choice precision",
-                  "Collocations",
-                  "Avoiding repetition",
-                ],
-                dotColor: "bg-amber-500",
+                code: "LR", title: "Lexical Resource",
+                items: ["Vocabulary range", "Word choice precision", "Collocations", "Avoiding repetition"],
+                accent: "border-t-amber-400", icon: "text-amber-500 bg-amber-50",
               },
               {
-                label: "CC",
-                borderColor: "border-l-blue-500",
-                iconGradient: "from-blue-500 to-blue-600",
-                textColor: "text-blue-500",
-                title: "Coherence & Cohesion",
-                items: [
-                  "Paragraph flow",
-                  "Linking devices",
-                  "Idea progression",
-                  "Referencing",
-                ],
-                dotColor: "bg-blue-500",
+                code: "CC", title: "Coherence & Cohesion",
+                items: ["Paragraph flow", "Linking devices", "Idea progression", "Referencing"],
+                accent: "border-t-blue-400", icon: "text-blue-500 bg-blue-50",
               },
               {
-                label: "TA",
-                borderColor: "border-l-emerald-500",
-                iconGradient: "from-emerald-500 to-emerald-600",
-                textColor: "text-emerald-500",
-                title: "Task Achievement",
-                items: [
-                  "Addressing all parts",
-                  "Developing ideas",
-                  "Clarity of position",
-                  "Sufficient coverage",
-                ],
-                dotColor: "bg-emerald-500",
+                code: "TA", title: "Task Achievement",
+                items: ["Addressing all parts", "Developing ideas", "Clarity of position", "Sufficient coverage"],
+                accent: "border-t-emerald-400", icon: "text-emerald-500 bg-emerald-50",
               },
-            ].map(({ label, borderColor, iconGradient, textColor, title, items, dotColor }) => (
-              <Card
-                key={label}
-                variant="default"
-                className={`border-l-4 ${borderColor} hover:shadow-2xl transition-all duration-300`}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div
-                      className={`w-10 h-10 rounded-xl bg-gradient-to-br ${iconGradient} flex items-center justify-center shadow-md shrink-0`}
-                    >
-                      <BookMarked className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <span
-                        className={`text-xs font-bold uppercase tracking-widest ${textColor}`}
-                      >
-                        {label}
-                      </span>
-                      <h3 className="text-base font-bold text-slate-900">
-                        {title}
-                      </h3>
-                    </div>
-                  </div>
-                  <ul className="space-y-1.5">
-                    {items.map((item) => (
-                      <li
-                        key={item}
-                        className="flex items-center gap-2 text-sm text-slate-600"
-                      >
-                        <div
-                          className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}`}
-                        />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
+            ].map(({ code, title, items, accent, icon }) => (
+              <div key={code} className={`bg-white border border-[var(--border)] border-t-2 ${accent} rounded-xl p-5 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]`}>
+                <div className={`inline-flex items-center justify-center w-8 h-8 rounded-lg mb-3 ${icon}`}>
+                  <span className="text-xs font-bold">{code}</span>
+                </div>
+                <h3 className="text-sm font-semibold text-slate-900 mb-3">{title}</h3>
+                <ul className="space-y-1.5">
+                  {items.map((item) => (
+                    <li key={item} className="flex items-center gap-2 text-xs text-slate-500">
+                      <div className="w-1 h-1 rounded-full bg-slate-300 shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Writing Memory System ── */}
-      <section className="py-24 bg-gradient-to-br from-slate-900 via-brand-950 to-brand-900 text-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-brand-500/20 rounded-full px-4 py-1.5 text-sm font-medium text-brand-300 mb-6 border border-brand-500/30">
-              <Brain className="h-3.5 w-3.5" />
-              Powered by Memory AI
+      {/* ── Memory System (dark) ── */}
+      <section className="bg-slate-900 border-b border-slate-800">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-xs font-medium text-slate-400 mb-6">
+              <Brain className="h-3.5 w-3.5 text-brand-400" />
+              Memory AI
             </div>
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              The Memory System.{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-200 to-brand-300">
-                Your secret weapon.
-              </span>
+            <h2 className="text-3xl font-bold text-white mb-3">
+              The system that remembers your mistakes
             </h2>
-            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              Most writing tools forget you the moment you close the tab. We
-              don&apos;t.
+            <p className="text-slate-400 text-sm max-w-xl mx-auto leading-relaxed">
+              Most writing tools forget you the moment you close the tab. IELTS Loop doesn&apos;t.
             </p>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-3">
             {[
               {
                 icon: BarChart3,
                 title: "Tracks Every Mistake",
-                desc: "We log every error type, how often it appears, and when you last made it — building a precise picture of your writing habits.",
-                accent: "border-brand-500/40",
-                gradient: "from-brand-500 to-brand-600",
+                desc: "Every error type is logged — how often it appears and when you last made it — building a precise picture of your writing habits.",
+                iconColor: "text-brand-400 bg-brand-400/10",
               },
               {
                 icon: Brain,
                 title: "Finds Your Patterns",
-                desc: "After 3+ essays, we identify your #1 score blocker versus random one-off errors, so you know exactly where to focus.",
-                accent: "border-brand-500/40",
-                gradient: "from-brand-600 to-brand-700",
+                desc: "After a few essays we separate your #1 score blocker from random one-off errors — so you know exactly where to focus first.",
+                iconColor: "text-violet-400 bg-violet-400/10",
               },
               {
                 icon: Crosshair,
                 title: "Adapts Your Practice",
                 desc: "Exercises are generated from your real mistake profile, not generic drills — because your time is too valuable for irrelevant practice.",
-                accent: "border-blue-500/40",
-                gradient: "from-blue-500 to-blue-600",
+                iconColor: "text-blue-400 bg-blue-400/10",
               },
-            ].map(({ icon: Icon, title, desc, accent, gradient }) => (
-              <div
-                key={title}
-                className={`bg-white/10 backdrop-blur-xl border ${accent} rounded-2xl p-8 hover:bg-white/15 transition-all duration-300`}
-              >
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg mb-4`}>
-                  <Icon className="h-6 w-6 text-white" />
+            ].map(({ icon: Icon, title, desc, iconColor }) => (
+              <div key={title} className="bg-white/5 border border-white/10 rounded-xl p-6 hover:bg-white/8 transition-colors">
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-4 ${iconColor}`}>
+                  <Icon className="h-4.5 w-4.5" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3">{title}</h3>
-                <p className="text-slate-400 leading-relaxed text-sm">{desc}</p>
+                <h3 className="text-sm font-semibold text-white mb-2">{title}</h3>
+                <p className="text-slate-400 text-xs leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Examiner Feedback Preview ── */}
-      <section className="py-24 bg-white/60 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+      {/* ── Feedback Preview ── */}
+      <section className="bg-white border-b border-[var(--border)]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <p className="text-sm font-semibold text-brand-600 uppercase tracking-widest mb-3">
-                Examiner-style feedback
-              </p>
-              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-6">
+              <p className="text-xs font-semibold text-brand-600 uppercase tracking-widest mb-3">Feedback</p>
+              <h2 className="text-3xl font-bold text-slate-900 mb-4">
                 See exactly what&apos;s holding you back
               </h2>
-              <p className="text-slate-500 text-lg leading-relaxed mb-6">
-                Every essay analysis reads like a certified IELTS examiner wrote
-                it — with band scores, criterion breakdown, and a prioritised
-                list of your top score blockers.
+              <p className="text-slate-500 text-sm leading-relaxed mb-4">
+                Every analysis reads like a certified IELTS examiner wrote it — with band scores, criterion breakdown, and your top score blockers highlighted inline in your essay.
               </p>
-              <p className="text-slate-500 leading-relaxed text-sm">
-                Most importantly, when we&apos;ve seen you make the same mistake
-                before, we call it out — because knowing a pattern is your
-                fastest path to fixing it.
+              <p className="text-slate-500 text-sm leading-relaxed">
+                When we&apos;ve seen you make the same mistake before, we call it out — because knowing it&apos;s a pattern is your fastest path to fixing it.
               </p>
+              <Link href="/auth/signin" className="inline-block mt-8">
+                <Button className="bg-brand-600 hover:bg-brand-700 text-white border-0 rounded-lg h-9 px-4 text-sm">
+                  Try it free <ChevronRight className="h-3.5 w-3.5 ml-1" />
+                </Button>
+              </Link>
             </div>
 
-            {/* Mock Feedback Card */}
-            <div className="bg-white/80 backdrop-blur-2xl border border-white/70 shadow-2xl rounded-2xl overflow-hidden">
-              {/* Card header */}
-              <div className="bg-gradient-to-r from-brand-600 to-brand-800 p-5 flex items-center justify-between">
+            {/* Mock feedback card */}
+            <div className="bg-white border border-[var(--border)] rounded-xl shadow-[0_4px_24px_0_rgba(0,0,0,0.07)] overflow-hidden">
+              {/* Score header */}
+              <div className="px-5 py-4 border-b border-[var(--border)] flex items-center gap-4">
                 <div>
-                  <p className="text-brand-200 text-xs font-medium uppercase tracking-wide mb-0.5">
-                    Overall Band Score
-                  </p>
-                  <p className="text-transparent bg-clip-text bg-gradient-to-r from-white to-brand-100 text-4xl font-extrabold">6.5</p>
+                  <div className="text-3xl font-bold text-amber-500 tabular-nums">6.5</div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">Overall Band</div>
                 </div>
-                <div className="text-right">
-                  <span className="inline-block bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full">
-                    Task 2 · Academic
-                  </span>
-                </div>
-              </div>
-
-              {/* Criterion scores */}
-              <div className="p-5 border-b border-slate-100">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
-                  Criterion Breakdown
-                </p>
-                <div className="space-y-2.5">
+                <div className="flex-1 space-y-1.5">
                   {[
-                    { label: "Task Achievement", code: "TA", score: 6.5, color: "bg-emerald-500" },
-                    { label: "Coherence & Cohesion", code: "CC", score: 6.0, color: "bg-blue-500" },
-                    { label: "Lexical Resource", code: "LR", score: 6.5, color: "bg-amber-500" },
-                    { label: "Grammar Accuracy", code: "GRA", score: 6.0, color: "bg-red-500" },
-                  ].map(({ label, code, score, color }) => (
-                    <div key={code} className="flex items-center gap-3">
-                      <span className="text-xs font-bold text-slate-500 w-8 shrink-0">
-                        {code}
-                      </span>
-                      <div className="flex-1 bg-slate-100 rounded-full h-2">
-                        <div
-                          className={`${color} h-2 rounded-full`}
-                          style={{ width: `${(score / 9) * 100}%` }}
-                        />
+                    { code: "TA", score: 6.5, bar: "bg-emerald-400" },
+                    { code: "CC", score: 6.0, bar: "bg-blue-400" },
+                    { code: "LR", score: 6.5, bar: "bg-amber-400" },
+                    { code: "GRA", score: 6.0, bar: "bg-red-400" },
+                  ].map(({ code, score, bar }) => (
+                    <div key={code} className="flex items-center gap-2">
+                      <span className="text-[10px] font-semibold text-slate-400 w-7 shrink-0">{code}</span>
+                      <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className={`${bar} h-full rounded-full`} style={{ width: `${(score / 9) * 100}%` }} />
                       </div>
-                      <span className="text-sm font-bold text-slate-700 w-8 text-right shrink-0">
-                        {score.toFixed(1)}
-                      </span>
+                      <span className="text-[11px] font-bold text-slate-600 w-7 text-right tabular-nums">{score.toFixed(1)}</span>
                     </div>
                   ))}
                 </div>
+                <span className="text-[10px] font-medium px-2 py-1 rounded bg-slate-100 text-slate-500 shrink-0">Task 2</span>
               </div>
 
-              {/* Top Score Blockers */}
-              <div className="p-5 border-b border-slate-100">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
-                  Top Score Blockers
-                </p>
-                <div className="space-y-2">
-                  {[
-                    { name: "Article errors", impact: "High Impact", color: "bg-red-100 text-red-700" },
-                    { name: "Weak conclusions", impact: "High Impact", color: "bg-red-100 text-red-700" },
-                    { name: "Vocabulary repetition", impact: "Medium", color: "bg-amber-100 text-amber-700" },
-                  ].map(({ name, impact, color }) => (
-                    <div key={name} className="flex items-center justify-between">
-                      <span className="text-sm text-slate-700">{name}</span>
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${color}`}>
-                        {impact}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+              {/* Score blockers */}
+              <div className="px-5 py-4 border-b border-[var(--border)]">
+                <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-2.5">Score Blockers</div>
+                {[
+                  { name: "Article errors",          badge: "High",   color: "bg-red-50 text-red-600" },
+                  { name: "Weak conclusions",         badge: "High",   color: "bg-red-50 text-red-600" },
+                  { name: "Vocabulary repetition",    badge: "Medium", color: "bg-amber-50 text-amber-600" },
+                ].map(({ name, badge, color }) => (
+                  <div key={name} className="flex items-center justify-between py-1.5 border-b border-[var(--border)] last:border-0">
+                    <span className="text-xs text-slate-700">{name}</span>
+                    <span className={`text-[10px] font-semibold px-1.5 py-px rounded ${color}`}>{badge}</span>
+                  </div>
+                ))}
               </div>
 
               {/* Memory insight */}
-              <div className="p-5 bg-brand-50/80">
-                <div className="flex gap-3">
-                  <Brain className="h-4 w-4 text-brand-600 mt-0.5 shrink-0" />
-                  <p className="text-sm text-brand-800 leading-relaxed">
-                    <span className="font-semibold">Memory insight:</span> You&apos;ve
-                    made article errors in 7 of your last 9 essays. This is your{" "}
-                    <span className="font-semibold">#1 band limiter.</span>
-                  </p>
-                </div>
+              <div className="bg-slate-900 px-5 py-4 flex items-start gap-2.5">
+                <Brain className="h-3.5 w-3.5 text-brand-400 mt-0.5 shrink-0" />
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  <span className="font-semibold text-white">Memory insight: </span>
+                  You&apos;ve made article errors in 7 of your last 9 essays. This is your{" "}
+                  <span className="text-brand-400 font-semibold">#1 band limiter.</span>
+                </p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Final CTA ── */}
-      <section className="py-24 bg-gradient-to-br from-slate-900 via-brand-950 to-brand-900 text-white">
-        <div className="max-w-2xl mx-auto px-4 text-center">
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-12 shadow-2xl relative overflow-hidden">
-            {/* Glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-brand-600/10 to-brand-800/10 rounded-2xl" />
-            <div className="absolute -inset-px bg-gradient-to-br from-brand-500/20 via-transparent to-brand-700/20 rounded-2xl" />
-
-            <div className="relative">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-                Ready to break through your band score plateau?
-              </h2>
-              <p className="text-brand-200 text-lg mb-8">
-                No credit card. No fluff. Just targeted improvement.
-              </p>
-              <Link href="/auth/signin">
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-brand-600 to-brand-800 hover:from-brand-500 hover:to-brand-700 text-white font-bold text-base px-8 rounded-xl shadow-2xl shadow-brand-500/30 border-0 transition-all duration-300"
-                >
-                  Get started free
-                  <ChevronRight className="h-5 w-5 ml-1" />
-                </Button>
-              </Link>
-              <p className="text-brand-300 text-sm mt-4">
-                Join thousands of IELTS candidates already improving with IELTS Loop
-              </p>
-            </div>
+      {/* ── CTA ── */}
+      <section className="bg-[var(--bg)] border-b border-[var(--border)]">
+        <div className="max-w-2xl mx-auto px-4 py-20 text-center">
+          <div className="bg-slate-900 rounded-xl p-12 border border-slate-800">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+              Ready to break through your band score plateau?
+            </h2>
+            <p className="text-slate-400 text-sm mb-8">No credit card. No fluff. Just targeted improvement.</p>
+            <Link href="/auth/signin">
+              <Button className="bg-white hover:bg-slate-100 text-slate-900 font-semibold rounded-lg h-10 px-6 text-sm border-0">
+                Get started free
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </Link>
+            <p className="text-slate-500 text-xs mt-4">
+              Join thousands of IELTS candidates already improving with IELTS Loop
+            </p>
           </div>
         </div>
       </section>
+
     </div>
   );
 }
