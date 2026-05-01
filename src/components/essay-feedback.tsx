@@ -225,13 +225,13 @@ export function EssayFeedback({ essay, recurringErrors = [] }: EssayFeedbackProp
       </Card>
 
       {/* ══ 2. BAND SCORES + EXAMINER ASSESSMENT — side by side ══════════ */}
-      <div className="grid gap-6 lg:grid-cols-2 items-start">
+      <div className="grid gap-6 lg:grid-cols-2 items-stretch">
 
         {/* Band Scores */}
-        <BandScoreCard scores={scores} />
+        <BandScoreCard scores={scores} className="h-full" />
 
         {/* Examiner Assessment */}
-        <Card variant="glass">
+        <Card variant="glass" className="h-full">
           <CardHeader className="pb-3 border-b border-white/40">
             <div className="flex items-center gap-2.5">
               <div className="p-1.5 rounded-lg bg-gradient-to-br from-brand-600 to-brand-700 shadow-sm">
