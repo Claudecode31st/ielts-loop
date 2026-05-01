@@ -229,75 +229,61 @@ async function DashboardContent({ userId }: { userId: string }) {
             )}
           </div>
 
-          {/* What to Do Next + Recent Essays — merged */}
+          {/* Recent Essays */}
           <div className="bg-white border border-[var(--border)] rounded-2xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden">
-            {/* Coaching header */}
-            <div className="p-4 bg-gradient-to-br from-brand-600 to-brand-700 text-white">
-              <div className="flex items-center gap-2 mb-2">
-                <Sparkles className="h-4 w-4 opacity-80" />
-                <span className="text-xs font-bold uppercase tracking-wide opacity-80">What to do next</span>
+            <div className="px-5 py-3.5 border-b border-[var(--border)] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ScrollText className="h-4 w-4 text-brand-600" />
+                <span className="text-sm font-semibold text-slate-800">Recent Essays</span>
               </div>
-              <p className="text-sm font-medium leading-relaxed">
-                {totalEssays === 0
-                  ? "Submit your first essay to unlock your personalised coaching plan."
-                  : topErrors.length > 0
-                  ? <>Practice fixing <span className="font-bold">{topErrors[0].errorType}</span> — it&apos;s your #1 score blocker right now.</>
-                  : "Keep writing! More essays sharpen your feedback and error profile."}
-              </p>
-              <Link href={totalEssays === 0 ? "/essay/new" : "/exercises"}>
-                <button className="mt-3 flex items-center gap-1.5 text-xs font-semibold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors">
-                  {totalEssays === 0 ? "Submit Essay" : "Start Exercises"} <ArrowRight className="h-3.5 w-3.5" />
-                </button>
+              <Link href="/essays" className="text-xs text-brand-600 hover:text-brand-700 flex items-center gap-0.5 font-medium">
+                View all <ChevronRight className="h-3 w-3" />
               </Link>
             </div>
-
-            {/* Recent essays */}
-            <div className="border-t border-[var(--border)]">
-              <div className="px-5 py-2.5 flex items-center justify-between border-b border-[var(--border)]">
-                <div className="flex items-center gap-2">
-                  <ScrollText className="h-3.5 w-3.5 text-brand-600" />
-                  <span className="text-xs font-semibold text-slate-600">Recent Essays</span>
+            {recentEssays.length === 0 ? (
+              <div className="py-14 text-center px-6">
+                <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3">
+                  <ScrollText className="h-6 w-6 text-slate-300" />
                 </div>
-                <Link href="/essays" className="text-xs text-brand-600 hover:text-brand-700 flex items-center gap-0.5 font-medium">
-                  View all <ChevronRight className="h-3 w-3" />
+                <p className="text-sm font-semibold text-slate-700 mb-1">No essays yet</p>
+                <p className="text-xs text-slate-400 mb-4">Submit your first essay to get detailed AI feedback.</p>
+                <Link href="/essay/new">
+                  <Button size="sm" className="bg-brand-600 hover:bg-brand-700 text-white border-0 rounded-xl text-xs gap-1.5">
+                    <PenLine className="h-3.5 w-3.5" /> Submit first essay
+                  </Button>
                 </Link>
               </div>
-              {recentEssays.length === 0 ? (
-                <div className="py-10 text-center px-6">
-                  <p className="text-xs text-slate-400">No essays yet — submit one above to get started.</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-[var(--border)]">
-                  {recentEssays.map((essay) => {
-                    const band = essay.overallBand ? parseFloat(String(essay.overallBand)) : null;
-                    return (
-                      <Link key={essay.id} href={`/essay/${essay.id}`}>
-                        <div className="flex items-center gap-4 px-5 py-3 hover:bg-slate-50/60 transition-colors cursor-pointer">
-                          <div className="shrink-0 w-12 text-right">
-                            {band != null
-                              ? <span className={`text-2xl font-extrabold tabular-nums ${getBandColor(band)}`}>{band.toFixed(1)}</span>
-                              : <span className="text-lg text-slate-200 font-bold">—</span>}
-                          </div>
-                          <div className="w-px h-8 bg-slate-100 shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5 mb-0.5">
-                              <span className="text-[11px] font-semibold px-1.5 py-px rounded-md bg-slate-100 text-slate-600">
-                                {essay.taskType === "task1" ? "Task 1" : "Task 2"}
-                              </span>
-                              <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                                <Clock className="h-3 w-3" />{formatDate(essay.submittedAt!)}
-                              </span>
-                            </div>
-                            <p className="text-sm text-slate-700 line-clamp-1">{essay.prompt}</p>
-                          </div>
-                          <ChevronRight className="h-4 w-4 text-slate-200 shrink-0" />
+            ) : (
+              <div className="divide-y divide-[var(--border)]">
+                {recentEssays.map((essay) => {
+                  const band = essay.overallBand ? parseFloat(String(essay.overallBand)) : null;
+                  return (
+                    <Link key={essay.id} href={`/essay/${essay.id}`}>
+                      <div className="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50/60 transition-colors cursor-pointer">
+                        <div className="shrink-0 w-12 text-right">
+                          {band != null
+                            ? <span className={`text-2xl font-extrabold tabular-nums ${getBandColor(band)}`}>{band.toFixed(1)}</span>
+                            : <span className="text-lg text-slate-200 font-bold">—</span>}
                         </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+                        <div className="w-px h-8 bg-slate-100 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span className="text-[11px] font-semibold px-1.5 py-px rounded-md bg-slate-100 text-slate-600">
+                              {essay.taskType === "task1" ? "Task 1" : "Task 2"}
+                            </span>
+                            <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                              <Clock className="h-3 w-3" />{formatDate(essay.submittedAt!)}
+                            </span>
+                          </div>
+                          <p className="text-sm text-slate-700 line-clamp-1">{essay.prompt}</p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-slate-200 shrink-0" />
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
@@ -373,50 +359,27 @@ async function DashboardContent({ userId }: { userId: string }) {
             );
           })()}
 
-          {/* Last essay criteria breakdown */}
-          {(() => {
-            const le = recentEssays[0];
-            const criteria = le ? [
-              { abbr: "TA", score: le.taskAchievement },
-              { abbr: "CC", score: le.coherenceCohesion },
-              { abbr: "LR", score: le.lexicalResource },
-              { abbr: "GR", score: le.grammaticalRange },
-            ].filter(c => c.score != null) : [];
-
-            if (criteria.length === 0) return null;
-
-            const scores = criteria.map(c => parseFloat(String(c.score)));
-            const minScore = Math.min(...scores);
-
-            return (
-              <div className="bg-white border border-[var(--border)] rounded-2xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden">
-                <div className="px-4 py-3.5 border-b border-[var(--border)] flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-800">Last Essay</span>
-                  <Link href={`/essay/${le!.id}`} className="text-xs text-brand-600 hover:text-brand-700 font-medium flex items-center gap-0.5">
-                    Full feedback <ChevronRight className="h-3 w-3" />
-                  </Link>
-                </div>
-                <div className="p-4 space-y-1">
-                  {criteria.map(({ abbr, score }) => {
-                    const s = parseFloat(String(score));
-                    const isLowest = s === minScore;
-                    const barColor = s >= 7 ? "bg-emerald-400" : s >= 6 ? "bg-amber-400" : "bg-red-400";
-                    const textColor = s >= 7 ? "text-emerald-600" : s >= 6 ? "text-amber-600" : "text-red-500";
-                    return (
-                      <div key={abbr} className={`flex items-center gap-2.5 py-1.5 px-2 rounded-lg ${isLowest ? "bg-red-50/60" : ""}`}>
-                        <span className={`text-[10px] font-bold w-6 shrink-0 ${isLowest ? "text-red-500" : "text-slate-400"}`}>{abbr}</span>
-                        <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full ${barColor} transition-all duration-500`} style={{ width: `${(s / 9) * 100}%` }} />
-                        </div>
-                        <span className={`text-xs font-bold tabular-nums w-7 text-right ${textColor}`}>{s.toFixed(1)}</span>
-                        {isLowest && <span className="text-[9px] font-bold text-red-400 bg-red-100 px-1 py-px rounded shrink-0">Weakest</span>}
-                      </div>
-                    );
-                  })}
-                </div>
+          {/* What to Do Next */}
+          <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-brand-600 to-brand-700 text-white shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
+            <div className="p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="h-4 w-4 opacity-80" />
+                <span className="text-xs font-bold uppercase tracking-wide opacity-80">What to do next</span>
               </div>
-            );
-          })()}
+              <p className="text-sm font-medium leading-relaxed mb-4">
+                {totalEssays === 0
+                  ? "Submit your first essay to unlock your personalised coaching plan."
+                  : topErrors.length > 0
+                  ? <>Practice fixing <span className="font-bold">{topErrors[0].errorType}</span> — it&apos;s your #1 score blocker right now.</>
+                  : "Keep writing! More essays sharpen your feedback and error profile."}
+              </p>
+              <Link href={totalEssays === 0 ? "/essay/new" : "/exercises"}>
+                <button className="flex items-center gap-1.5 text-xs font-semibold bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl transition-colors w-full justify-center">
+                  {totalEssays === 0 ? "Submit Essay" : "Start Exercises"} <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+              </Link>
+            </div>
+          </div>
 
         </div>
       </div>
