@@ -217,22 +217,75 @@ export function EssayFeedback({ essay, recurringErrors = [] }: EssayFeedbackProp
               const style = cs(err.category);
               const isActive = activeIdx === seg.errorIndex;
               return (
-                <button
-                  key={i}
-                  onClick={() => onMarkClick(seg.errorIndex!)}
-                  title={`#${seg.errorIndex! + 1} ${err.category} — click to see correction`}
-                  className={`
-                    inline cursor-pointer rounded-sm px-0.5
-                    ${style.border}
-                    ${isActive ? style.activeBg : `hover:${style.activeBg}`}
-                    transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-brand-400
-                  `}
-                >
-                  {seg.text}
-                  <sup className="text-[9px] font-bold text-slate-400 ml-px select-none leading-none">
-                    {seg.errorIndex! + 1}
-                  </sup>
-                </button>
+                <span key={i} className="relative group inline">
+                  {/* Annotated word */}
+                  <button
+                    onClick={() => onMarkClick(seg.errorIndex!)}
+                    className={`
+                      inline cursor-pointer rounded-sm px-0.5
+                      ${style.border}
+                      ${isActive ? style.activeBg : ""}
+                      hover:${style.activeBg}
+                      transition-colors duration-150 focus:outline-none
+                    `}
+                  >
+                    {seg.text}
+                    <sup className="text-[9px] font-bold text-slate-400 ml-px select-none leading-none">
+                      {seg.errorIndex! + 1}
+                    </sup>
+                  </button>
+
+                  {/* Hover / tap tooltip */}
+                  <span
+                    className={`
+                      pointer-events-none absolute z-50
+                      bottom-[calc(100%+10px)] left-1/2 -translate-x-1/2
+                      w-72 transition-opacity duration-150
+                      ${isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"}
+                    `}
+                  >
+                    <span className="block bg-white rounded-xl border border-[var(--border)]
+                      shadow-[0_8px_24px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.06)] p-3 text-left">
+
+                      {/* Category + number */}
+                      <span className="flex items-center gap-2 mb-2.5">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${style.badge}`}>
+                          {err.category}
+                        </span>
+                        <span className="text-[10px] text-slate-400">Error #{seg.errorIndex! + 1}</span>
+                      </span>
+
+                      {/* Error → Correction */}
+                      <span className="block space-y-1.5 mb-2.5">
+                        <span className="flex items-start gap-1.5">
+                          <AlertCircle className="h-3 w-3 text-red-400 shrink-0 mt-0.5" />
+                          <span className="text-xs text-slate-500 line-through leading-snug">
+                            &ldquo;{err.text}&rdquo;
+                          </span>
+                        </span>
+                        <span className="flex items-start gap-1.5">
+                          <CheckCircle className="h-3 w-3 text-green-500 shrink-0 mt-0.5" />
+                          <span className="text-xs font-semibold text-green-700 leading-snug">
+                            &ldquo;{err.correction}&rdquo;
+                          </span>
+                        </span>
+                      </span>
+
+                      {/* Explanation */}
+                      <span className="block text-xs text-slate-500 leading-relaxed border-t border-slate-100 pt-2">
+                        {err.explanation}
+                      </span>
+                    </span>
+
+                    {/* Arrow pointing down toward the word */}
+                    <span className="block flex justify-center -mt-px">
+                      <span className="block w-0 h-0
+                        border-l-[6px] border-l-transparent
+                        border-r-[6px] border-r-transparent
+                        border-t-[6px] border-t-white" />
+                    </span>
+                  </span>
+                </span>
               );
             })}
           </div>
@@ -241,7 +294,7 @@ export function EssayFeedback({ essay, recurringErrors = [] }: EssayFeedbackProp
               <span className="font-medium text-slate-500">
                 {errors.length} error{errors.length !== 1 ? "s" : ""} marked.
               </span>{" "}
-              Click any underlined text to jump to the correction below.
+              Hover any underlined text to see the correction.
             </p>
           )}
         </CardContent>
