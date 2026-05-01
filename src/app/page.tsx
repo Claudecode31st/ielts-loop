@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FeatureDemos } from "@/components/feature-demos";
 import { Button } from "@/components/ui/button";
 import {
   CheckCircle, Brain, Zap, BarChart3, Crosshair,
@@ -177,6 +178,9 @@ export default function LandingPage() {
             ))}
           </div>
         </section>
+
+        {/* ── Feature Demos ── */}
+        <FeatureDemos />
 
         {/* ── Why IELTS Loop ── */}
         <section>
