@@ -12,7 +12,7 @@ import {
   ImagePlus, X, GraduationCap, BookOpen,
   Clock, AlertTriangle, EyeOff, Sparkles, Zap,
 } from "lucide-react";
-import { GuidePanel } from "@/components/guide-panel";
+import { GuidePanel, detectRepeatedWords } from "@/components/guide-panel";
 import type { GuideSuggestion } from "@/components/guide-panel";
 import { countWords } from "@/lib/utils";
 import type { TaskType } from "@/types";
@@ -52,6 +52,8 @@ export default function NewEssayPage() {
   const [guideSuggestions, setGuideSuggestions] = useState<GuideSuggestion[]>([]);
   const [guideLoading, setGuideLoading] = useState(false);
   const [isProUser, setIsProUser] = useState(false);
+  const [knownErrors, setKnownErrors] = useState<string[]>([]);
+  const [repeatedWords, setRepeatedWords] = useState<string[]>([]);
   const lastAnalysedWordCount = useRef(0);
   const guideDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -69,6 +71,13 @@ export default function NewEssayPage() {
     fetch("/api/usage")
       .then((r) => r.json())
       .then((data) => setIsProUser(data.plan === "pro"))
+      .catch(() => {});
+    fetch("/api/memory")
+      .then((r) => r.json())
+      .then((data) => {
+        const patterns = (data.topErrorPatterns ?? []).slice(0, 6).map((e: { errorType: string }) => e.errorType);
+        setKnownErrors(patterns);
+      })
       .catch(() => {});
   }, []);
 
@@ -132,7 +141,7 @@ export default function NewEssayPage() {
         const res = await fetch("/api/guide", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ essay: essayText, prompt, taskType, ieltsMode }),
+          body: JSON.stringify({ essay: essayText, prompt, taskType, ieltsMode, knownErrors }),
         });
         const data = await res.json();
         if (res.ok && data.suggestions) {
@@ -462,9 +471,18 @@ export default function NewEssayPage() {
         {/* 2-column layout when guide mode is on */}
         <div className={`flex gap-4 items-start transition-all duration-300`}>
           <div className={`flex-1 min-w-0 transition-all duration-300`}>
-            <Textarea id="essay" value={essay} onChange={(e) => { setEssay(e.target.value); setShowWordWarning(false); triggerGuideAnalysis(e.target.value); }}
+            <Textarea
+              id="essay"
+              value={essay}
               placeholder={taskType === "task1" ? (ieltsMode === "academic" ? "The chart illustrates…" : "Dear Sir or Madam,\n\nI am writing to…") : "In recent decades…"}
-              className="min-h-[350px] resize-y text-sm leading-relaxed w-full" />
+              className="min-h-[350px] resize-y text-sm leading-relaxed w-full"
+              onChange={(e) => {
+                setEssay(e.target.value);
+                setShowWordWarning(false);
+                triggerGuideAnalysis(e.target.value);
+                if (guideMode) setRepeatedWords(detectRepeatedWords(e.target.value));
+              }}
+            />
           </div>
 
           {/* Guide panel — slides in when guide mode is on */}
@@ -475,6 +493,7 @@ export default function NewEssayPage() {
                 isLoading={guideLoading}
                 wordCount={wordCount}
                 isProUser={isProUser}
+                repeatedWords={repeatedWords}
               />
             </div>
           )}
