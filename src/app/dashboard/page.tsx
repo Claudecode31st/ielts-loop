@@ -2,14 +2,14 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { essays, users, errorPatterns } from "@/lib/db/schema";
-import { eq, desc, count } from "drizzle-orm";
+import { eq, desc, count, avg } from "drizzle-orm";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   PenLine, TrendingUp, TrendingDown, Minus,
-  Target, BookOpen, Brain, Clock,
+  Clock, BarChart2,
   ScrollText, Sparkles, ChevronRight, ArrowRight, AlertTriangle,
 } from "lucide-react";
 import { getBandColor, formatDate } from "@/lib/utils";
@@ -46,27 +46,28 @@ const ERROR_TIPS: Record<string, string> = {
 // ── Data ───────────────────────────────────────────────────────────────────
 
 async function DashboardContent({ userId }: { userId: string }) {
-  const [[userData], recentEssays, topErrors, [{ totalEssays }]] = await Promise.all([
+  const [[userData], recentEssays, topErrors, [{ totalEssays }], [criteriaAvg]] = await Promise.all([
     db.select().from(users).where(eq(users.id, userId)).limit(1),
     db.select().from(essays).where(eq(essays.userId, userId)).orderBy(desc(essays.submittedAt)).limit(5),
     db.select().from(errorPatterns).where(eq(errorPatterns.userId, userId)).orderBy(desc(errorPatterns.frequency)).limit(5),
     db.select({ totalEssays: count() }).from(essays).where(eq(essays.userId, userId)),
+    db.select({
+      avgTA: avg(essays.taskAchievement),
+      avgCC: avg(essays.coherenceCohesion),
+      avgLR: avg(essays.lexicalResource),
+      avgGR: avg(essays.grammaticalRange),
+    }).from(essays).where(eq(essays.userId, userId)),
   ]);
 
   const currentBand  = userData?.currentBand ? parseFloat(String(userData.currentBand)) : null;
   const targetBand   = userData?.targetBand  ? parseFloat(String(userData.targetBand))  : 7.0;
   const gapToTarget  = currentBand != null ? Math.max(0, targetBand - currentBand) : null;
 
-  // Trend: compare latest essay band vs previous
+  // Trend delta for stat card
   const bands = recentEssays
     .map((e) => e.overallBand ? parseFloat(String(e.overallBand)) : null)
     .filter((b): b is number => b != null);
-  const latestBand   = bands[0] ?? null;
-  const previousBand = bands[1] ?? null;
-  const trendDelta   = latestBand != null && previousBand != null ? latestBand - previousBand : null;
-
-  // Sparkline oldest→newest (up to 5)
-  const sparkBands = [...bands].reverse();
+  const trendDelta = bands.length >= 2 ? bands[0] - bands[1] : null;
 
   const bandColorClass = currentBand ? getBandColor(currentBand) : "text-slate-300";
 
@@ -228,153 +229,9 @@ async function DashboardContent({ userId }: { userId: string }) {
             )}
           </div>
 
-          {/* Recent Essays */}
+          {/* What to Do Next + Recent Essays — merged */}
           <div className="bg-white border border-[var(--border)] rounded-2xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-[var(--border)] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ScrollText className="h-4 w-4 text-brand-600" />
-                <span className="text-sm font-semibold text-slate-800">Recent Essays</span>
-              </div>
-              <Link href="/essays" className="text-xs text-brand-600 hover:text-brand-700 flex items-center gap-0.5 font-medium">
-                View all <ChevronRight className="h-3 w-3" />
-              </Link>
-            </div>
-            {recentEssays.length === 0 ? (
-              <div className="py-14 text-center px-6">
-                <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3">
-                  <ScrollText className="h-6 w-6 text-slate-300" />
-                </div>
-                <p className="text-sm font-semibold text-slate-700 mb-1">No essays yet</p>
-                <p className="text-xs text-slate-400 mb-4">Submit your first essay to get detailed AI feedback.</p>
-                <Link href="/essay/new">
-                  <Button size="sm" className="bg-brand-600 hover:bg-brand-700 text-white border-0 rounded-xl text-xs gap-1.5">
-                    <PenLine className="h-3.5 w-3.5" /> Submit first essay
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="divide-y divide-[var(--border)]">
-                {recentEssays.map((essay) => {
-                  const band = essay.overallBand ? parseFloat(String(essay.overallBand)) : null;
-                  return (
-                    <Link key={essay.id} href={`/essay/${essay.id}`}>
-                      <div className="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50/60 transition-colors cursor-pointer">
-                        {/* Band score */}
-                        <div className="shrink-0 w-12 text-right">
-                          {band != null
-                            ? <span className={`text-2xl font-extrabold tabular-nums ${getBandColor(band)}`}>{band.toFixed(1)}</span>
-                            : <span className="text-lg text-slate-200 font-bold">—</span>}
-                        </div>
-                        {/* Divider */}
-                        <div className="w-px h-8 bg-slate-100 shrink-0" />
-                        {/* Info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="text-[11px] font-semibold px-1.5 py-px rounded-md bg-slate-100 text-slate-600">
-                              {essay.taskType === "task1" ? "Task 1" : "Task 2"}
-                            </span>
-                            <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                              <Clock className="h-3 w-3" />{formatDate(essay.submittedAt!)}
-                            </span>
-                          </div>
-                          <p className="text-sm text-slate-700 line-clamp-1">{essay.prompt}</p>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-slate-200 shrink-0" />
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ── Right 1/3 ── */}
-        <div className="space-y-4">
-
-          {/* Progress trend — no repeated score, just trend & sparkline */}
-          <div className="bg-white border border-[var(--border)] rounded-2xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden">
-            <div className="px-4 py-3.5 border-b border-[var(--border)] flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-brand-600" />
-              <span className="text-sm font-semibold text-slate-800">Progress Trend</span>
-            </div>
-            <div className="p-4 space-y-4">
-              {/* Gap to target — visual pill */}
-              <div className="flex items-center justify-between gap-2">
-                <div>
-                  <p className="text-[11px] text-slate-400 mb-0.5">Target</p>
-                  <p className="text-lg font-bold text-brand-600 tabular-nums">{targetBand.toFixed(1)}</p>
-                </div>
-                <div className={`px-3 py-1.5 rounded-xl text-xs font-semibold border ${
-                  gapToTarget === 0 ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                  : gapToTarget != null ? "bg-brand-50 text-brand-700 border-brand-100"
-                  : "bg-slate-50 text-slate-400 border-slate-100"
-                }`}>
-                  {gapToTarget === 0 ? "🎉 Reached!" : gapToTarget != null ? `${gapToTarget.toFixed(1)} to go` : "No data yet"}
-                </div>
-              </div>
-
-              {/* Progress bar */}
-              {currentBand != null && (
-                <div>
-                  <div className="relative h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-brand-600 transition-all duration-500"
-                      style={{ width: `${(currentBand / 9) * 100}%` }}
-                    />
-                    <div
-                      className="absolute top-0 h-full w-0.5 bg-brand-300 z-10"
-                      style={{ left: `${(targetBand / 9) * 100}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-[9px] text-slate-300 mt-1">
-                    <span>0</span><span>Target {targetBand.toFixed(1)}</span><span>9.0</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Sparkline */}
-              {sparkBands.length > 0 ? (
-                <div>
-                  <p className="text-[11px] text-slate-400 mb-2">Band over last {sparkBands.length} essay{sparkBands.length > 1 ? "s" : ""}</p>
-                  <div className="flex items-end gap-1.5 h-12">
-                    {sparkBands.map((band, i) => {
-                      const color = band >= 7 ? "bg-emerald-400" : band >= 6 ? "bg-amber-400" : "bg-red-400";
-                      const h = Math.max(15, (band / 9) * 100);
-                      return (
-                        <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                          <div className={`w-full rounded-sm ${color}`} style={{ height: `${h}%` }} />
-                          <span className="text-[9px] text-slate-400 tabular-nums">{band.toFixed(1)}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : (
-                <p className="text-xs text-slate-300 text-center py-4">
-                  Submit essays to see your trend
-                </p>
-              )}
-
-              {/* Trend commentary */}
-              {trendDelta != null && (
-                <div className={`flex items-start gap-2 p-3 rounded-xl text-xs leading-relaxed ${
-                  trendDelta > 0 ? "bg-emerald-50 text-emerald-700"
-                  : trendDelta < 0 ? "bg-red-50 text-red-700"
-                  : "bg-slate-50 text-slate-500"
-                }`}>
-                  {trendDelta > 0
-                    ? <><TrendingUp className="h-3.5 w-3.5 shrink-0 mt-0.5" /> Your score improved by <strong className="mx-0.5">+{trendDelta.toFixed(1)}</strong> since your last essay. Keep going!</>
-                    : trendDelta < 0
-                    ? <><TrendingDown className="h-3.5 w-3.5 shrink-0 mt-0.5" /> Score dipped by <strong className="mx-0.5">{trendDelta.toFixed(1)}</strong>. Focus on the top errors below.</>
-                    : <><Minus className="h-3.5 w-3.5 shrink-0 mt-0.5" /> Score held steady. Push to fix one error pattern this week.</>}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Next step card */}
-          <div className="bg-white border border-[var(--border)] rounded-2xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden">
+            {/* Coaching header */}
             <div className="p-4 bg-gradient-to-br from-brand-600 to-brand-700 text-white">
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="h-4 w-4 opacity-80" />
@@ -394,36 +251,153 @@ async function DashboardContent({ userId }: { userId: string }) {
               </Link>
             </div>
 
-            {/* Last essay criteria breakdown */}
-            {(() => {
-              const le = recentEssays[0];
-              const criteria = le ? [
-                { label: "Task Achievement",    abbr: "TA",  score: le.taskAchievement },
-                { label: "Coherence & Cohesion", abbr: "CC", score: le.coherenceCohesion },
-                { label: "Lexical Resource",    abbr: "LR",  score: le.lexicalResource },
-                { label: "Grammatical Range",   abbr: "GR",  score: le.grammaticalRange },
-              ].filter(c => c.score != null) : [];
+            {/* Recent essays */}
+            <div className="border-t border-[var(--border)]">
+              <div className="px-5 py-2.5 flex items-center justify-between border-b border-[var(--border)]">
+                <div className="flex items-center gap-2">
+                  <ScrollText className="h-3.5 w-3.5 text-brand-600" />
+                  <span className="text-xs font-semibold text-slate-600">Recent Essays</span>
+                </div>
+                <Link href="/essays" className="text-xs text-brand-600 hover:text-brand-700 flex items-center gap-0.5 font-medium">
+                  View all <ChevronRight className="h-3 w-3" />
+                </Link>
+              </div>
+              {recentEssays.length === 0 ? (
+                <div className="py-10 text-center px-6">
+                  <p className="text-xs text-slate-400">No essays yet — submit one above to get started.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-[var(--border)]">
+                  {recentEssays.map((essay) => {
+                    const band = essay.overallBand ? parseFloat(String(essay.overallBand)) : null;
+                    return (
+                      <Link key={essay.id} href={`/essay/${essay.id}`}>
+                        <div className="flex items-center gap-4 px-5 py-3 hover:bg-slate-50/60 transition-colors cursor-pointer">
+                          <div className="shrink-0 w-12 text-right">
+                            {band != null
+                              ? <span className={`text-2xl font-extrabold tabular-nums ${getBandColor(band)}`}>{band.toFixed(1)}</span>
+                              : <span className="text-lg text-slate-200 font-bold">—</span>}
+                          </div>
+                          <div className="w-px h-8 bg-slate-100 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <span className="text-[11px] font-semibold px-1.5 py-px rounded-md bg-slate-100 text-slate-600">
+                                {essay.taskType === "task1" ? "Task 1" : "Task 2"}
+                              </span>
+                              <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                                <Clock className="h-3 w-3" />{formatDate(essay.submittedAt!)}
+                              </span>
+                            </div>
+                            <p className="text-sm text-slate-700 line-clamp-1">{essay.prompt}</p>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-slate-200 shrink-0" />
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
-              if (criteria.length === 0) {
-                return (
-                  <div className="px-4 py-6 text-center">
-                    <p className="text-xs text-slate-300">Submit an essay to see your score breakdown</p>
+        {/* ── Right 1/3 ── */}
+        <div className="space-y-4">
+
+          {/* Score by Criterion — averaged across all essays */}
+          {(() => {
+            const criteriaRows = [
+              { label: "Task Achievement",     abbr: "TA", val: criteriaAvg?.avgTA },
+              { label: "Coherence & Cohesion", abbr: "CC", val: criteriaAvg?.avgCC },
+              { label: "Lexical Resource",     abbr: "LR", val: criteriaAvg?.avgLR },
+              { label: "Grammatical Range",    abbr: "GR", val: criteriaAvg?.avgGR },
+            ].map(r => ({ ...r, score: r.val != null ? parseFloat(String(r.val)) : null }));
+
+            const hasData = criteriaRows.some(r => r.score != null);
+            const validScores = criteriaRows.filter(r => r.score != null).map(r => r.score!);
+            const minScore = validScores.length ? Math.min(...validScores) : null;
+
+            return (
+              <div className="bg-white border border-[var(--border)] rounded-2xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden">
+                <div className="px-4 py-3.5 border-b border-[var(--border)] flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <BarChart2 className="h-4 w-4 text-brand-600" />
+                    <span className="text-sm font-semibold text-slate-800">Score by Criterion</span>
                   </div>
-                );
-              }
+                  {hasData && (
+                    <span className="text-[10px] text-slate-400 font-medium">avg · {totalEssays} essay{totalEssays !== 1 ? "s" : ""}</span>
+                  )}
+                </div>
 
-              const scores = criteria.map(c => parseFloat(String(c.score)));
-              const minScore = Math.min(...scores);
+                {!hasData ? (
+                  <div className="py-12 text-center px-4">
+                    <p className="text-xs text-slate-300">Submit essays to see your criteria breakdown</p>
+                  </div>
+                ) : (
+                  <div className="p-4 space-y-3.5">
+                    {criteriaRows.map(({ label, abbr, score }) => {
+                      if (score == null) return null;
+                      const gap = Math.max(0, targetBand - score);
+                      const isWeakest = score === minScore;
+                      const barColor = score >= 7 ? "bg-emerald-400" : score >= 6 ? "bg-amber-400" : "bg-red-400";
+                      const textColor = score >= 7 ? "text-emerald-600" : score >= 6 ? "text-amber-600" : "text-red-500";
+                      return (
+                        <div key={abbr}>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <div className="flex items-center gap-2">
+                              <span className={`text-[10px] font-bold w-6 ${isWeakest ? "text-red-500" : "text-slate-400"}`}>{abbr}</span>
+                              <span className="text-xs text-slate-600">{label}</span>
+                              {isWeakest && <span className="text-[9px] font-bold text-red-400 bg-red-50 border border-red-100 px-1.5 py-px rounded-full">Weakest</span>}
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span className={`text-xs font-bold tabular-nums ${textColor}`}>{score.toFixed(1)}</span>
+                              {gap > 0 && <span className="text-[9px] text-slate-400 tabular-nums">+{gap.toFixed(1)} needed</span>}
+                            </div>
+                          </div>
+                          <div className="relative h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div className={`h-full rounded-full ${barColor} transition-all duration-500`}
+                              style={{ width: `${(score / 9) * 100}%` }} />
+                            {/* Target marker */}
+                            <div className="absolute top-0 h-full w-0.5 bg-slate-400/40"
+                              style={{ left: `${(targetBand / 9) * 100}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <p className="text-[10px] text-slate-400 pt-1 leading-relaxed border-t border-[var(--border)]">
+                      Vertical line marks your Band {targetBand.toFixed(1)} target. Improve your weakest criterion first for the fastest score gain.
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
-              return (
+          {/* Last essay criteria breakdown */}
+          {(() => {
+            const le = recentEssays[0];
+            const criteria = le ? [
+              { abbr: "TA", score: le.taskAchievement },
+              { abbr: "CC", score: le.coherenceCohesion },
+              { abbr: "LR", score: le.lexicalResource },
+              { abbr: "GR", score: le.grammaticalRange },
+            ].filter(c => c.score != null) : [];
+
+            if (criteria.length === 0) return null;
+
+            const scores = criteria.map(c => parseFloat(String(c.score)));
+            const minScore = Math.min(...scores);
+
+            return (
+              <div className="bg-white border border-[var(--border)] rounded-2xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden">
+                <div className="px-4 py-3.5 border-b border-[var(--border)] flex items-center justify-between">
+                  <span className="text-sm font-semibold text-slate-800">Last Essay</span>
+                  <Link href={`/essay/${le!.id}`} className="text-xs text-brand-600 hover:text-brand-700 font-medium flex items-center gap-0.5">
+                    Full feedback <ChevronRight className="h-3 w-3" />
+                  </Link>
+                </div>
                 <div className="p-4 space-y-1">
-                  <div className="flex items-center justify-between mb-2.5">
-                    <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Last Essay Breakdown</p>
-                    <Link href={`/essay/${le!.id}`} className="text-[11px] text-brand-600 hover:text-brand-700 font-medium flex items-center gap-0.5">
-                      Full feedback <ChevronRight className="h-2.5 w-2.5" />
-                    </Link>
-                  </div>
-                  {criteria.map(({ label, abbr, score }) => {
+                  {criteria.map(({ abbr, score }) => {
                     const s = parseFloat(String(score));
                     const isLowest = s === minScore;
                     const barColor = s >= 7 ? "bg-emerald-400" : s >= 6 ? "bg-amber-400" : "bg-red-400";
@@ -432,21 +406,17 @@ async function DashboardContent({ userId }: { userId: string }) {
                       <div key={abbr} className={`flex items-center gap-2.5 py-1.5 px-2 rounded-lg ${isLowest ? "bg-red-50/60" : ""}`}>
                         <span className={`text-[10px] font-bold w-6 shrink-0 ${isLowest ? "text-red-500" : "text-slate-400"}`}>{abbr}</span>
                         <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full ${barColor} transition-all duration-500`}
-                            style={{ width: `${(s / 9) * 100}%` }} />
+                          <div className={`h-full rounded-full ${barColor} transition-all duration-500`} style={{ width: `${(s / 9) * 100}%` }} />
                         </div>
                         <span className={`text-xs font-bold tabular-nums w-7 text-right ${textColor}`}>{s.toFixed(1)}</span>
                         {isLowest && <span className="text-[9px] font-bold text-red-400 bg-red-100 px-1 py-px rounded shrink-0">Weakest</span>}
                       </div>
                     );
                   })}
-                  <p className="text-[10px] text-slate-400 mt-2 leading-relaxed">
-                    Focus on your weakest criterion first — each 0.5 gain compounds across all 4 bands.
-                  </p>
                 </div>
-              );
-            })()}
-          </div>
+              </div>
+            );
+          })()}
 
         </div>
       </div>
