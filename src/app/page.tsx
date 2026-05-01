@@ -16,7 +16,7 @@ export default function LandingPage() {
           <div>
             <div className="inline-flex items-center gap-2 bg-white border border-[var(--border)] rounded-full px-4 py-1.5 text-xs font-medium text-slate-600 mb-7 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
               <Zap className="h-3.5 w-3.5 text-amber-500" />
-              Powered by Claude AI · Mistake Intelligence Engine
+              Adaptive feedback that remembers your mistakes
             </div>
 
             <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 leading-tight tracking-tight mb-5">
@@ -161,7 +161,7 @@ export default function LandingPage() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { icon: PenLine,   step: "01", title: "Submit Essay",      desc: "Paste your Task 1 or Task 2 response with the question prompt. Upload an image for Task 1 charts.",    color: "text-brand-600 bg-brand-50" },
-              { icon: Target,    step: "02", title: "AI Examination",    desc: "Scored on all 4 official IELTS criteria by a Claude AI model trained on examiner-level assessment.",   color: "text-blue-600 bg-blue-50" },
+              { icon: Target,    step: "02", title: "AI Examination",    desc: "Scored on all 4 official IELTS criteria by an AI model trained on examiner-level assessment.",   color: "text-blue-600 bg-blue-50" },
               { icon: Brain,     step: "03", title: "Memory Updates",    desc: "Each submission updates your personal error profile, separating one-off mistakes from real patterns.", color: "text-violet-600 bg-violet-50" },
               { icon: Crosshair, step: "04", title: "Targeted Practice", desc: "AI-generated exercises target your specific weaknesses — not generic drills anyone could find online.", color: "text-emerald-600 bg-emerald-50" },
             ].map(({ icon: Icon, step, title, desc, color }, i) => (

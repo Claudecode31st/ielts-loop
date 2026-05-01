@@ -5,7 +5,7 @@ export function Footer() {
   return (
     <footer className="border-t border-[var(--border)] bg-white mt-auto">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 mb-8">
 
           {/* Brand */}
           <div className="col-span-2 sm:col-span-1">
@@ -34,23 +34,6 @@ export function Footer() {
                   <Link href={href} className="text-xs text-slate-400 hover:text-slate-700 transition-colors">
                     {label}
                   </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* IELTS */}
-          <div>
-            <p className="text-xs font-semibold text-slate-700 mb-3">IELTS</p>
-            <ul className="space-y-2">
-              {[
-                "Task 1 (Academic)",
-                "Task 1 (General)",
-                "Task 2 Essay",
-                "Band Score Guide",
-              ].map((label) => (
-                <li key={label}>
-                  <span className="text-xs text-slate-400">{label}</span>
                 </li>
               ))}
             </ul>
