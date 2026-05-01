@@ -1,6 +1,5 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
 import { ProgressChart } from "./progress-chart";
 import { MemoryInsights } from "@/components/memory-insights";
@@ -10,21 +9,15 @@ import { essays } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { format } from "date-fns";
 import type { ProgressDataPoint } from "@/types";
+import { getBandColor } from "@/lib/utils";
 
 export default async function ProgressPage() {
   const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/auth/signin");
-  }
+  if (!session?.user?.id) redirect("/auth/signin");
 
   const [memory, essayHistory] = await Promise.all([
     getStudentMemoryContext(session.user.id),
-    db
-      .select()
-      .from(essays)
-      .where(eq(essays.userId, session.user.id))
-      .orderBy(essays.submittedAt)
-      .limit(50),
+    db.select().from(essays).where(eq(essays.userId, session.user.id)).orderBy(essays.submittedAt).limit(50),
   ]);
 
   const progressData: ProgressDataPoint[] = essayHistory.map((e) => ({
@@ -36,42 +29,25 @@ export default async function ProgressPage() {
     grammaticalRange: parseFloat(String(e.grammaticalRange)) || 0,
   }));
 
-  const avgScores =
-    progressData.length > 0
-      ? {
-          overallBand: (
-            progressData.reduce((s, e) => s + e.overallBand, 0) /
-            progressData.length
-          ).toFixed(1),
-          taskAchievement: (
-            progressData.reduce((s, e) => s + e.taskAchievement, 0) /
-            progressData.length
-          ).toFixed(1),
-          coherenceCohesion: (
-            progressData.reduce((s, e) => s + e.coherenceCohesion, 0) /
-            progressData.length
-          ).toFixed(1),
-          lexicalResource: (
-            progressData.reduce((s, e) => s + e.lexicalResource, 0) /
-            progressData.length
-          ).toFixed(1),
-          grammaticalRange: (
-            progressData.reduce((s, e) => s + e.grammaticalRange, 0) /
-            progressData.length
-          ).toFixed(1),
-        }
-      : null;
+  const avgScores = progressData.length > 0 ? {
+    overallBand:       (progressData.reduce((s, e) => s + e.overallBand,       0) / progressData.length).toFixed(1),
+    taskAchievement:   (progressData.reduce((s, e) => s + e.taskAchievement,   0) / progressData.length).toFixed(1),
+    coherenceCohesion: (progressData.reduce((s, e) => s + e.coherenceCohesion, 0) / progressData.length).toFixed(1),
+    lexicalResource:   (progressData.reduce((s, e) => s + e.lexicalResource,   0) / progressData.length).toFixed(1),
+    grammaticalRange:  (progressData.reduce((s, e) => s + e.grammaticalRange,  0) / progressData.length).toFixed(1),
+  } : null;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2">
-          <TrendingUp className="h-7 w-7 text-brand-600" />
+        <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+          <TrendingUp className="h-4.5 w-4.5 text-brand-600" />
           Progress Analytics
         </h1>
-        <p className="text-slate-500 mt-1">
-          Track your band score trends across all criteria over time.
+        <p className="text-sm text-slate-500 mt-0.5">
+          Band score trends across all four IELTS criteria.
         </p>
       </div>
 
@@ -79,52 +55,42 @@ export default async function ProgressPage() {
       {avgScores && (
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {[
-            { label: "Avg Overall", value: avgScores.overallBand, highlight: true },
+            { label: "Overall",          value: avgScores.overallBand,       highlight: true },
             { label: "Task Achievement", value: avgScores.taskAchievement },
-            { label: "Coherence & Cohesion", value: avgScores.coherenceCohesion },
-            { label: "Lexical Resource", value: avgScores.lexicalResource },
-            { label: "Grammatical Range", value: avgScores.grammaticalRange },
+            { label: "Coherence",        value: avgScores.coherenceCohesion },
+            { label: "Vocabulary",       value: avgScores.lexicalResource },
+            { label: "Grammar",          value: avgScores.grammaticalRange },
           ].map(({ label, value, highlight }) => {
             const band = parseFloat(value);
             return (
-              <Card key={label} className={highlight ? "ring-2 ring-brand-500" : ""}>
-                <CardContent className="p-4 text-center">
-                  <div
-                    className={`text-2xl font-extrabold ${
-                      band >= 7
-                        ? "text-green-600"
-                        : band >= 6
-                        ? "text-amber-500"
-                        : "text-red-500"
-                    }`}
-                  >
-                    {value}
-                  </div>
-                  <div className="text-xs text-slate-500 mt-1 leading-tight">
-                    {label}
-                  </div>
-                </CardContent>
-              </Card>
+              <div
+                key={label}
+                className={`bg-white border rounded-xl p-4 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] text-center ${highlight ? "border-brand-200" : "border-[var(--border)]"}`}
+              >
+                <div className={`text-2xl font-bold tabular-nums ${getBandColor(band)}`}>{value}</div>
+                <div className="text-[11px] text-slate-500 mt-1 leading-tight">{label}</div>
+              </div>
             );
           })}
         </div>
       )}
 
-      {/* Score Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Band Score Trends</CardTitle>
-        </CardHeader>
-        <CardContent>
+      {/* Chart */}
+      <div className="bg-white border border-[var(--border)] rounded-xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
+        <div className="px-4 py-3 border-b border-[var(--border)]">
+          <span className="text-sm font-semibold text-slate-800">Band Score Trends</span>
+        </div>
+        <div className="p-4">
           <ProgressChart data={progressData} />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* Memory Insights */}
+      {/* Memory / Learning Profile */}
       <div>
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">
-          Learning Profile
-        </h2>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-sm font-semibold text-slate-800">Learning Profile</span>
+          <span className="text-xs text-slate-400">— your recurring error patterns</span>
+        </div>
         <MemoryInsights memory={memory} />
       </div>
     </div>

@@ -5,13 +5,17 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "glass" | "dark" | "flat";
 }
 
+// All variants now follow the "surface deep" design language:
+// white surface, thin border, subtle shadow — no glassmorphism
 const cardVariants: Record<NonNullable<CardProps["variant"]>, string> = {
   default:
-    "bg-white/60 backdrop-blur-xl border border-white/70 shadow-xl shadow-brand-100/30 rounded-2xl",
+    "bg-white border border-[var(--border)] rounded-xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04),0_1px_2px_-1px_rgba(0,0,0,0.03)]",
   glass:
-    "bg-white/40 backdrop-blur-2xl border border-white/50 shadow-2xl shadow-brand-200/20 rounded-2xl",
-  dark: "bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl text-white",
-  flat: "bg-white border border-slate-200 rounded-2xl shadow-sm",
+    "bg-white border border-[var(--border)] rounded-xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04),0_1px_2px_-1px_rgba(0,0,0,0.03)]",
+  dark:
+    "bg-slate-900 border border-slate-800 rounded-xl shadow-[0_1px_3px_0_rgba(0,0,0,0.2)] text-white",
+  flat:
+    "bg-white border border-[var(--border)] rounded-xl",
 };
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
@@ -31,7 +35,7 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    className={cn("flex flex-col space-y-1 px-4 py-3", className)}
     {...props}
   />
 ));
@@ -43,10 +47,7 @@ const CardTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h3
     ref={ref}
-    className={cn(
-      "font-semibold leading-none tracking-tight text-slate-900",
-      className
-    )}
+    className={cn("font-semibold leading-none tracking-tight text-slate-900 text-sm", className)}
     {...props}
   />
 ));
@@ -58,7 +59,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-slate-500", className)}
+    className={cn("text-xs text-slate-500", className)}
     {...props}
   />
 ));
@@ -68,7 +69,7 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+  <div ref={ref} className={cn("px-4 pb-4", className)} {...props} />
 ));
 CardContent.displayName = "CardContent";
 
@@ -78,17 +79,10 @@ const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center p-6 pt-0", className)}
+    className={cn("flex items-center px-4 pb-4", className)}
     {...props}
   />
 ));
 CardFooter.displayName = "CardFooter";
 
-export {
-  Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardDescription,
-  CardContent,
-};
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };

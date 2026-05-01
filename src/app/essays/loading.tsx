@@ -2,55 +2,41 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function EssaysLoading() {
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-64" />
+      <div className="flex items-center justify-between">
+        <div className="space-y-1.5">
+          <Skeleton className="h-6 w-36" />
+          <Skeleton className="h-3.5 w-24" />
         </div>
-        <Skeleton className="h-11 w-36 rounded-xl" />
+        <Skeleton className="h-9 w-28 rounded-lg" />
       </div>
 
-      {/* Essay cards */}
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div
-          key={i}
-          className="bg-white/60 backdrop-blur-xl border border-white/70 shadow-xl rounded-2xl p-5 space-y-4"
-        >
-          {/* Top row: badges + score */}
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex gap-2 flex-wrap">
-              <Skeleton className="h-5 w-16 rounded-full" />
-              <Skeleton className="h-5 w-24 rounded-full" />
+      {/* Essay list */}
+      <div className="bg-white border border-[var(--border)] rounded-xl overflow-hidden">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className={`flex items-start gap-4 px-4 py-3.5 ${i !== 0 ? "border-t border-[var(--border)]" : ""}`}>
+            <div className="shrink-0 w-12 space-y-1 text-right">
+              <Skeleton className="h-6 w-10 ml-auto" />
+              <Skeleton className="h-2.5 w-10 ml-auto" />
             </div>
-            <Skeleton className="h-10 w-14 rounded-xl shrink-0" />
-          </div>
-
-          {/* Essay prompt excerpt */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-5/6" />
-          </div>
-
-          {/* Sub-scores row */}
-          <div className="grid grid-cols-4 gap-3">
-            {Array.from({ length: 4 }).map((_, j) => (
-              <div key={j} className="space-y-1.5">
-                <Skeleton className="h-3 w-14" />
-                <Skeleton className="h-5 w-10" />
+            <div className="flex-1 space-y-2">
+              <div className="flex gap-1.5">
+                <Skeleton className="h-4 w-12 rounded" />
+                <Skeleton className="h-4 w-20 rounded" />
+                <Skeleton className="h-4 w-14 rounded" />
               </div>
-            ))}
+              <Skeleton className="h-3.5 w-3/4" />
+              <div className="flex gap-3">
+                {Array.from({ length: 4 }).map((_, j) => (
+                  <Skeleton key={j} className="h-3 w-10" />
+                ))}
+              </div>
+            </div>
           </div>
-
-          {/* Footer */}
-          <div className="flex items-center justify-between pt-1">
-            <Skeleton className="h-3 w-28" />
-            <Skeleton className="h-8 w-24 rounded-xl" />
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

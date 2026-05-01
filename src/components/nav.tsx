@@ -16,10 +16,10 @@ interface NavProps {
 }
 
 const navLinks = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/essay/new", label: "Submit Essay", icon: PenLine },
-  { href: "/exercises", label: "Exercises", icon: Dumbbell },
-  { href: "/progress", label: "Progress", icon: TrendingUp },
+  { href: "/dashboard",  label: "Dashboard", icon: LayoutDashboard },
+  { href: "/essay/new",  label: "Submit",     icon: PenLine },
+  { href: "/exercises",  label: "Exercises",  icon: Dumbbell },
+  { href: "/progress",   label: "Progress",   icon: TrendingUp },
 ];
 
 export function Nav({ user }: NavProps) {
@@ -31,40 +31,38 @@ export function Nav({ user }: NavProps) {
     : user?.email?.[0]?.toUpperCase() ?? "U";
 
   return (
-    <nav className="sticky top-0 z-40 w-full bg-white/70 backdrop-blur-xl border-b border-white/60 shadow-sm">
+    <nav className="sticky top-0 z-40 w-full bg-white border-b border-[var(--border)]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-12 items-center justify-between gap-6">
+
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 p-1.5 shadow-lg">
-              <Infinity className="h-5 w-5 text-white" />
+          <Link href="/" className="flex items-center gap-2 shrink-0">
+            <div className="w-6 h-6 rounded-md bg-brand-600 flex items-center justify-center">
+              <Infinity className="h-3.5 w-3.5 text-white" />
             </div>
-            <span className="font-bold text-slate-900 text-lg">
-              IELTS <span className="text-brand-600">Loop</span>
+            <span className="font-semibold text-slate-900 text-sm tracking-tight">
+              IELTS<span className="text-brand-600">Loop</span>
             </span>
           </Link>
 
           {/* Desktop nav */}
           {user && (
-            <div className="hidden md:flex items-center gap-1">
+            <div className="hidden md:flex items-center gap-0.5 flex-1">
               {navLinks.map(({ href, label, icon: Icon }) => {
-                const isActive = pathname === href;
+                const isActive = pathname === href || (href !== "/dashboard" && pathname?.startsWith(href));
                 return (
                   <Link
                     key={href}
                     href={href}
                     className={cn(
-                      "relative flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200",
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors duration-150",
                       isActive
-                        ? "bg-brand-500/10 text-brand-700"
-                        : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
+                        ? "bg-slate-100 text-slate-900 font-medium"
+                        : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                     )}
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-3.5 w-3.5" />
                     {label}
-                    {isActive && (
-                      <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-brand-600" />
-                    )}
                   </Link>
                 );
               })}
@@ -73,30 +71,30 @@ export function Nav({ user }: NavProps) {
 
           {/* User menu */}
           {user && (
-            <div className="flex items-center gap-2">
-              <div className="hidden md:flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <div className="hidden md:flex items-center gap-1">
                 <Link href="/profile">
-                  <div className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-slate-100/80 transition-all duration-200 cursor-pointer">
+                  <div className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
                     {user.image ? (
                       <img
                         src={user.image}
                         alt={user.name || "User"}
-                        className="h-7 w-7 rounded-full object-cover ring-2 ring-brand-100"
+                        className="h-6 w-6 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="h-7 w-7 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">{initials}</span>
+                      <div className="h-6 w-6 rounded-full bg-brand-600 flex items-center justify-center">
+                        <span className="text-white text-[10px] font-bold">{initials}</span>
                       </div>
                     )}
-                    <span className="text-sm text-slate-700 font-medium max-w-[120px] truncate">
-                      {user.name || user.email}
+                    <span className="text-sm text-slate-600 font-medium max-w-[100px] truncate">
+                      {user.name?.split(" ")[0] || user.email}
                     </span>
                   </div>
                 </Link>
                 <button
                   onClick={() => signOut({ callbackUrl: "/" })}
                   title="Sign out"
-                  className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all duration-200"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                 >
                   <LogOut className="h-4 w-4" />
                 </button>
@@ -104,23 +102,18 @@ export function Nav({ user }: NavProps) {
 
               {/* Mobile hamburger */}
               <button
-                className="md:hidden p-2 rounded-xl text-slate-500 hover:bg-slate-100/80 transition-all duration-200"
+                className="md:hidden p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
                 onClick={() => setMobileOpen(!mobileOpen)}
               >
-                {mobileOpen ? (
-                  <X className="h-5 w-5" />
-                ) : (
-                  <Menu className="h-5 w-5" />
-                )}
+                {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
             </div>
           )}
 
-          {/* Not logged in */}
           {!user && (
             <Link
               href="/auth/signin"
-              className="bg-gradient-to-r from-brand-600 to-brand-800 hover:from-brand-700 hover:to-brand-800 text-white text-sm font-semibold px-4 py-2 rounded-xl shadow-md shadow-brand-500/20 transition-all duration-200"
+              className="bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
             >
               Sign In
             </Link>
@@ -130,7 +123,7 @@ export function Nav({ user }: NavProps) {
 
       {/* Mobile menu */}
       {user && mobileOpen && (
-        <div className="md:hidden bg-white/90 backdrop-blur-xl border-t border-white/60 px-4 py-3 space-y-1">
+        <div className="md:hidden bg-white border-t border-[var(--border)] px-4 py-2 space-y-0.5">
           {navLinks.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href;
             return (
@@ -139,10 +132,8 @@ export function Nav({ user }: NavProps) {
                 href={href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
-                  isActive
-                    ? "bg-brand-500/10 text-brand-700"
-                    : "text-slate-600 hover:bg-slate-100/80"
+                  "flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors",
+                  isActive ? "bg-slate-100 text-slate-900 font-medium" : "text-slate-600 hover:bg-slate-50"
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -153,14 +144,14 @@ export function Nav({ user }: NavProps) {
           <Link
             href="/profile"
             onClick={() => setMobileOpen(false)}
-            className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100/80 transition-all duration-200"
+            className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition-colors"
           >
             <User className="h-4 w-4" />
             Profile
           </Link>
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 w-full text-left transition-all duration-200"
+            className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-red-600 hover:bg-red-50 w-full text-left transition-colors"
           >
             <LogOut className="h-4 w-4" />
             Sign Out
