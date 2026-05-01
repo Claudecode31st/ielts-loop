@@ -2,15 +2,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Brain, Zap, BarChart3, Crosshair, BookMarked, Target, TrendingUp, PenLine, ChevronRight } from "lucide-react";
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
 
 export default async function LandingPage() {
-  const session = await auth();
-  if (session?.user) {
-    redirect("/dashboard");
-  }
-
   return (
     <div className="flex flex-col min-h-screen">
       {/* ── Hero ── */}

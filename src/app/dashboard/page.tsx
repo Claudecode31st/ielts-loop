@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { essays, users, errorPatterns } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, count } from "drizzle-orm";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,14 +35,16 @@ export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/signin");
 
-  const [userData] = await db.select().from(users).where(eq(users.id, session.user.id)).limit(1);
-  const recentEssays = await db.select().from(essays).where(eq(essays.userId, session.user.id)).orderBy(desc(essays.submittedAt)).limit(4);
-  const topErrors = await db.select().from(errorPatterns).where(eq(errorPatterns.userId, session.user.id)).orderBy(desc(errorPatterns.frequency)).limit(5);
+  const [[userData], recentEssays, topErrors, [{ totalEssays }]] = await Promise.all([
+    db.select().from(users).where(eq(users.id, session.user.id)).limit(1),
+    db.select().from(essays).where(eq(essays.userId, session.user.id)).orderBy(desc(essays.submittedAt)).limit(4),
+    db.select().from(errorPatterns).where(eq(errorPatterns.userId, session.user.id)).orderBy(desc(errorPatterns.frequency)).limit(5),
+    db.select({ totalEssays: count() }).from(essays).where(eq(essays.userId, session.user.id)),
+  ]);
 
   const firstName = session.user.name?.split(" ")[0] || "there";
   const currentBand = userData?.currentBand ? parseFloat(String(userData.currentBand)) : null;
   const targetBand = userData?.targetBand ? parseFloat(String(userData.targetBand)) : 7.0;
-  const totalEssays = userData?.totalEssays || 0;
   const topError = topErrors[0];
   const bandColorClass = currentBand ? getBandColor(currentBand) : "text-slate-400";
   const gapToTarget = currentBand != null ? Math.max(0, targetBand - currentBand) : null;

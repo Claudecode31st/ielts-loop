@@ -35,8 +35,8 @@ export function Nav({ user }: NavProps) {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-12 items-center justify-between gap-6">
 
-          {/* Logo — land on dashboard if logged in, landing page if not */}
-          <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-2 shrink-0">
+          {/* Logo — always leads to landing page */}
+          <Link href="/" className="flex items-center gap-2 shrink-0">
             <div className="w-6 h-6 rounded-md bg-brand-600 flex items-center justify-center">
               <Infinity className="h-3.5 w-3.5 text-white" />
             </div>
