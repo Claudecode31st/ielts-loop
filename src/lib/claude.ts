@@ -221,7 +221,7 @@ Return ONLY a valid JSON array with exactly 3 exercise objects:
 Make exercises varied: include at least one grammar correction exercise, one vocabulary/collocation exercise, and one structure/organization exercise. Each exercise should have 4-5 questions.`;
 
   const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-6",
+    model: "claude-haiku-4-5",
     max_tokens: 3000,
     system: [
       {
