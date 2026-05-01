@@ -12,6 +12,7 @@ import Link from "next/link";
 import { ArrowLeft, Clock, FileText } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import type { Essay, ErrorPattern, DetailedFeedback } from "@/types";
+import { SampleEssay } from "@/components/sample-essay";
 
 export default async function EssayDetailPage({
   params,
@@ -137,6 +138,9 @@ export default async function EssayDetailPage({
 
       {/* Feedback — essay is shown first inside EssayFeedback */}
       <EssayFeedback essay={typedEssay} recurringErrors={typedErrors} />
+
+      {/* Model Answer */}
+      <SampleEssay essayId={essay.id} />
     </div>
   );
 }
