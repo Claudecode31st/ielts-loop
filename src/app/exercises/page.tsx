@@ -92,7 +92,7 @@ export default function ExercisesPage() {
   const completed = exercises.filter((e) => e.isCompleted);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -202,7 +202,7 @@ export default function ExercisesPage() {
                   {pending.length}
                 </span>
               </div>
-              <div className="space-y-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 {pending.map((exercise, idx) => (
                   <ExerciseCard
                     key={exercise.id}
@@ -232,7 +232,7 @@ export default function ExercisesPage() {
                   {completed.length}
                 </span>
               </div>
-              <div className="space-y-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 {completed.map((exercise, idx) => (
                   <ExerciseCard
                     key={exercise.id}

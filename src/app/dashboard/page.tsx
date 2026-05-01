@@ -57,14 +57,6 @@ async function DashboardContent({ userId }: { userId: string }) {
 
   return (
     <>
-      {/* Sub-header with essay count */}
-      <p className="text-sm text-slate-500 -mt-3">
-        Band Goal <span className="font-medium text-slate-700">{targetBand.toFixed(1)}</span>
-        {" · "}
-        <span className="font-medium text-slate-700">{totalEssays}</span>{" "}
-        {totalEssays === 1 ? "essay" : "essays"} submitted
-      </p>
-
       {/* ── Stats Row ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-white border border-[var(--border)] rounded-xl p-4 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
@@ -300,25 +292,25 @@ async function DashboardContent({ userId }: { userId: string }) {
           </div>
 
           {/* Personalized Coaching */}
-          <div className="bg-slate-900 text-white rounded-xl overflow-hidden border border-slate-800 shadow-[0_1px_3px_0_rgba(0,0,0,0.12)]">
+          <div className="bg-white border border-[var(--border)] rounded-xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
             <div className="p-4">
               <div className="flex items-center gap-2 mb-2">
-                <Sparkles className="h-4 w-4 text-brand-400" />
-                <span className="text-sm font-semibold text-white">AI Coaching</span>
+                <Sparkles className="h-4 w-4 text-brand-600" />
+                <span className="text-sm font-semibold text-slate-800">AI Coaching</span>
               </div>
               {totalEssays > 0 && topError ? (
-                <p className="text-slate-400 text-xs leading-relaxed">
-                  Based on <span className="text-white font-medium">{totalEssays}</span>{" "}
+                <p className="text-slate-500 text-xs leading-relaxed">
+                  Based on <span className="text-slate-800 font-medium">{totalEssays}</span>{" "}
                   {totalEssays === 1 ? "essay" : "essays"}, your biggest limiter is{" "}
-                  <span className="text-brand-400 font-medium">{topError.errorType}</span>. Focus here first.
+                  <span className="text-brand-600 font-medium">{topError.errorType}</span>. Focus here first.
                 </p>
               ) : (
-                <p className="text-slate-400 text-xs leading-relaxed">
+                <p className="text-slate-500 text-xs leading-relaxed">
                   Submit your first essay and I&apos;ll build a personalized plan.
                 </p>
               )}
               <Link href="/exercises" className="mt-3 inline-block">
-                <Button size="sm" className="bg-white text-slate-900 hover:bg-slate-100 font-medium rounded-lg border-0 h-7 text-xs px-3">
+                <Button size="sm" className="bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg border-0 h-7 text-xs px-3">
                   Start exercises <ChevronRight className="h-3 w-3 ml-0.5" />
                 </Button>
               </Link>
@@ -439,8 +431,7 @@ export default async function DashboardPage() {
       {/* Welcome bar renders immediately from JWT — no DB needed */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-lg font-semibold text-slate-900">Welcome back, {firstName}</h1>
-          {/* Sub-header (essay count etc.) streams in below */}
+          <h1 className="text-2xl font-bold text-slate-900">Welcome back, {firstName} 👋</h1>
         </div>
         <Link href="/essay/new">
           <Button className="gap-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg h-9 px-4 text-sm border-0 shrink-0">

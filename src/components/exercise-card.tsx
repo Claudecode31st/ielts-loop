@@ -152,8 +152,6 @@ export function ExerciseCard({
         }`}
       >
         <CardContent className="p-0">
-          {/* Type colour stripe */}
-          <div className={`h-1 w-full ${style.stripe}`} />
           <div className="px-5 py-4 flex items-center gap-4">
             {/* Number badge */}
             {index !== undefined && (
