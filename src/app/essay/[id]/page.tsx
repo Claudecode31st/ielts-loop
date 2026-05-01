@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 
-import { ArrowLeft, Clock, FileText } from "lucide-react";
+import { ArrowLeft, Clock, FileText, PenLine } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import type { Essay, ErrorPattern, DetailedFeedback } from "@/types";
 import { SampleEssay } from "@/components/sample-essay";
@@ -94,50 +94,39 @@ export default async function EssayDetailPage({
   }));
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      {/* Back button */}
-      <Link href="/essays">
-        <Button variant="ghost" size="sm" className="gap-1.5 -ml-2">
-          <ArrowLeft className="h-4 w-4" />
-          All Essays
-        </Button>
-      </Link>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
 
-      {/* Essay Meta */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
-        <div className="space-y-1">
+      {/* Compact header */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3 flex-wrap">
+          <Link href="/essays">
+            <Button variant="ghost" size="sm" className="gap-1.5 -ml-2 text-slate-500">
+              <ArrowLeft className="h-3.5 w-3.5" />
+              All Essays
+            </Button>
+          </Link>
+          <div className="w-px h-4 bg-slate-200" />
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="secondary">
+            <Badge variant="secondary" className="text-xs">
               {essay.taskType === "task1" ? "Task 1" : "Task 2"}
             </Badge>
-            <span className="text-sm text-slate-500 flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              {formatDate(essay.submittedAt!)}
+            <span className="text-sm text-slate-400 flex items-center gap-1">
+              <Clock className="h-3 w-3" />{formatDate(essay.submittedAt!)}
             </span>
-            <span className="text-sm text-slate-500 flex items-center gap-1">
-              <FileText className="h-3 w-3" />
-              {essay.wordCount} words
+            <span className="text-sm text-slate-400 flex items-center gap-1">
+              <FileText className="h-3 w-3" />{essay.wordCount} words
             </span>
           </div>
-          <h1 className="text-xl font-bold text-slate-900">Essay Feedback</h1>
         </div>
         <Link href="/essay/new">
-          <Button size="sm">Submit New Essay</Button>
+          <Button size="sm" className="gap-1.5 bg-brand-600 hover:bg-brand-700 text-white border-0">
+            <PenLine className="h-3.5 w-3.5" /> Submit New Essay
+          </Button>
         </Link>
       </div>
 
-      {/* Original Prompt */}
-      <Card>
-        <CardContent className="p-4">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-            Task Prompt
-          </p>
-          <p className="text-sm text-slate-700 leading-relaxed">{essay.prompt}</p>
-        </CardContent>
-      </Card>
-
-      {/* Feedback — essay is shown first inside EssayFeedback */}
-      <EssayFeedback essay={typedEssay} recurringErrors={typedErrors} />
+      {/* Feedback grid */}
+      <EssayFeedback essay={typedEssay} prompt={essay.prompt} recurringErrors={typedErrors} />
 
       {/* Model Answer */}
       <SampleEssay essayId={essay.id} />
