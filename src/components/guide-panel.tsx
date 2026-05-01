@@ -15,12 +15,21 @@ export interface GuideSuggestion {
   excerpt?: string | null;
 }
 
+export interface BandScores {
+  taskAchievement: number;
+  coherenceCohesion: number;
+  lexicalResource: number;
+  grammaticalRange: number;
+  overall: number;
+}
+
 interface GuidePanelProps {
   suggestions: GuideSuggestion[];
   isLoading: boolean;
   wordCount: number;
   isProUser: boolean;
   repeatedWords?: string[]; // client-side detected
+  bandScores?: BandScores | null;
 }
 
 const TYPE_CONFIG: Record<GuideSuggestion["type"], {
@@ -41,6 +50,48 @@ const TYPE_CONFIG: Record<GuideSuggestion["type"], {
   structure:        { label: "Structure",          icon: LayoutTemplate,       color: "text-green-700",    bg: "bg-green-50",    border: "border-green-100" },
 };
 
+function bandColor(score: number): string {
+  if (score >= 7) return "text-green-600";
+  if (score >= 6) return "text-amber-500";
+  return "text-red-500";
+}
+
+function bandBg(score: number): string {
+  if (score >= 7) return "bg-green-50 border-green-100";
+  if (score >= 6) return "bg-amber-50 border-amber-100";
+  return "bg-red-50 border-red-100";
+}
+
+function BandScoreStrip({ scores }: { scores: BandScores }) {
+  const items: { key: keyof BandScores; label: string }[] = [
+    { key: "taskAchievement",  label: "Task" },
+    { key: "coherenceCohesion", label: "CC" },
+    { key: "lexicalResource",  label: "Lex" },
+    { key: "grammaticalRange", label: "Gram" },
+  ];
+  return (
+    <div className={`rounded-xl border p-3 mb-1 ${bandBg(scores.overall)}`}>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Live Band Estimate</span>
+        <span className={`text-lg font-extrabold tabular-nums ${bandColor(scores.overall)}`}>
+          {scores.overall.toFixed(1)}
+        </span>
+      </div>
+      <div className="grid grid-cols-4 gap-1">
+        {items.map(({ key, label }) => {
+          const val = scores[key] as number;
+          return (
+            <div key={key} className="flex flex-col items-center gap-0.5 bg-white/60 rounded-lg py-1.5">
+              <span className={`text-sm font-bold tabular-nums ${bandColor(val)}`}>{val.toFixed(1)}</span>
+              <span className="text-[9px] text-slate-400 font-medium">{label}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function SuggestionCard({ s }: { s: GuideSuggestion }) {
   const cfg = TYPE_CONFIG[s.type] ?? TYPE_CONFIG.grammar;
   const Icon = cfg.icon;
@@ -60,7 +111,7 @@ function SuggestionCard({ s }: { s: GuideSuggestion }) {
   );
 }
 
-export function GuidePanel({ suggestions, isLoading, wordCount, isProUser, repeatedWords = [] }: GuidePanelProps) {
+export function GuidePanel({ suggestions, isLoading, wordCount, isProUser, repeatedWords = [], bandScores }: GuidePanelProps) {
   if (!isProUser) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 h-full min-h-[200px] text-center p-4">
@@ -111,6 +162,11 @@ export function GuidePanel({ suggestions, isLoading, wordCount, isProUser, repea
         </div>
         {isLoading && <Loader2 className="h-3.5 w-3.5 animate-spin text-brand-500 shrink-0" />}
       </div>
+
+      {/* Band score strip — shown once we have scores */}
+      {bandScores && wordCount >= 15 && (
+        <BandScoreStrip scores={bandScores} />
+      )}
 
       {/* Content */}
       {wordCount < 15 ? (

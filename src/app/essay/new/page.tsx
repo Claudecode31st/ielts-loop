@@ -13,7 +13,7 @@ import {
   Clock, AlertTriangle, EyeOff, Sparkles, Zap,
 } from "lucide-react";
 import { GuidePanel, detectRepeatedWords } from "@/components/guide-panel";
-import type { GuideSuggestion } from "@/components/guide-panel";
+import type { GuideSuggestion, BandScores } from "@/components/guide-panel";
 import { countWords } from "@/lib/utils";
 import type { TaskType } from "@/types";
 import { EssayLimitBanner } from "@/components/essay-limit-banner";
@@ -54,6 +54,7 @@ export default function NewEssayPage() {
   const [isProUser, setIsProUser] = useState(false);
   const [knownErrors, setKnownErrors] = useState<string[]>([]);
   const [repeatedWords, setRepeatedWords] = useState<string[]>([]);
+  const [bandScores, setBandScores] = useState<BandScores | null>(null);
   const lastAnalysedWordCount = useRef(0);
   const guideDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -146,6 +147,7 @@ export default function NewEssayPage() {
         const data = await res.json();
         if (res.ok && data.suggestions) {
           setGuideSuggestions(data.suggestions);
+          if (data.bandScores) setBandScores(data.bandScores);
           lastAnalysedWordCount.current = words;
         }
       } catch { /* silent */ } finally {
@@ -449,7 +451,7 @@ export default function NewEssayPage() {
             {/* Guide mode toggle */}
             <button
               type="button"
-              onClick={() => { setGuideMode((m) => !m); setGuideSuggestions([]); lastAnalysedWordCount.current = 0; }}
+              onClick={() => { setGuideMode((m) => !m); setGuideSuggestions([]); setBandScores(null); lastAnalysedWordCount.current = 0; }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-200 ${
                 guideMode
                   ? "bg-brand-600 text-white border-brand-600 shadow-sm"
@@ -494,6 +496,7 @@ export default function NewEssayPage() {
                 wordCount={wordCount}
                 isProUser={isProUser}
                 repeatedWords={repeatedWords}
+                bandScores={bandScores}
               />
             </div>
           )}
