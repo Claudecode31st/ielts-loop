@@ -8,14 +8,23 @@ import { generateExercises } from "@/lib/claude";
 import { getStudentMemoryContext } from "@/lib/memory";
 import { eq, desc, gte, count } from "drizzle-orm";
 
-// Daily generation limits (each generation = 3 exercises)
-const FREE_DAILY_GENERATIONS = 2;  // 6 exercises/day
-const PRO_DAILY_GENERATIONS  = 5;  // 15 exercises/day
+// Free: monthly limit. Pro: daily limit. Each generation = 3 exercises.
+const FREE_MONTHLY_GENERATIONS = 3;  // 9 exercises/month
+const PRO_DAILY_GENERATIONS    = 5;  // 15 exercises/day
+
+async function getMonthlyGenerationCount(userId: string): Promise<number> {
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const [result] = await db
+    .select({ value: count() })
+    .from(exercises)
+    .where(eq(exercises.userId, userId) && gte(exercises.generatedAt, startOfMonth) as never);
+  return Math.floor((result?.value ?? 0) / 3);
+}
 
 async function getDailyGenerationCount(userId: string): Promise<number> {
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
-  // Each generation inserts 3 exercises — divide total by 3
   const [result] = await db
     .select({ value: count() })
     .from(exercises)
@@ -30,7 +39,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // ── Check plan & daily generation limit ───────────────────────────────
+    // ── Check plan & generation limit ────────────────────────────────────
     const [user] = await db
       .select({ plan: users.plan, planExpiresAt: users.planExpiresAt })
       .from(users)
@@ -41,20 +50,30 @@ export async function POST(req: NextRequest) {
       user?.plan === "pro" &&
       (user.planExpiresAt == null || user.planExpiresAt > new Date());
 
-    const dailyLimit = isActivePro ? PRO_DAILY_GENERATIONS : FREE_DAILY_GENERATIONS;
-    const dailyUsed  = await getDailyGenerationCount(session.user.id);
-
-    if (dailyUsed >= dailyLimit) {
-      return NextResponse.json(
-        {
-          error: isActivePro
-            ? `Daily limit reached — you've generated exercises ${dailyUsed} times today (max ${dailyLimit}).`
-            : `Free plan allows ${dailyLimit} exercise generations per day. Upgrade to Pro for more.`,
-          limitReached: true,
-          plan: isActivePro ? "pro" : "free",
-        },
-        { status: 429 }
-      );
+    if (isActivePro) {
+      const dailyUsed = await getDailyGenerationCount(session.user.id);
+      if (dailyUsed >= PRO_DAILY_GENERATIONS) {
+        return NextResponse.json(
+          {
+            error: `Daily limit reached — you've generated exercises ${dailyUsed} times today (max ${PRO_DAILY_GENERATIONS}).`,
+            limitReached: true,
+            plan: "pro",
+          },
+          { status: 429 }
+        );
+      }
+    } else {
+      const monthlyUsed = await getMonthlyGenerationCount(session.user.id);
+      if (monthlyUsed >= FREE_MONTHLY_GENERATIONS) {
+        return NextResponse.json(
+          {
+            error: `Free plan allows ${FREE_MONTHLY_GENERATIONS} exercise generations per month. Upgrade to Pro for more.`,
+            limitReached: true,
+            plan: "free",
+          },
+          { status: 429 }
+        );
+      }
     }
 
     // ── Generate ──────────────────────────────────────────────────────────
@@ -91,10 +110,7 @@ export async function POST(req: NextRequest) {
       savedExercises.push(saved);
     }
 
-    return NextResponse.json({
-      exercises: savedExercises,
-      usage: { used: dailyUsed + 1, limit: dailyLimit, plan: isActivePro ? "pro" : "free" },
-    });
+    return NextResponse.json({ exercises: savedExercises });
   } catch (error) {
     console.error("Generate exercises error:", error);
     return NextResponse.json(
