@@ -94,6 +94,7 @@ export const essays = pgTable("essays", {
   feedbackSummary: text("feedback_summary"),
   detailedFeedback: jsonb("detailed_feedback"),
   examinerComments: text("examiner_comments"),
+  sampleEssay: text("sample_essay"),
 });
 
 export const errorPatterns = pgTable("error_patterns", {

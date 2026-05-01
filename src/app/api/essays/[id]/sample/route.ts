@@ -19,7 +19,11 @@ export async function GET(
   const { id } = await params;
 
   const [essay] = await db
-    .select({ prompt: essays.prompt, taskType: essays.taskType, content: essays.content })
+    .select({
+      prompt: essays.prompt,
+      taskType: essays.taskType,
+      sampleEssay: essays.sampleEssay,
+    })
     .from(essays)
     .where(and(eq(essays.id, id), eq(essays.userId, session.user.id)))
     .limit(1);
@@ -28,15 +32,19 @@ export async function GET(
     return NextResponse.json({ error: "Essay not found" }, { status: 404 });
   }
 
+  // ── Return cached version if it exists ──────────────────────────────────
+  if (essay.sampleEssay) {
+    return NextResponse.json({ sample: essay.sampleEssay, cached: true });
+  }
+
+  // ── Generate a new model answer ──────────────────────────────────────────
   const taskLabel =
     essay.taskType === "task1"
       ? "IELTS Academic Task 1 (describing data/visuals)"
       : "IELTS Task 2 (argumentative essay)";
 
   const wordTarget =
-    essay.taskType === "task1"
-      ? "around 175–190 words"
-      : "around 280–300 words";
+    essay.taskType === "task1" ? "around 175–190 words" : "around 280–300 words";
 
   const response = await anthropic.messages.create({
     model: "claude-sonnet-4-5",
@@ -68,5 +76,13 @@ Return ONLY the essay text. No preamble, no labels, no band score commentary.`,
     return NextResponse.json({ error: "Unexpected response" }, { status: 500 });
   }
 
-  return NextResponse.json({ sample: content.text.trim() });
+  const sample = content.text.trim();
+
+  // ── Cache in DB so future requests are free ──────────────────────────────
+  await db
+    .update(essays)
+    .set({ sampleEssay: sample })
+    .where(eq(essays.id, id));
+
+  return NextResponse.json({ sample, cached: false });
 }

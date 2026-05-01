@@ -3,10 +3,25 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 export const maxDuration = 60; // Vercel hobby plan max
-import { exercises, errorPatterns } from "@/lib/db/schema";
+import { exercises, users } from "@/lib/db/schema";
 import { generateExercises } from "@/lib/claude";
 import { getStudentMemoryContext } from "@/lib/memory";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, gte, count } from "drizzle-orm";
+
+// Daily generation limits (each generation = 3 exercises)
+const FREE_DAILY_GENERATIONS = 2;  // 6 exercises/day
+const PRO_DAILY_GENERATIONS  = 5;  // 15 exercises/day
+
+async function getDailyGenerationCount(userId: string): Promise<number> {
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+  // Each generation inserts 3 exercises — divide total by 3
+  const [result] = await db
+    .select({ value: count() })
+    .from(exercises)
+    .where(eq(exercises.userId, userId) && gte(exercises.generatedAt, startOfDay) as never);
+  return Math.floor((result?.value ?? 0) / 3);
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,38 +30,52 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const studentMemory = await getStudentMemoryContext(session.user.id);
+    // ── Check plan & daily generation limit ───────────────────────────────
+    const [user] = await db
+      .select({ plan: users.plan, planExpiresAt: users.planExpiresAt })
+      .from(users)
+      .where(eq(users.id, session.user.id))
+      .limit(1);
 
-    // Get top error types to target
-    const targetErrors =
-      studentMemory.topErrorPatterns
-        .slice(0, 5)
-        .map((e) => e.errorType) || [];
+    const isActivePro =
+      user?.plan === "pro" &&
+      (user.planExpiresAt == null || user.planExpiresAt > new Date());
 
-    if (targetErrors.length === 0) {
-      targetErrors.push(
-        "article usage",
-        "sentence variety",
-        "cohesive devices"
+    const dailyLimit = isActivePro ? PRO_DAILY_GENERATIONS : FREE_DAILY_GENERATIONS;
+    const dailyUsed  = await getDailyGenerationCount(session.user.id);
+
+    if (dailyUsed >= dailyLimit) {
+      return NextResponse.json(
+        {
+          error: isActivePro
+            ? `Daily limit reached — you've generated exercises ${dailyUsed} times today (max ${dailyLimit}).`
+            : `Free plan allows ${dailyLimit} exercise generations per day. Upgrade to Pro for more.`,
+          limitReached: true,
+          plan: isActivePro ? "pro" : "free",
+        },
+        { status: 429 }
       );
     }
 
-    const generatedExercises = await generateExercises({
-      studentMemory,
-      targetErrors,
-    });
+    // ── Generate ──────────────────────────────────────────────────────────
+    const studentMemory = await getStudentMemoryContext(session.user.id);
 
-    // Save exercises to DB
+    const targetErrors =
+      studentMemory.topErrorPatterns.slice(0, 5).map((e) => e.errorType);
+
+    if (targetErrors.length === 0) {
+      targetErrors.push("article usage", "sentence variety", "cohesive devices");
+    }
+
+    const generatedExercises = await generateExercises({ studentMemory, targetErrors });
+
     const savedExercises = [];
     for (const ex of generatedExercises) {
       const exerciseType =
-        ex.targetSkill?.toLowerCase().includes("grammar")
-          ? "grammar"
-          : ex.targetSkill?.toLowerCase().includes("vocab")
-          ? "vocabulary"
-          : ex.targetSkill?.toLowerCase().includes("struct")
-          ? "structure"
-          : "coherence";
+        ex.targetSkill?.toLowerCase().includes("grammar")   ? "grammar"
+        : ex.targetSkill?.toLowerCase().includes("vocab")   ? "vocabulary"
+        : ex.targetSkill?.toLowerCase().includes("struct")  ? "structure"
+        : "coherence";
 
       const [saved] = await db
         .insert(exercises)
@@ -62,7 +91,10 @@ export async function POST(req: NextRequest) {
       savedExercises.push(saved);
     }
 
-    return NextResponse.json({ exercises: savedExercises });
+    return NextResponse.json({
+      exercises: savedExercises,
+      usage: { used: dailyUsed + 1, limit: dailyLimit, plan: isActivePro ? "pro" : "free" },
+    });
   } catch (error) {
     console.error("Generate exercises error:", error);
     return NextResponse.json(
@@ -72,7 +104,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {

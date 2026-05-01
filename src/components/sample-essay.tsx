@@ -11,6 +11,7 @@ interface SampleEssayProps {
 export function SampleEssay({ essayId }: SampleEssayProps) {
   const [state, setState] = useState<"idle" | "loading" | "done">("idle");
   const [sample, setSample] = useState<string | null>(null);
+  const [cached, setCached] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -22,6 +23,7 @@ export function SampleEssay({ essayId }: SampleEssayProps) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setSample(data.sample);
+      setCached(data.cached ?? false);
       setState("done");
     } catch {
       setError("Failed to generate model answer. Please try again.");
@@ -117,15 +119,16 @@ export function SampleEssay({ essayId }: SampleEssayProps) {
             ))}
           </div>
 
-          {/* Regenerate */}
+          {/* Cached notice / regenerate */}
           <div className="pt-2 border-t border-[var(--border)]">
-            <button
-              onClick={generate}
-              className="text-xs text-slate-400 hover:text-brand-600 transition-colors flex items-center gap-1"
-            >
-              <Sparkles className="h-3 w-3" />
-              Generate another model answer
-            </button>
+            {cached ? (
+              <p className="text-xs text-slate-400">Saved answer — generated once and cached.</p>
+            ) : (
+              <p className="text-xs text-slate-400 flex items-center gap-1">
+                <Sparkles className="h-3 w-3 text-brand-400" />
+                Generated and saved — reloading this page shows the same answer for free.
+              </p>
+            )}
           </div>
         </div>
       )}

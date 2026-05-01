@@ -55,6 +55,10 @@ export default function ExercisesPage() {
       setError(null);
       const res = await fetch("/api/exercises", { method: "POST" });
       const data = await res.json();
+      if (res.status === 429) {
+        setError(data.error);
+        return;
+      }
       if (!res.ok) throw new Error(data.error);
       await fetchExercises();
     } catch (err) {
