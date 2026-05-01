@@ -44,7 +44,7 @@ export function Nav({ user }: NavProps) {
           <div className="flex h-12 items-center justify-between gap-6">
 
             {/* Logo */}
-            <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-2 shrink-0">
+            <Link href="/" className="flex items-center gap-2 shrink-0">
               <div className="w-6 h-6 rounded-md bg-brand-600 flex items-center justify-center">
                 <Infinity className="h-3.5 w-3.5 text-white" />
               </div>
