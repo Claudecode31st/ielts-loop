@@ -121,11 +121,11 @@ export default function LandingPage() {
                 ))}
               </div>
               {/* Coaching row */}
-              <div className="bg-slate-900 p-4 flex items-start gap-2.5">
-                <Brain className="h-3.5 w-3.5 text-brand-400 mt-0.5 shrink-0" />
-                <p className="text-[11px] text-slate-400 leading-relaxed">
-                  <span className="font-semibold text-white">AI Coaching: </span>
-                  Article errors in 7 of 9 essays — your <span className="text-brand-400 font-semibold">#1 band limiter.</span>
+              <div className="px-4 py-3 bg-brand-50 border-t border-[var(--border)] flex items-start gap-2.5">
+                <Brain className="h-3.5 w-3.5 text-brand-600 mt-0.5 shrink-0" />
+                <p className="text-[11px] text-slate-600 leading-relaxed">
+                  <span className="font-semibold text-slate-800">AI Coaching: </span>
+                  Article errors in 7 of 9 essays — your <span className="text-brand-600 font-semibold">#1 band limiter.</span>
                 </p>
               </div>
             </div>
@@ -171,12 +171,12 @@ export default function LandingPage() {
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { code: "GRA", title: "Grammar Accuracy",      items: ["Articles (a/an/the)", "Tense consistency", "Subject-verb agreement", "Sentence structure"], top: "border-t-red-400",     icon: "text-red-500 bg-red-50" },
-              { code: "LR",  title: "Lexical Resource",       items: ["Vocabulary range", "Word choice precision", "Collocations", "Avoiding repetition"],          top: "border-t-amber-400",  icon: "text-amber-500 bg-amber-50" },
-              { code: "CC",  title: "Coherence & Cohesion",   items: ["Paragraph flow", "Linking devices", "Idea progression", "Referencing"],                      top: "border-t-blue-400",   icon: "text-blue-500 bg-blue-50" },
-              { code: "TA",  title: "Task Achievement",        items: ["Addressing all parts", "Developing ideas", "Clarity of position", "Sufficient coverage"],    top: "border-t-emerald-400",icon: "text-emerald-500 bg-emerald-50" },
-            ].map(({ code, title, items, top, icon }) => (
-              <div key={code} className={`bg-white border border-[var(--border)] border-t-2 ${top} rounded-xl p-5 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]`}>
+              { code: "GRA", title: "Grammar Accuracy",      items: ["Articles (a/an/the)", "Tense consistency", "Subject-verb agreement", "Sentence structure"], icon: "text-red-500 bg-red-50" },
+              { code: "LR",  title: "Lexical Resource",       items: ["Vocabulary range", "Word choice precision", "Collocations", "Avoiding repetition"],         icon: "text-amber-500 bg-amber-50" },
+              { code: "CC",  title: "Coherence & Cohesion",   items: ["Paragraph flow", "Linking devices", "Idea progression", "Referencing"],                     icon: "text-blue-500 bg-blue-50" },
+              { code: "TA",  title: "Task Achievement",       items: ["Addressing all parts", "Developing ideas", "Clarity of position", "Sufficient coverage"],   icon: "text-emerald-500 bg-emerald-50" },
+            ].map(({ code, title, items, icon }) => (
+              <div key={code} className="bg-white border border-[var(--border)] rounded-xl p-5 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
                 <div className={`inline-flex items-center justify-center w-8 h-8 rounded-lg mb-3 text-xs font-bold ${icon}`}>{code}</div>
                 <h3 className="text-sm font-semibold text-slate-900 mb-3">{title}</h3>
                 <ul className="space-y-1.5">
@@ -276,12 +276,12 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
-            <div className="bg-slate-900 px-5 py-4 flex items-start gap-2.5">
-              <Brain className="h-3.5 w-3.5 text-brand-400 mt-0.5 shrink-0" />
-              <p className="text-[11px] text-slate-400 leading-relaxed">
-                <span className="font-semibold text-white">Memory insight: </span>
+            <div className="px-5 py-4 bg-brand-50 border-t border-[var(--border)] flex items-start gap-2.5">
+              <Brain className="h-3.5 w-3.5 text-brand-600 mt-0.5 shrink-0" />
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                <span className="font-semibold text-slate-800">Memory insight: </span>
                 You&apos;ve made article errors in 7 of your last 9 essays — your{" "}
-                <span className="text-brand-400 font-semibold">#1 band limiter.</span>
+                <span className="text-brand-600 font-semibold">#1 band limiter.</span>
               </p>
             </div>
           </div>
@@ -289,17 +289,17 @@ export default function LandingPage() {
 
         {/* ── CTA ── */}
         <section className="pb-8">
-          <div className="bg-slate-900 rounded-xl border border-slate-800 p-12 text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+          <div className="bg-white border border-[var(--border)] rounded-xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] p-12 text-center">
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3">
               Ready to break through your band score plateau?
             </h2>
-            <p className="text-slate-400 text-sm mb-8">No credit card. No fluff. Just targeted improvement.</p>
+            <p className="text-slate-500 text-sm mb-8">No credit card. No fluff. Just targeted improvement.</p>
             <Link href="/auth/signin">
-              <Button className="bg-white hover:bg-slate-100 text-slate-900 font-semibold rounded-lg h-10 px-6 text-sm border-0">
+              <Button className="bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg h-10 px-6 text-sm border-0">
                 Get started free <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </Link>
-            <p className="text-slate-500 text-xs mt-4">
+            <p className="text-slate-400 text-xs mt-4">
               Join thousands of IELTS candidates already improving with IELTS Loop
             </p>
           </div>
