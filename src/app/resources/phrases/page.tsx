@@ -189,7 +189,7 @@ export default function PhrasesPage() {
           </p>
         </div>
 
-        <div className="mt-4 p-5 bg-brand-50 border border-brand-100 rounded-2xl text-center">
+        <div className="mt-4 p-5 bg-white border border-slate-200 rounded-2xl text-center">
           <p className="text-sm font-semibold text-slate-800 mb-1">See these phrases in your own writing</p>
           <p className="text-xs text-slate-500 mb-3">Submit an essay and get feedback on your coherence and vocabulary use.</p>
           <Link href="/essay/new" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 text-white text-xs font-semibold hover:bg-brand-700 transition-colors">
