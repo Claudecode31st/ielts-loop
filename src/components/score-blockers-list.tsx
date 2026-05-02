@@ -53,6 +53,20 @@ export function ScoreBlockersList({ errors }: Props) {
 
   return (
     <div className="p-3 space-y-2">
+      {/* Badge legend */}
+      <div className="flex items-center gap-3 px-1 pb-1 flex-wrap">
+        {[
+          { label: "Repeat",    desc: "seen in 2 essays",  color: "text-slate-600 bg-slate-50 border-slate-200"   },
+          { label: "Pattern",   desc: "3–4 essays",        color: "text-amber-600 bg-amber-50 border-amber-100"   },
+          { label: "Recurring", desc: "5+ essays",         color: "text-red-600 bg-red-50 border-red-100"         },
+        ].map(({ label, desc, color }) => (
+          <div key={label} className="flex items-center gap-1.5">
+            <span className={`text-[10px] font-semibold px-1.5 py-px rounded border ${color}`}>{label}</span>
+            <span className="text-[10px] text-slate-400">= {desc}</span>
+          </div>
+        ))}
+      </div>
+
       {errors.map((error, idx) => {
         const freq     = error.frequency ?? 1;
         const barPct   = Math.min(100, freq * 10);
