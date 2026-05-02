@@ -7,8 +7,14 @@ import { Button } from "@/components/ui/button";
 import {
   AlertCircle, Loader2, PenLine, Info,
   ImagePlus, X, GraduationCap, BookOpen,
-  Clock, AlertTriangle, EyeOff, Sparkles, Zap, CheckCircle2, ClipboardList,
+  Clock, AlertTriangle, EyeOff, Sparkles, Zap, CheckCircle2, ClipboardList, Save,
 } from "lucide-react";
+
+// ── Draft helpers ─────────────────────────────────────────────────────────────
+function draftKey(taskType: string, ieltsMode: string) {
+  return `ielts-draft-${taskType}-${ieltsMode}`;
+}
+interface Draft { prompt: string; essay: string; savedAt: number; }
 import { GuidePanel, detectRepeatedWords } from "@/components/guide-panel";
 import type { GuideSuggestion, BandScores } from "@/components/guide-panel";
 import { countWords } from "@/lib/utils";
@@ -54,10 +60,14 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
   const [knownErrors, setKnownErrors] = useState<string[]>(initialKnownErrors);
   const [repeatedWords, setRepeatedWords] = useState<string[]>([]);
   const [bandScores, setBandScores] = useState<BandScores | null>(null);
+  const [draftSavedAt, setDraftSavedAt] = useState<Date | null>(null);
+  const [draftRestored, setDraftRestored] = useState(false);
   const lastAnalysedWordCount = useRef(0);
   const guideDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Keep a ref of current draft values so the interval doesn't need to re-register
+  const draftValuesRef = useRef({ prompt, essay, taskType, ieltsMode });
 
   const wordCount = countWords(essay);
   const minWords = MIN_WORDS[taskType];
@@ -78,6 +88,37 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
     document.addEventListener("visibilitychange", handleVisibility);
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, [isSubmitting]);
+
+  // Keep draft ref in sync
+  useEffect(() => { draftValuesRef.current = { prompt, essay, taskType, ieltsMode }; }, [prompt, essay, taskType, ieltsMode]);
+
+  // Restore draft on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(draftKey(taskType, ieltsMode));
+      if (saved) {
+        const draft: Draft = JSON.parse(saved);
+        if (draft.essay) setEssay(draft.essay);
+        if (draft.prompt) setPrompt(draft.prompt);
+        setDraftRestored(true);
+      }
+    } catch { /* ignore */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run once on mount only
+
+  // Auto-save every 30 s (stable interval — reads values from ref)
+  useEffect(() => {
+    const id = setInterval(() => {
+      const { prompt, essay, taskType, ieltsMode } = draftValuesRef.current;
+      if (!essay.trim() && !prompt.trim()) return;
+      try {
+        const draft: Draft = { prompt, essay, savedAt: Date.now() };
+        localStorage.setItem(draftKey(taskType, ieltsMode), JSON.stringify(draft));
+        setDraftSavedAt(new Date());
+      } catch { /* ignore */ }
+    }, 30_000);
+    return () => clearInterval(id);
+  }, []); // empty deps — interval never re-registers
 
   const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -139,6 +180,8 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
       const res = await fetch("/api/essays", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ essay, prompt, taskType, ieltsMode, imageBase64: imageBase64 ?? undefined, imageMime: imageBase64 ? imageMime : undefined }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to analyze essay");
+      // Clear draft on success
+      try { localStorage.removeItem(draftKey(taskType, ieltsMode)); } catch { /* ignore */ }
       router.push(`/essay/${data.essayId}`);
     } catch (err) { setError(err instanceof Error ? err.message : "Something went wrong."); setIsSubmitting(false); }
   }, [essay, prompt, taskType, ieltsMode, imageBase64, imageMime, router]);
@@ -241,6 +284,19 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
         )}
       </div>
 
+      {/* Draft restored banner */}
+      {draftRestored && (
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-amber-50 border border-amber-100 rounded-xl text-xs text-amber-800">
+          <Save className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+          <span className="flex-1">Draft restored from your last session.</span>
+          <button onClick={() => { setEssay(""); setPrompt(""); setDraftRestored(false); try { localStorage.removeItem(draftKey(taskType, ieltsMode)); } catch { /**/ } }}
+            className="font-semibold underline underline-offset-2 hover:text-amber-900 transition-colors">Discard</button>
+          <button onClick={() => setDraftRestored(false)} className="ml-1 text-amber-400 hover:text-amber-700 transition-colors">
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* Usage banner (limit reached) */}
       {usageData && isAtLimit && (
         <EssayLimitBanner used={usageData.used} limit={usageData.limit} plan={usageData.plan} />
@@ -335,7 +391,15 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
       <div className="space-y-2">
         {/* Header row */}
         <div className="flex items-center justify-between gap-2">
-          <label className="text-sm font-semibold text-slate-700">Your Essay <span className="text-brand-600">*</span></label>
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-semibold text-slate-700">Your Essay <span className="text-brand-600">*</span></label>
+            {draftSavedAt && (
+              <span className="flex items-center gap-1 text-[10px] text-slate-400">
+                <Save className="h-3 w-3" />
+                Autosaved {draftSavedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             {/* Word count */}
             <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${
