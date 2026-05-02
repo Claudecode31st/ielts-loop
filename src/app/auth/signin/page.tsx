@@ -34,10 +34,10 @@ export default async function SignInPage({
         {/* Benefits */}
         <div className="bg-brand-50 rounded-xl p-5 space-y-3">
           {[
-            "Real IELTS band scores using official descriptors",
-            "Personalized feedback based on your error history",
-            "Adaptive exercises targeting your weak points",
-            "Progress tracking across all 4 IELTS criteria",
+            "AI memory that learns from every essay you write",
+            "Guide Mode — live AI tutor as you type, not after",
+            "Examiner-level band scores across all 4 criteria",
+            "Adaptive exercises targeting your personal weak points",
           ].map((benefit) => (
             <div key={benefit} className="flex items-start gap-2.5">
               <CheckCircle className="h-4 w-4 text-brand-600 shrink-0 mt-0.5" />
