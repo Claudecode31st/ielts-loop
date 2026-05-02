@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
-  Infinity, LayoutDashboard, PenLine, BookOpen,
+  NotebookPen, LayoutDashboard, PenLine, BookOpen,
   TrendingUp, LogOut, User, Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -46,10 +46,10 @@ export function Nav({ user }: NavProps) {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 shrink-0">
               <div className="w-6 h-6 rounded-md bg-brand-600 flex items-center justify-center">
-                <Infinity className="h-3.5 w-3.5 text-white" />
+                <NotebookPen className="h-3.5 w-3.5 text-white" />
               </div>
               <span className="font-semibold text-slate-900 text-sm tracking-tight">
-                IELTS<span className="text-brand-600">Loop</span>
+                IELTS<span className="text-brand-600">Memo</span>
               </span>
             </Link>
 

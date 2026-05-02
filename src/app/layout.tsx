@@ -9,9 +9,9 @@ import { auth } from "@/lib/auth";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "IELTS Loop — AI-Powered Writing Feedback",
+  title: "IELTS Memo — AI Writing Coach That Remembers",
   description:
-    "Get instant, accurate IELTS writing feedback from our AI examiner. Track your progress and target your weaknesses with personalized exercises.",
+    "IELTS Memo gives you examiner-level writing feedback, builds a long-term memory of your error patterns, and coaches you in real time — so every session targets exactly what's holding your band score back.",
 };
 
 export default async function RootLayout({

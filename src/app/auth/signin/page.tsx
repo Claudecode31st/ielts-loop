@@ -24,10 +24,10 @@ export default async function SignInPage({
             <BookOpen className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900">
-            Sign in to IELTS Loop
+            Sign in to IELTS Memo
           </h1>
           <p className="mt-2 text-slate-500 text-sm">
-            Your personal AI writing examiner that remembers everything
+            Your AI writing coach with long-term memory
           </p>
         </div>
 

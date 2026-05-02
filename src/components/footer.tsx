@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Infinity } from "lucide-react";
+import { NotebookPen } from "lucide-react";
 
 export function Footer() {
   return (
@@ -11,9 +11,9 @@ export function Footer() {
           <div className="col-span-2 sm:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-3">
               <div className="w-6 h-6 rounded-md bg-brand-600 flex items-center justify-center">
-                <Infinity className="h-3.5 w-3.5 text-white" />
+                <NotebookPen className="h-3.5 w-3.5 text-white" />
               </div>
-              <span className="font-semibold text-slate-900 text-sm">IELTSLoop</span>
+              <span className="font-semibold text-slate-900 text-sm">IELTSMemo</span>
             </Link>
             <p className="text-xs text-slate-400 leading-relaxed max-w-[180px]">
               AI-powered IELTS writing feedback that builds a memory of your mistakes.
@@ -59,7 +59,7 @@ export function Footer() {
 
         <div className="border-t border-[var(--border)] pt-6 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-xs text-slate-400">
-            © {new Date().getFullYear()} IELTS Loop. All rights reserved.
+            © {new Date().getFullYear()} IELTS Memo. All rights reserved.
           </p>
           <p className="text-xs text-slate-400">
             Not affiliated with IDP, British Council, or Cambridge Assessment English.
