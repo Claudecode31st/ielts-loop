@@ -279,19 +279,6 @@ export function EssayFeedback({ essay, prompt, recurringErrors = [] }: EssayFeed
         ) : null}
         </div>
 
-        {/* Key Insight */}
-        {essay.feedbackSummary && (
-          <div className="flex items-start gap-3 p-4 bg-brand-50 border border-brand-100 rounded-2xl">
-            <div className="w-7 h-7 rounded-lg bg-brand-100 flex items-center justify-center shrink-0 mt-0.5">
-              <Lightbulb className="h-3.5 w-3.5 text-brand-600" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-brand-500 uppercase tracking-widest mb-1">Your #1 Priority</p>
-              <p className="text-xs text-brand-900 leading-relaxed">{essay.feedbackSummary}</p>
-            </div>
-          </div>
-        )}
-
         {/* Examiner Assessment */}
         <div className="bg-white border border-[var(--border)] rounded-2xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden">
           <div className="px-4 py-3.5 border-b border-[var(--border)] flex items-center gap-2">
@@ -302,6 +289,23 @@ export function EssayFeedback({ essay, prompt, recurringErrors = [] }: EssayFeed
             <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">{essay.examinerComments}</p>
           </div>
         </div>
+
+        {/* #1 Priority — below Examiner Assessment, no indent */}
+        {essay.feedbackSummary && (
+          <div className="p-4 bg-brand-50 border border-brand-100 rounded-2xl">
+            <div className="flex items-center gap-1.5 mb-2">
+              <Lightbulb className="h-3.5 w-3.5 text-brand-600 shrink-0" />
+              <p className="text-[10px] font-bold text-brand-600 uppercase tracking-widest">Your #1 Priority</p>
+              <span className="ml-auto text-[10px] text-brand-400 font-medium tabular-nums">
+                {essay.taskType === "task1" ? "Task 1" : "Task 2"}
+                {essay.submittedAt
+                  ? ` · ${new Date(essay.submittedAt).toLocaleDateString("en", { day: "numeric", month: "short" })}`
+                  : ""}
+              </span>
+            </div>
+            <p className="text-xs text-brand-900 leading-relaxed">{essay.feedbackSummary}</p>
+          </div>
+        )}
 
       </div>
     </div>
