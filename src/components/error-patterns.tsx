@@ -16,9 +16,9 @@ const getCat = (c: string) => CAT_STYLE[c] ?? FALLBACK;
 function freqBar(freq: number) { return Math.min(100, Math.max(8, (freq / 5) * 100)); }
 
 function FreqLabel({ freq }: { freq: number }) {
-  if (freq >= 5) return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">High</span>;
-  if (freq >= 3) return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-600">Med</span>;
-  return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-400">Low</span>;
+  if (freq >= 5) return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">Recurring</span>;
+  if (freq >= 3) return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-600">Sometimes</span>;
+  return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-400">Occasional</span>;
 }
 
 export function ErrorPatterns({ memory }: { memory: StudentMemoryContext }) {

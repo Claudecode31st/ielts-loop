@@ -226,7 +226,7 @@ async function DashboardContent({ userId }: { userId: string }) {
                               <span className="text-xs text-slate-700 font-medium">{label}</span>
                               {isWeakest && (
                                 <span className="text-[9px] font-bold text-red-500 bg-red-50 border border-red-100 px-1.5 py-px rounded-full">
-                                  Needs work
+                                  Needs practice
                                 </span>
                               )}
                             </div>

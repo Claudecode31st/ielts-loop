@@ -24,7 +24,7 @@ interface Props {
 }
 
 function catLabel(cat: string) {
-  return cat === "grammar" ? "GRA" : cat === "vocabulary" ? "LR" : cat === "structure" ? "CC" : "TA";
+  return cat === "grammar" ? "Grammar" : cat === "vocabulary" ? "Vocabulary" : cat === "structure" ? "Coherence" : "Task";
 }
 function catColor(cat: string) {
   return cat === "grammar"
@@ -37,16 +37,16 @@ function catColor(cat: string) {
 }
 function impactConfig(freq: number) {
   return freq >= 5
-    ? { label: "High impact", color: "text-red-600 bg-red-50 border-red-100" }
+    ? { label: "Recurring mistake", color: "text-red-600 bg-red-50 border-red-100" }
     : freq >= 3
-    ? { label: "Medium impact", color: "text-amber-600 bg-amber-50 border-amber-100" }
-    : { label: "Low impact", color: "text-slate-500 bg-slate-50 border-slate-200" };
+    ? { label: "Seen a few times", color: "text-amber-600 bg-amber-50 border-amber-100" }
+    : { label: "Seen once", color: "text-slate-500 bg-slate-50 border-slate-200" };
 }
 const CATEGORY_TIPS: Record<string, string> = {
-  grammar:    "Errors here lower your Grammatical Range & Accuracy band.",
-  vocabulary: "Repetition or weak word choice limits your Lexical Resource band.",
-  structure:  "Weak cohesion reduces your Coherence & Cohesion band.",
-  coherence:  "Poor paragraph flow reduces your Coherence & Cohesion band.",
+  grammar:    "Fixing this will improve your Grammar score.",
+  vocabulary: "Fixing this will improve your Vocabulary score.",
+  structure:  "Fixing this will improve your Coherence & Cohesion score.",
+  coherence:  "Fixing this will improve your Coherence & Cohesion score.",
 };
 
 export function ScoreBlockersList({ errors }: Props) {
