@@ -87,7 +87,9 @@ export default async function SignInPage({
           </form>
 
           <p className="text-xs text-center text-slate-400">
-            By signing in, you agree to our Terms of Service and Privacy Policy.
+            By signing in, you agree to our{" "}
+            <a href="/terms" className="underline hover:text-slate-600">Terms of Service</a>{" "}and{" "}
+            <a href="/privacy" className="underline hover:text-slate-600">Privacy Policy</a>.
             We never share your essays with anyone.
           </p>
         </div>

@@ -44,8 +44,8 @@ export function Footer() {
             <p className="text-xs font-semibold text-slate-700 mb-3">Legal</p>
             <ul className="space-y-2">
               {[
-                { label: "Privacy Policy",   href: "#" },
-                { label: "Terms of Service", href: "#" },
+                { label: "Privacy Policy",   href: "/privacy" },
+                { label: "Terms of Service", href: "/terms" },
               ].map(({ label, href }) => (
                 <li key={label}>
                   <Link href={href} className="text-xs text-slate-400 hover:text-slate-700 transition-colors">
