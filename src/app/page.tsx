@@ -8,6 +8,18 @@ import {
   BookOpen, Sparkles, MessageSquare,
 } from "lucide-react";
 
+function PricingCell({ value, brand }: { value: boolean | string; brand?: boolean }) {
+  const base = "px-4 py-3.5 text-center border-l border-[var(--border)] flex items-center justify-center";
+  const bg = brand ? "bg-brand-50" : "";
+  return (
+    <div className={`${base} ${bg}`}>
+      {value === true  ? <CheckCircle className={`h-4 w-4 ${brand ? "text-brand-600" : "text-emerald-500"}`} /> :
+       value === false ? <span className="text-slate-200 font-bold text-lg leading-none">—</span> :
+       <span className={`text-sm font-medium ${brand ? "text-brand-700" : "text-slate-500"}`}>{value}</span>}
+    </div>
+  );
+}
+
 export default function LandingPage() {
   return (
     <div className="bg-[var(--bg)] min-h-screen">
@@ -360,30 +372,30 @@ export default function LandingPage() {
                   icon: Users,
                   title: "vs Human Tutors",
                   points: [
-                    { pro: true,  text: "Available 24 / 7" },
-                    { pro: true,  text: "Consistent IELTS-standard scoring" },
-                    { pro: true,  text: "Fraction of the cost" },
-                    { pro: false, text: "Can't replace conversational practice" },
+                    "Available 24 / 7 — no scheduling",
+                    "Consistent IELTS-standard scoring every time",
+                    "Fraction of the cost ($12 vs $30–80/hr)",
+                    "Tracks patterns across every essay — tutors can't",
                   ],
                 },
                 {
                   icon: Zap,
                   title: "vs Generic AI",
                   points: [
-                    { pro: true,  text: "Long-term memory across every essay" },
-                    { pro: true,  text: "IELTS-specific criteria & scoring" },
-                    { pro: true,  text: "Guided Mode for live coaching" },
-                    { pro: false, text: "Requires an internet connection" },
+                    "Long-term memory across every essay you write",
+                    "IELTS-specific criteria and band scoring",
+                    "Live coaching with Guided Mode as you write",
+                    "Built for IELTS — not a generic writing tool",
                   ],
                 },
                 {
                   icon: BookOpen,
                   title: "vs Textbooks",
                   points: [
-                    { pro: true,  text: "Feedback on YOUR writing, not examples" },
-                    { pro: true,  text: "Error memory grows with every essay" },
-                    { pro: true,  text: "Exercises matched to your weak points" },
-                    { pro: false, text: "Doesn't replace reading widely" },
+                    "Feedback on your own writing — not example essays",
+                    "Error memory grows and adapts with every submission",
+                    "Exercises matched to your specific weaknesses",
+                    "Adapts to you — textbooks use the same content for everyone",
                   ],
                 },
               ].map(({ icon: Icon, title, points }) => (
@@ -395,12 +407,10 @@ export default function LandingPage() {
                     <span className="text-sm font-semibold text-slate-800">{title}</span>
                   </div>
                   <ul className="space-y-2">
-                    {points.map(({ pro, text }) => (
+                    {points.map((text) => (
                       <li key={text} className="flex items-start gap-2">
-                        <span className={`mt-0.5 text-xs font-bold shrink-0 ${pro ? "text-emerald-500" : "text-slate-300"}`}>
-                          {pro ? "✓" : "–"}
-                        </span>
-                        <span className={`text-xs leading-relaxed ${pro ? "text-slate-600" : "text-slate-400"}`}>{text}</span>
+                        <span className="mt-0.5 text-xs font-bold shrink-0 text-emerald-500">✓</span>
+                        <span className="text-xs leading-relaxed text-slate-600">{text}</span>
                       </li>
                     ))}
                   </ul>
@@ -527,61 +537,95 @@ export default function LandingPage() {
         </section>
 
         {/* ── Pricing ── */}
-        <section>
+        <section id="pricing">
           <div className="text-center mb-10">
+            <p className="text-xs font-semibold text-brand-600 uppercase tracking-widest mb-2">Pricing</p>
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3">
-              Simple, transparent pricing
+              Start free. Upgrade when you&apos;re ready.
             </h2>
             <p className="text-slate-500 text-sm max-w-md mx-auto">
-              Start free. Upgrade when you&apos;re serious. Cancel anytime.
+              Every plan includes AI feedback, error memory, and targeted exercises. Pro removes the limits and adds the tools serious candidates need.
             </p>
           </div>
 
+          {/* Comparison table */}
           <div className="bg-white border border-[var(--border)] rounded-xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden mb-6">
-            <div className="grid grid-cols-4 border-b border-[var(--border)]">
-              <div className="col-span-2 px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wide" />
-              <div className="px-4 py-4 text-center border-l border-[var(--border)]">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Free</p>
-                <p className="text-xl font-bold text-slate-900 mt-0.5">$0</p>
+            {/* Header */}
+            <div className="grid grid-cols-[1fr_140px_160px] border-b border-[var(--border)]">
+              <div className="px-6 py-5" />
+              <div className="px-4 py-5 text-center border-l border-[var(--border)]">
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Free</p>
+                <p className="text-2xl font-bold text-slate-900">$0</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">forever</p>
               </div>
-              <div className="px-4 py-4 text-center border-l border-[var(--border)] bg-brand-50">
-                <p className="text-xs font-semibold text-brand-600 uppercase tracking-wide">Pro</p>
-                <p className="text-xl font-bold text-slate-900 mt-0.5">$12<span className="text-xs font-normal text-slate-400">/mo</span></p>
+              <div className="px-4 py-5 text-center border-l border-[var(--border)] bg-brand-50 relative">
+                <div className="absolute -top-px left-0 right-0 h-0.5 bg-brand-600" />
+                <p className="text-[11px] font-bold text-brand-600 uppercase tracking-widest mb-1">Pro</p>
+                <p className="text-2xl font-bold text-slate-900">$12<span className="text-xs font-normal text-slate-400">/mo</span></p>
+                <p className="text-[11px] text-brand-600 font-medium mt-0.5">Most popular</p>
               </div>
             </div>
 
+            {/* Section: Writing */}
+            <div className="grid grid-cols-[1fr_140px_160px] bg-slate-50/60 border-b border-[var(--border)]">
+              <div className="px-6 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest col-span-3">Writing & Feedback</div>
+            </div>
             {[
-              { label: "Essays per month",             free: "2",       pro: "Unlimited" },
-              { label: "Daily essay limit",             free: "2",       pro: "5 per day" },
-              { label: "AI examiner feedback",          free: true,      pro: true        },
-              { label: "All 4 IELTS criteria scored",   free: true,      pro: true        },
-              { label: "AI long-term error memory",     free: true,      pro: true        },
-              { label: "Guided writing mode",           free: "5/day",   pro: "50/day"    },
-              { label: "Adaptive exercises",            free: true,      pro: true        },
-              { label: "Progress analytics",            free: "Basic",   pro: "Full"      },
-              { label: "Priority AI processing",        free: false,     pro: true        },
+              { label: "Essays per month",                    free: "2 essays",   pro: "Unlimited" },
+              { label: "Daily essay limit",                   free: "2/day",      pro: "5/day" },
+              { label: "AI examiner feedback (all criteria)", free: true,         pro: true },
+              { label: "Task 1 & Task 2 supported",           free: true,         pro: true },
+              { label: "Task 1 image / chart upload",         free: true,         pro: true },
+              { label: "Guided writing (live AI coaching)",   free: "5/day",      pro: "50/day" },
             ].map((row, i) => (
-              <div key={i} className={`grid grid-cols-4 border-b border-[var(--border)] last:border-0 ${i % 2 === 1 ? "bg-slate-50/50" : ""}`}>
-                <div className="col-span-2 px-6 py-3.5 text-sm text-slate-600">{row.label}</div>
-                <div className="px-4 py-3.5 text-center border-l border-[var(--border)] flex items-center justify-center">
-                  {row.free === true  ? <CheckCircle className="h-4 w-4 text-emerald-500" /> :
-                   row.free === false ? <span className="text-slate-200 font-bold text-lg">—</span> :
-                   <span className="text-sm text-slate-500">{row.free}</span>}
-                </div>
-                <div className="px-4 py-3.5 text-center border-l border-[var(--border)] bg-brand-50 flex items-center justify-center">
-                  {row.pro === true  ? <CheckCircle className="h-4 w-4 text-brand-600" /> :
-                   row.pro === false ? <span className="text-slate-200 font-bold text-lg">—</span> :
-                   <span className="text-sm font-medium text-brand-700">{row.pro}</span>}
-                </div>
+              <div key={i} className="grid grid-cols-[1fr_140px_160px] border-b border-[var(--border)]">
+                <div className="px-6 py-3.5 text-sm text-slate-600">{row.label}</div>
+                <PricingCell value={row.free} />
+                <PricingCell value={row.pro} brand />
+              </div>
+            ))}
+
+            {/* Section: Memory & Practice */}
+            <div className="grid grid-cols-[1fr_140px_160px] bg-slate-50/60 border-b border-[var(--border)]">
+              <div className="px-6 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest col-span-3">Memory & Practice</div>
+            </div>
+            {[
+              { label: "AI error memory across all essays",   free: true,         pro: true },
+              { label: "Score blocker tracking",              free: true,         pro: true },
+              { label: "Targeted practice exercises",         free: true,         pro: true },
+              { label: "Examples from your own writing",      free: true,         pro: true },
+            ].map((row, i) => (
+              <div key={i} className="grid grid-cols-[1fr_140px_160px] border-b border-[var(--border)]">
+                <div className="px-6 py-3.5 text-sm text-slate-600">{row.label}</div>
+                <PricingCell value={row.free} />
+                <PricingCell value={row.pro} brand />
+              </div>
+            ))}
+
+            {/* Section: Progress */}
+            <div className="grid grid-cols-[1fr_140px_160px] bg-slate-50/60 border-b border-[var(--border)]">
+              <div className="px-6 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest col-span-3">Progress & Analytics</div>
+            </div>
+            {[
+              { label: "Band score progress charts",          free: false,        pro: true },
+              { label: "Full essay history & trends",         free: false,        pro: true },
+              { label: "Per-criterion progress tracking",     free: false,        pro: true },
+              { label: "Priority AI processing",              free: false,        pro: true },
+            ].map((row, i) => (
+              <div key={i} className={`grid grid-cols-[1fr_140px_160px] ${i < 3 ? "border-b border-[var(--border)]" : ""}`}>
+                <div className="px-6 py-3.5 text-sm text-slate-600">{row.label}</div>
+                <PricingCell value={row.free} />
+                <PricingCell value={row.pro} brand />
               </div>
             ))}
           </div>
 
+          {/* Cost comparison */}
           <div className="grid sm:grid-cols-3 gap-4 mb-8">
             {[
-              { label: "IELTS exam fee",     value: "$200–250", sub: "one time"            },
-              { label: "Human tutor",        value: "$30–80",   sub: "per hour"            },
-              { label: "IELTS Memo Pro",     value: "$12",      sub: "per month", brand: true },
+              { label: "IELTS exam fee",  value: "$200–250", sub: "one time" },
+              { label: "Human tutor",     value: "$30–80",   sub: "per hour" },
+              { label: "IELTS Memo Pro",  value: "$12",      sub: "per month", brand: true },
             ].map(({ label, value, sub, brand }) => (
               <div key={label} className={`rounded-xl border p-5 text-center ${brand ? "border-brand-200 bg-brand-50" : "border-[var(--border)] bg-white"}`}>
                 <p className="text-xs text-slate-500 mb-1">{label}</p>
