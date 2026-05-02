@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   NotebookPen, LayoutDashboard, PenLine, BookOpen,
-  TrendingUp, LogOut, User, Zap, Library,
+  TrendingUp, LogOut, Zap, Library, ScrollText,
   FileText, MessageSquareQuote, BookMarked, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,9 +21,10 @@ interface NavProps {
 
 const navLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/essay/new", label: "Submit",    icon: PenLine },
-  { href: "/exercises", label: "Exercises", icon: BookOpen },
-  { href: "/progress",  label: "Progress",  icon: TrendingUp },
+  { href: "/essays",    label: "Essays",    icon: ScrollText    },
+  { href: "/essay/new", label: "Submit",    icon: PenLine       },
+  { href: "/exercises", label: "Exercises", icon: BookOpen      },
+  { href: "/progress",  label: "Progress",  icon: TrendingUp    },
 ];
 
 const resourceItems = [
@@ -68,6 +69,18 @@ export function Nav({ user }: NavProps) {
 
   const isResourcesActive = pathname?.startsWith("/resources");
 
+  const Avatar = ({ size = "sm" }: { size?: "sm" | "md" }) => {
+    const dim = size === "sm" ? "h-7 w-7" : "h-6 w-6";
+    const text = size === "sm" ? "text-[11px]" : "text-[10px]";
+    return user?.image ? (
+      <img src={user.image} alt={user.name || "User"} className={`${dim} rounded-full object-cover`} />
+    ) : (
+      <div className={`${dim} rounded-full bg-brand-600 flex items-center justify-center`}>
+        <span className={`text-white font-bold ${text}`}>{initials}</span>
+      </div>
+    );
+  };
+
   return (
     <>
       {/* ── Top nav ── */}
@@ -106,42 +119,47 @@ export function Nav({ user }: NavProps) {
               </div>
             )}
 
-            {/* Upgrade link — desktop, logged-in only */}
-            {user && (
-              <Link
-                href="/pricing"
-                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-brand-600 hover:bg-brand-50 transition-colors duration-150 shrink-0"
-              >
-                <Zap className="h-3.5 w-3.5" />
-                Upgrade
-              </Link>
-            )}
-
-            {/* User area */}
+            {/* Right side — desktop */}
             {user ? (
-              <div className="hidden md:flex items-center gap-1">
-                <Link href="/profile">
-                  <div className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
-                    {user.image ? (
-                      <img src={user.image} alt={user.name || "User"} className="h-6 w-6 rounded-full object-cover" />
-                    ) : (
-                      <div className="h-6 w-6 rounded-full bg-brand-600 flex items-center justify-center">
-                        <span className="text-white text-[10px] font-bold">{initials}</span>
-                      </div>
-                    )}
-                    <span className="text-sm text-slate-600 font-medium max-w-[100px] truncate">
-                      {user.name?.split(" ")[0] || user.email}
-                    </span>
+              <>
+                {/* Upgrade — desktop only */}
+                <Link
+                  href="/pricing"
+                  className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-brand-600 hover:bg-brand-50 transition-colors duration-150 shrink-0"
+                >
+                  <Zap className="h-3.5 w-3.5" />
+                  Upgrade
+                </Link>
+
+                {/* Profile + sign-out — desktop */}
+                <div className="hidden md:flex items-center gap-1">
+                  <Link href="/profile">
+                    <div className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
+                      <Avatar size="md" />
+                      <span className="text-sm text-slate-600 font-medium max-w-[100px] truncate">
+                        {user.name?.split(" ")[0] || user.email}
+                      </span>
+                    </div>
+                  </Link>
+                  <button
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                    title="Sign out"
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* Profile avatar — mobile top header only */}
+                <Link href="/profile" className="md:hidden shrink-0">
+                  <div className={cn(
+                    "rounded-full ring-2 transition-colors",
+                    pathname === "/profile" ? "ring-brand-500" : "ring-transparent hover:ring-slate-200"
+                  )}>
+                    <Avatar size="sm" />
                   </div>
                 </Link>
-                <button
-                  onClick={() => signOut({ callbackUrl: "/" })}
-                  title="Sign out"
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                >
-                  <LogOut className="h-4 w-4" />
-                </button>
-              </div>
+              </>
             ) : (
               <Link
                 href="/auth/signin"
@@ -186,18 +204,6 @@ export function Nav({ user }: NavProps) {
               <Library className={cn("h-[18px] w-[18px]", isResourcesActive || resourcesOpen ? "text-brand-600" : "text-slate-400")} />
               Resources
             </button>
-
-            {/* Profile */}
-            <Link
-              href="/profile"
-              className={cn(
-                "flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors",
-                pathname === "/profile" ? "text-brand-600" : "text-slate-400 hover:text-slate-600"
-              )}
-            >
-              <User className={cn("h-[18px] w-[18px]", pathname === "/profile" ? "text-brand-600" : "text-slate-400")} />
-              Me
-            </Link>
           </nav>
 
           {/* ── Resources bottom sheet ── */}
@@ -209,7 +215,7 @@ export function Nav({ user }: NavProps) {
                 onClick={() => setResourcesOpen(false)}
               />
               {/* Sheet */}
-              <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-xl pb-safe">
+              <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-xl">
                 {/* Handle + header */}
                 <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-100">
                   <div>
