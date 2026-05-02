@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, X, Zap, Brain, BarChart3, PenLine, ArrowRight } from "lucide-react";
+import { Check, X, Zap, Brain, BarChart3, PenLine } from "lucide-react";
 import { UpgradeButton } from "@/components/upgrade-button";
 
 const FREE_INCLUDED = [
@@ -96,7 +96,12 @@ export function PricingCards() {
             <span className="text-4xl font-bold text-slate-900">$12</span>
             <span className="text-slate-400 text-sm">/month</span>
           </div>
-          <p className="text-sm text-slate-500">Everything in Free, plus no limits.</p>
+          <p className="text-sm text-slate-500 mb-2">Everything in Free, plus no limits.</p>
+          {/* Value pill */}
+          <span className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-100 text-emerald-700 text-[11px] font-semibold px-3 py-1 rounded-full">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+            Cheaper than one hour of private tutoring
+          </span>
         </div>
 
         <div>
@@ -136,88 +141,32 @@ export function PricingCards() {
 
 export function CostComparison() {
   return (
-    <div className="max-w-3xl mx-auto space-y-3">
-
-      {/* Main comparison */}
-      <div className="grid sm:grid-cols-[1fr_auto_1fr] gap-3 items-stretch">
-
-        {/* The old way */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col gap-4">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">The traditional way</p>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-700">IELTS exam retake</p>
-                <p className="text-[11px] text-slate-400">one failed attempt</p>
-              </div>
-              <span className="text-sm font-bold text-slate-800">$200–250</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-700">Private tutor</p>
-                <p className="text-[11px] text-slate-400">just 5 hours of sessions</p>
-              </div>
-              <span className="text-sm font-bold text-slate-800">$150–400</span>
-            </div>
-            <div className="border-t border-slate-100 pt-3 flex items-center justify-between">
-              <p className="text-sm font-semibold text-slate-600">Typical total spend</p>
-              <span className="text-base font-bold text-red-500">$350–650+</span>
-            </div>
-          </div>
-          <p className="text-[11px] text-slate-400 leading-relaxed mt-auto">
-            …and you still prepare alone, with no feedback between sessions.
+    <div className="grid sm:grid-cols-3 gap-3 max-w-3xl mx-auto">
+      {[
+        { label: "IELTS exam fee",  value: "$200–250", sub: "one-time retake cost" },
+        { label: "Human tutor",     value: "$30–80",   sub: "per hour of sessions" },
+        { label: "IELTS Memo Pro",  value: "$12",      sub: "per month, cancel anytime", brand: true },
+      ].map(({ label, value, sub, brand }) => (
+        <div
+          key={label}
+          className={`rounded-2xl border p-5 text-center ${
+            brand
+              ? "border-brand-200 bg-white ring-2 ring-brand-100"
+              : "border-slate-200 bg-white"
+          }`}
+        >
+          <p className="text-[11px] font-semibold text-slate-400 mb-2">{label}</p>
+          <p className={`text-3xl font-extrabold tracking-tight ${brand ? "text-brand-600" : "text-slate-800"}`}>
+            {value}
           </p>
+          <p className="text-xs text-slate-400 mt-1.5">{sub}</p>
+          {brand && (
+            <span className="mt-3 inline-flex items-center gap-1 bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Best value
+            </span>
+          )}
         </div>
-
-        {/* VS divider */}
-        <div className="hidden sm:flex flex-col items-center justify-center gap-2 py-4">
-          <div className="w-px flex-1 bg-slate-200" />
-          <span className="text-xs font-bold text-slate-300 bg-[#F3F4F6] px-1">VS</span>
-          <div className="w-px flex-1 bg-slate-200" />
-        </div>
-
-        {/* IELTS Memo Pro */}
-        <div className="bg-brand-600 rounded-2xl p-5 flex flex-col gap-4">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-brand-300">IELTS Memo Pro</p>
-          <div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-5xl font-bold text-white">$12</span>
-              <span className="text-brand-300 text-sm">/month</span>
-            </div>
-            <p className="text-brand-300 text-xs mt-1">Cancel anytime. No contracts.</p>
-          </div>
-          <ul className="space-y-2 flex-1">
-            {[
-              "Unlimited AI examiner feedback",
-              "Live writing coach as you type",
-              "Error memory across all essays",
-              "Band score progress charts",
-            ].map((item) => (
-              <li key={item} className="flex items-center gap-2 text-sm text-brand-100">
-                <Check className="h-3.5 w-3.5 text-brand-300 shrink-0" />
-                {item}
-              </li>
-            ))}
-          </ul>
-          <p className="text-[11px] text-brand-400 border-t border-brand-500 pt-3 mt-auto">
-            That&apos;s less than one cup of coffee a week.
-          </p>
-        </div>
-      </div>
-
-      {/* Savings callout */}
-      <div className="flex items-center gap-4 bg-emerald-50 border border-emerald-100 rounded-2xl px-5 py-4">
-        <div className="flex-1">
-          <p className="text-sm font-bold text-emerald-800">
-            Save up to <span className="text-emerald-600">$638</span> compared to retaking the exam with a tutor
-          </p>
-          <p className="text-xs text-emerald-600 mt-0.5">
-            Use IELTS Memo for a full year and still spend less than one retake fee.
-          </p>
-        </div>
-        <ArrowRight className="h-5 w-5 text-emerald-400 shrink-0" />
-      </div>
-
+      ))}
     </div>
   );
 }
