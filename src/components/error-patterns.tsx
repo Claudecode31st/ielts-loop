@@ -13,26 +13,54 @@ const CAT_STYLE: Record<string, { badge: string; bar: string }> = {
 const FALLBACK = { badge: "bg-slate-100 text-slate-600", bar: "bg-slate-400" };
 const getCat = (c: string) => CAT_STYLE[c] ?? FALLBACK;
 
+// Plain-English category names — no IELTS jargon
+const CAT_LABEL: Record<string, string> = {
+  grammar:    "Grammar",
+  vocabulary: "Vocabulary",
+  structure:  "Structure",
+  coherence:  "Coherence",
+};
+const catLabel = (c: string) => CAT_LABEL[c] ?? c.charAt(0).toUpperCase() + c.slice(1);
+
+// Plain-English skill area names — strip IELTS abbreviations from AI output
+function normaliseArea(area: string): string {
+  const map: Record<string, string> = {
+    "Coherence & Cohesion":           "Coherence",
+    "Lexical Resource":               "Vocabulary",
+    "Grammatical Range & Accuracy":   "Grammar",
+    "Grammatical Range":              "Grammar",
+    "Task Achievement":               "Task Achievement",
+    "Task Response":                  "Task Response",
+  };
+  return map[area] ?? area;
+}
+
 function freqBar(freq: number) { return Math.min(100, Math.max(8, (freq / 5) * 100)); }
 
 function FreqLabel({ freq }: { freq: number }) {
   if (freq >= 5) return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">Recurring</span>;
   if (freq >= 3) return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-600">Sometimes</span>;
-  return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-400">Occasional</span>;
+  if (freq >= 2) return <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500">Seen twice</span>;
+  return null; // 1× errors are not patterns — don't show a label
 }
 
 export function ErrorPatterns({ memory }: { memory: StudentMemoryContext }) {
   const { topErrorPatterns, memoryProfile } = memory;
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const hasErrors = topErrorPatterns.length > 0;
+  // Only show actual patterns — errors seen more than once
+  const recurringPatterns = topErrorPatterns.filter((p) => (p.frequency ?? 1) >= 2);
+
   const hasProfile = !!(memoryProfile?.strengthAreas?.length || memoryProfile?.weaknessAreas?.length);
 
-  if (!hasErrors && !hasProfile) {
+  if (!recurringPatterns.length && !hasProfile) {
     return (
-      <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center space-y-3">
-        <Brain className="h-9 w-9 text-slate-200 mx-auto" />
-        <p className="text-sm text-slate-500">Submit more essays to build your learning profile.</p>
+      <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center space-y-2">
+        <Brain className="h-8 w-8 text-slate-200 mx-auto" />
+        <p className="text-sm font-medium text-slate-500">No patterns found yet</p>
+        <p className="text-xs text-slate-400 max-w-xs mx-auto">
+          Submit a few more essays and we&apos;ll show you which mistakes keep coming back — those are the ones holding your band score back.
+        </p>
       </div>
     );
   }
@@ -41,20 +69,16 @@ export function ErrorPatterns({ memory }: { memory: StudentMemoryContext }) {
     <div className="space-y-4">
 
       {/* ── Recurring Errors ── */}
-      {hasErrors && (
+      {recurringPatterns.length > 0 ? (
         <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-amber-500" />
-              <h2 className="text-sm font-bold text-slate-800">Recurring Error Patterns</h2>
-            </div>
-            <span className="text-[10px] text-slate-400 font-medium">
-              1 essay = 20% · 5+ = 100%
-            </span>
+          <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-500" />
+            <h2 className="text-sm font-bold text-slate-800">Recurring Mistakes</h2>
+            <span className="ml-auto text-xs text-slate-400">Errors you keep making across multiple essays</span>
           </div>
 
           <div className="divide-y divide-slate-50">
-            {topErrorPatterns.slice(0, 8).map((pattern, idx) => {
+            {recurringPatterns.slice(0, 8).map((pattern, idx) => {
               const cat = getCat(pattern.errorCategory);
               const freq = pattern.frequency ?? 1;
               const isExpanded = expandedId === pattern.id;
@@ -71,12 +95,12 @@ export function ErrorPatterns({ memory }: { memory: StudentMemoryContext }) {
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1.5">
+                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                           <span className="text-sm font-semibold text-slate-800 capitalize leading-none">
                             {pattern.errorType}
                           </span>
                           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${cat.badge}`}>
-                            {pattern.errorCategory}
+                            {catLabel(pattern.errorCategory)}
                           </span>
                           <FreqLabel freq={freq} />
                         </div>
@@ -132,6 +156,16 @@ export function ErrorPatterns({ memory }: { memory: StudentMemoryContext }) {
             })}
           </div>
         </div>
+      ) : (
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 flex items-start gap-3">
+          <AlertTriangle className="h-4 w-4 text-slate-300 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-slate-600">No recurring mistakes yet</p>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Once the same mistake appears in more than one essay, it will show up here. Keep submitting to find your patterns.
+            </p>
+          </div>
+        </div>
       )}
 
       {/* ── Skill Profile ── */}
@@ -145,12 +179,12 @@ export function ErrorPatterns({ memory }: { memory: StudentMemoryContext }) {
             {memoryProfile?.strengthAreas && memoryProfile.strengthAreas.length > 0 && (
               <div>
                 <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-2">
-                  ✓ Strengths
+                  Strengths
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {memoryProfile.strengthAreas.map((area, i) => (
                     <span key={i} className="text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      {area}
+                      {normaliseArea(area)}
                     </span>
                   ))}
                 </div>
@@ -159,12 +193,12 @@ export function ErrorPatterns({ memory }: { memory: StudentMemoryContext }) {
             {memoryProfile?.weaknessAreas && memoryProfile.weaknessAreas.length > 0 && (
               <div>
                 <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-2">
-                  ✗ Focus Areas
+                  Needs Practice
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {memoryProfile.weaknessAreas.map((area, i) => (
                     <span key={i} className="text-xs font-medium px-2.5 py-1 rounded-full bg-red-50 text-red-600 border border-red-200">
-                      {area}
+                      {normaliseArea(area)}
                     </span>
                   ))}
                 </div>
