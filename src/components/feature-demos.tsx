@@ -12,7 +12,7 @@ function bandColor(s: number) {
   return s >= 7 ? "text-green-600" : s >= 6 ? "text-amber-500" : "text-red-500";
 }
 
-const DEMO_H = "h-[220px]";
+const DEMO_H = "h-[260px]";
 
 // ── Guide Mode Demo ───────────────────────────────────────────────────────────
 
@@ -67,7 +67,7 @@ function GuideModeDemo() {
       </div>
 
       {/* Guide panel */}
-      <div className="w-40 shrink-0 flex flex-col gap-1 overflow-hidden">
+      <div className="w-44 shrink-0 flex flex-col gap-1">
         {/* Header */}
         <div className="flex items-center gap-1 pb-1 border-b border-slate-100 shrink-0">
           <div className="w-4 h-4 rounded bg-brand-600 flex items-center justify-center shrink-0">
@@ -290,7 +290,7 @@ export function FeatureDemos() {
   }
 
   return (
-    <section>
+    <section className="max-w-3xl mx-auto">
       <div className="text-center mb-6">
         <p className="text-xs font-semibold text-brand-600 uppercase tracking-widest mb-2">Live Preview</p>
         <h2 className="text-2xl font-bold text-slate-900 mb-1.5">See it in action</h2>
