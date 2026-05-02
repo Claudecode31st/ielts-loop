@@ -1,5 +1,5 @@
 import { signIn } from "@/lib/auth";
-import { BookOpen, CheckCircle } from "lucide-react";
+import { NotebookPen, CheckCircle } from "lucide-react";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 
@@ -21,7 +21,7 @@ export default async function SignInPage({
         {/* Logo & Brand */}
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-600 mb-4">
-            <BookOpen className="h-8 w-8 text-white" />
+            <NotebookPen className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900">
             Sign in to IELTS Memo
