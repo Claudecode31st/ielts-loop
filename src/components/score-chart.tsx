@@ -13,12 +13,13 @@ import {
 } from "recharts";
 import type { ProgressDataPoint } from "@/types";
 
-// 5 visually distinct, non-similar colors
+// 5 hue families — none share a colour family with each other
+// Overall = brand red · Task = green · Coherence = blue · Vocabulary = amber · Grammar = purple
 const CRITERIA_LINES = [
-  { key: "taskAchievement",   label: "Task",       color: "#10B981" }, // emerald
-  { key: "coherenceCohesion", label: "Coherence",  color: "#EF4444" }, // red
-  { key: "lexicalResource",   label: "Vocabulary", color: "#F59E0B" }, // amber
-  { key: "grammaticalRange",  label: "Grammar",    color: "#8B5CF6" }, // violet (different from blue Overall)
+  { key: "taskAchievement",   label: "Task",       color: "#16A34A" }, // green
+  { key: "coherenceCohesion", label: "Coherence",  color: "#2563EB" }, // blue
+  { key: "lexicalResource",   label: "Vocabulary", color: "#D97706" }, // amber-orange
+  { key: "grammaticalRange",  label: "Grammar",    color: "#9333EA" }, // purple
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -140,14 +141,14 @@ export function ScoreChart({ data }: { data: ProgressDataPoint[] }) {
           />
         ))}
 
-        {/* Overall band — thicker, blue, most prominent */}
+        {/* Overall band — thicker, brand red, most prominent */}
         <Line
           type="monotone"
           dataKey="overallBand"
           name="Overall"
-          stroke="#2563EB"
+          stroke="#c7002b"
           strokeWidth={3.5}
-          dot={{ r: 6, fill: "#2563EB", stroke: "#fff", strokeWidth: 2 }}
+          dot={{ r: 6, fill: "#c7002b", stroke: "#fff", strokeWidth: 2 }}
           activeDot={{ r: 8, strokeWidth: 0 }}
           connectNulls
         />
