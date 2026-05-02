@@ -3,7 +3,21 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { users, essays, exercises } from "@/lib/db/schema";
 import { desc, gte, count, eq, countDistinct, sql } from "drizzle-orm";
-import { Users, FileText, Zap, Activity, TrendingUp, TrendingDown, Minus, BookOpen } from "lucide-react";
+import { Users, FileText, Zap, Activity, TrendingUp, TrendingDown, Minus, BookOpen, DollarSign } from "lucide-react";
+
+// ── Claude API cost estimates ─────────────────────────────────────────────────
+// Prices: sonnet-4-6 $3/$15 per MTok in/out · haiku-4-5 $0.80/$4 per MTok in/out
+// Avg tokens estimated from actual prompt sizes in src/lib/claude.ts
+const COST_PER_ESSAY     = (3200 * 3.00 + 1600 * 15.00) / 1_000_000; // ~$0.034
+const COST_PER_EX_BATCH  = (2400 * 0.80 + 1100 *  4.00) / 1_000_000; // ~$0.006  (3 exercises)
+const COST_PER_PROMPT    = ( 500 * 0.80 +  350 *  4.00) / 1_000_000; // ~$0.002
+const COST_PER_GUIDE     = (2200 * 0.80 +  850 *  4.00) / 1_000_000; // ~$0.005
+
+function fmtCost(n: number) {
+  if (n >= 1)   return `$${n.toFixed(2)}`;
+  if (n >= 0.01) return `$${n.toFixed(3)}`;
+  return `$${n.toFixed(4)}`;
+}
 
 // ── Auth guard ────────────────────────────────────────────────────────────────
 async function requireAdmin() {
@@ -66,6 +80,7 @@ export default async function AdminPage() {
     recentUsers,
     recentEssays,
     dailySignups,
+    exercisesByUser,
   ] = await Promise.all([
     db.select({ total: count() }).from(users),
     db.select({ total: count() }).from(users).where(gte(users.createdAt, monthStart)),
@@ -104,6 +119,10 @@ export default async function AdminPage() {
     .where(gte(users.createdAt, new Date(Date.now() - 14 * 86400_000)))
     .groupBy(sql`DATE(${users.createdAt})`)
     .orderBy(sql`DATE(${users.createdAt})`),
+    // Exercise count per user (for cost estimate per user)
+    db.select({ userId: exercises.userId, exCount: count() })
+      .from(exercises)
+      .groupBy(exercises.userId),
   ]);
 
   // Build a full 14-day map for the chart
@@ -124,6 +143,18 @@ export default async function AdminPage() {
   const tep = Number(essaysPrevMonth);
   const aw  = Number(activeThisWeek);
   const tex = Number(totalExercises);
+
+  // ── Cost estimates ────────────────────────────────────────────────────────
+  const exBatchesTotal = Math.floor(tex / 3);
+  const costEssays     = te  * COST_PER_ESSAY;
+  const costExercises  = exBatchesTotal * COST_PER_EX_BATCH;
+  // Prompt & guide costs estimated from essay volume (no global counter available)
+  const costPrompts    = te  * 0.4  * COST_PER_PROMPT;  // ~40% of essays used a generated prompt
+  const costGuide      = te  * 1.5  * COST_PER_GUIDE;   // ~1.5 guide calls per essay on average
+  const costTotal      = costEssays + costExercises + costPrompts + costGuide;
+
+  // Build lookup: userId → exercise count
+  const exByUser = new Map(exercisesByUser.map((r) => [r.userId, Number(r.exCount)]));
 
   function delta(curr: number, prev: number) {
     if (!prev) return null;
@@ -180,6 +211,15 @@ export default async function AdminPage() {
       color: "text-purple-600",
       bg: "bg-purple-50",
     },
+    {
+      label: "Est. API Cost",
+      value: fmtCost(costTotal),
+      sub: "all-time Claude API spend",
+      delta: null,
+      icon: DollarSign,
+      color: "text-rose-600",
+      bg: "bg-rose-50",
+    },
   ];
 
   return (
@@ -196,7 +236,7 @@ export default async function AdminPage() {
         </div>
 
         {/* Stat cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {statCards.map(({ label, value, sub, delta, icon: Icon, color, bg }) => (
             <div key={label} className="bg-white rounded-2xl border border-slate-200 p-4 space-y-3">
               <div className={`w-8 h-8 rounded-xl ${bg} flex items-center justify-center`}>
@@ -278,6 +318,41 @@ export default async function AdminPage() {
           </div>
         </div>
 
+        {/* API Cost Breakdown */}
+        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
+            <DollarSign className="h-4 w-4 text-rose-500" />
+            <h2 className="text-sm font-bold text-slate-800">Estimated API Cost Breakdown</h2>
+            <span className="ml-auto text-[10px] text-slate-400 bg-slate-50 border border-slate-200 rounded px-2 py-0.5">
+              Estimates · avg token counts per operation
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-slate-100">
+            {[
+              { label: "Essay Analysis",    model: "Sonnet 4-6", cost: costEssays,    count: te,            unit: "essays",       perUnit: COST_PER_ESSAY,    color: "text-blue-600" },
+              { label: "Exercise Gen",      model: "Haiku 4-5",  cost: costExercises, count: exBatchesTotal, unit: "batches",      perUnit: COST_PER_EX_BATCH, color: "text-purple-600" },
+              { label: "Prompt Gen",        model: "Haiku 4-5",  cost: costPrompts,   count: Math.round(te * 0.4), unit: "est. calls", perUnit: COST_PER_PROMPT,  color: "text-amber-600" },
+              { label: "Guide Mode",        model: "Haiku 4-5",  cost: costGuide,     count: Math.round(te * 1.5), unit: "est. calls", perUnit: COST_PER_GUIDE,   color: "text-emerald-600" },
+            ].map(({ label, model, cost, count: c, unit, perUnit, color }) => (
+              <div key={label} className="px-5 py-4 space-y-1">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
+                <p className={`text-xl font-bold tabular-nums ${color}`}>{fmtCost(cost)}</p>
+                <p className="text-[11px] text-slate-500">{fmt(c)} {unit}</p>
+                <p className="text-[10px] text-slate-400">{fmtCost(perUnit)}/call · {model}</p>
+              </div>
+            ))}
+          </div>
+          <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+            <p className="text-[11px] text-slate-400">
+              Prompt & Guide costs are estimated (~40% essay prompts generated, ~1.5 guide calls/essay avg).
+              Actual spend may vary based on essay length and caching.
+            </p>
+            <p className="text-sm font-bold text-slate-800 tabular-nums shrink-0 ml-4">
+              Total: <span className="text-rose-600">{fmtCost(costTotal)}</span>
+            </p>
+          </div>
+        </div>
+
         {/* Recent users table */}
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
@@ -288,7 +363,7 @@ export default async function AdminPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50">
-                  {["User", "Email", "Plan", "Essays", "Joined"].map((h) => (
+                  {["User", "Email", "Plan", "Essays", "Est. Cost", "Joined"].map((h) => (
                     <th key={h} className="px-5 py-2.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                       {h}
                     </th>
@@ -300,6 +375,9 @@ export default async function AdminPage() {
                   const initials = u.name
                     ? u.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
                     : (u.email?.[0] ?? "?").toUpperCase();
+                  const uEssays  = Number(u.totalEssays ?? 0);
+                  const uExBatch = Math.floor((exByUser.get(u.id) ?? 0) / 3);
+                  const uCost    = uEssays * COST_PER_ESSAY + uExBatch * COST_PER_EX_BATCH;
                   return (
                     <tr key={u.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-5 py-3">
@@ -325,7 +403,10 @@ export default async function AdminPage() {
                         )}
                       </td>
                       <td className="px-5 py-3 text-xs text-slate-500 tabular-nums">
-                        {u.totalEssays ?? 0}
+                        {uEssays}
+                      </td>
+                      <td className="px-5 py-3 text-xs tabular-nums font-medium text-rose-500">
+                        {uCost > 0 ? fmtCost(uCost) : <span className="text-slate-300">—</span>}
                       </td>
                       <td className="px-5 py-3 text-xs text-slate-400 tabular-nums whitespace-nowrap">
                         {u.createdAt
