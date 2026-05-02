@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { ExerciseCard } from "@/components/exercise-card";
 import {
   BookOpen,
@@ -9,7 +8,6 @@ import {
   RefreshCw,
   CheckCircle,
   Sparkles,
-  ClipboardList,
 } from "lucide-react";
 import type { Exercise, ExerciseContent } from "@/types";
 
@@ -18,7 +16,6 @@ export default function ExercisesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Only one exercise can be in "playing" state at a time
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -71,11 +68,8 @@ export default function ExercisesPage() {
   }
 
   async function handleComplete(id: string, score: number) {
-    setActiveExerciseId(null); // release the lock regardless
-
-    // score = -1 means the user quit — don't mark as complete
+    setActiveExerciseId(null);
     if (score < 0) return;
-
     try {
       await fetch(`/api/exercises/${id}/complete`, {
         method: "POST",
@@ -88,7 +82,7 @@ export default function ExercisesPage() {
         )
       );
     } catch {
-      // silent — UI already updated
+      // silent
     }
   }
 
@@ -96,63 +90,42 @@ export default function ExercisesPage() {
   const completed = exercises.filter((e) => e.isCompleted);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2">
-            <BookOpen className="h-7 w-7 text-brand-600" />
-            Adaptive Exercises
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <BookOpen className="h-5 w-5 text-brand-600" />
+            Exercises
           </h1>
-          <p className="text-slate-500 mt-1 text-sm">
-            Targeted to your specific weaknesses — updated as you improve.
+          <p className="text-slate-400 text-sm mt-0.5">
+            Targeted to your weaknesses — updated as you improve.
           </p>
         </div>
-        <Button
+
+        <button
           onClick={generateExercises}
           disabled={isGenerating}
-          className="gap-2 shrink-0 bg-gradient-to-r from-brand-600 to-brand-700 text-white border-0 rounded-xl shadow-md hover:opacity-90"
+          className="shrink-0 flex items-center gap-1.5 text-sm font-medium px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:text-brand-700 hover:bg-brand-50 transition-colors disabled:opacity-50"
         >
           {isGenerating ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
               Generating…
             </>
           ) : (
             <>
-              <RefreshCw className="h-4 w-4" />
-              Generate New
+              <RefreshCw className="h-3.5 w-3.5" />
+              Generate
             </>
           )}
-        </Button>
+        </button>
       </div>
-
-      {/* ── Stats pills ────────────────────────────────────────────────── */}
-      {exercises.length > 0 && (
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/70 border border-white/80 shadow-sm text-xs font-semibold text-slate-600">
-            <ClipboardList className="h-3.5 w-3.5 text-slate-400" />
-            {exercises.length} total
-          </div>
-          {pending.length > 0 && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-50 border border-brand-200 text-xs font-semibold text-brand-700">
-              <Sparkles className="h-3.5 w-3.5" />
-              {pending.length} to practice
-            </div>
-          )}
-          {completed.length > 0 && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-50 border border-green-200 text-xs font-semibold text-green-700">
-              <CheckCircle className="h-3.5 w-3.5" />
-              {completed.length} completed
-            </div>
-          )}
-        </div>
-      )}
 
       {/* ── Error ──────────────────────────────────────────────────────── */}
       {error && (
-        <div className="p-4 bg-red-50 rounded-xl border border-red-200 text-sm text-red-700">
+        <div className="px-4 py-3 bg-red-50 rounded-xl border border-red-200 text-sm text-red-700">
           {error}
         </div>
       )}
@@ -161,57 +134,61 @@ export default function ExercisesPage() {
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
           <div className="text-center space-y-3">
-            <Loader2 className="h-8 w-8 animate-spin text-brand-600 mx-auto" />
-            <p className="text-slate-500 text-sm">Loading exercises…</p>
+            <Loader2 className="h-7 w-7 animate-spin text-brand-600 mx-auto" />
+            <p className="text-slate-400 text-sm">Loading exercises…</p>
           </div>
         </div>
       ) : exercises.length === 0 ? (
 
         /* ── Empty state ─────────────────────────────────────────────── */
         <div className="text-center py-20 space-y-4">
-          <div className="w-16 h-16 rounded-2xl bg-brand-50 border border-brand-100 flex items-center justify-center mx-auto">
-            <BookOpen className="h-8 w-8 text-brand-300" />
+          <div className="w-14 h-14 rounded-2xl bg-brand-50 border border-brand-100 flex items-center justify-center mx-auto">
+            <BookOpen className="h-7 w-7 text-brand-300" />
           </div>
           <div>
             <p className="text-slate-700 font-semibold">No exercises yet</p>
-            <p className="text-slate-400 text-sm mt-1">
-              Generate exercises based on your error patterns, or submit an
-              essay first.
+            <p className="text-slate-400 text-sm mt-1 max-w-xs mx-auto">
+              Generate exercises based on your error patterns, or submit an essay first.
             </p>
           </div>
-          <Button
+          <button
             onClick={generateExercises}
             disabled={isGenerating}
-            className="bg-gradient-to-r from-brand-600 to-brand-700 text-white border-0 rounded-xl"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
           >
             {isGenerating ? (
-              <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating…</>
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Generating…
+              </>
             ) : (
-              "Generate Exercises"
+              <>
+                <Sparkles className="h-4 w-4" />
+                Generate Exercises
+              </>
             )}
-          </Button>
+          </button>
         </div>
       ) : (
-        <div className="space-y-10">
+        <div className="space-y-8">
 
           {/* ── Pending ──────────────────────────────────────────────── */}
           {pending.length > 0 && (
-            <section className="space-y-3">
+            <section className="space-y-2.5">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-brand-600" />
-                <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wide">
+                <Sparkles className="h-3.5 w-3.5 text-brand-500" />
+                <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
                   Practice Now
                 </h2>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-brand-100 text-brand-700">
+                <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-brand-100 text-brand-700 tabular-nums">
                   {pending.length}
                 </span>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {pending.map((exercise, idx) => (
+              <div className="space-y-2">
+                {pending.map((exercise) => (
                   <ExerciseCard
                     key={exercise.id}
                     exercise={exercise}
-                    index={idx + 1}
                     isLocked={
                       activeExerciseId !== null &&
                       activeExerciseId !== exercise.id
@@ -226,22 +203,21 @@ export default function ExercisesPage() {
 
           {/* ── Completed ────────────────────────────────────────────── */}
           {completed.length > 0 && (
-            <section className="space-y-3">
+            <section className="space-y-2.5">
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wide">
+                <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+                <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
                   Completed
                 </h2>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 tabular-nums">
                   {completed.length}
                 </span>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {completed.map((exercise, idx) => (
+              <div className="space-y-2">
+                {completed.map((exercise) => (
                   <ExerciseCard
                     key={exercise.id}
                     exercise={exercise}
-                    index={idx + 1}
                     isLocked={false}
                     onActivate={() => {}}
                     onComplete={handleComplete}
