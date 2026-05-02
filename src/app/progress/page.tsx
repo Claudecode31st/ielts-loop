@@ -76,7 +76,7 @@ export default async function ProgressPage() {
         {n > 0 && (
           <Link href="/essay/new"
             className="shrink-0 text-xs font-semibold px-3.5 py-2 rounded-xl bg-brand-600 text-white hover:bg-brand-700 transition-colors">
-            + Submit Essay
+            New Essay
           </Link>
         )}
       </div>
@@ -95,7 +95,7 @@ export default async function ProgressPage() {
           </div>
           <Link href="/essay/new"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 transition-colors">
-            Submit First Essay
+            New Essay
           </Link>
         </div>
       ) : (

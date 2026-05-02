@@ -151,7 +151,7 @@ async function DashboardContent({ userId }: { userId: string }) {
                 </p>
                 <Link href="/essay/new">
                   <Button size="sm" className="bg-brand-600 hover:bg-brand-700 text-white border-0 rounded-xl text-xs gap-1.5">
-                    <PenLine className="h-3.5 w-3.5" /> Submit first essay
+                    <PenLine className="h-3.5 w-3.5" /> New Essay
                   </Button>
                 </Link>
               </div>
@@ -317,7 +317,7 @@ async function DashboardContent({ userId }: { userId: string }) {
               </p>
               <Link href={totalEssays === 0 ? "/essay/new" : "/exercises"}>
                 <button className="flex items-center gap-1.5 text-xs font-semibold bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl transition-colors w-full justify-center">
-                  {totalEssays === 0 ? "Submit Essay" : "Start Exercises"} <ArrowRight className="h-3.5 w-3.5" />
+                  {totalEssays === 0 ? "New Essay" : "Start Exercises"} <ArrowRight className="h-3.5 w-3.5" />
                 </button>
               </Link>
             </div>
@@ -411,7 +411,7 @@ export default async function DashboardPage() {
         </div>
         <Link href="/essay/new">
           <Button className="gap-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-xl h-9 px-4 text-sm border-0 shrink-0">
-            <PenLine className="h-4 w-4" /> Submit Essay
+            <PenLine className="h-4 w-4" /> New Essay
           </Button>
         </Link>
       </div>

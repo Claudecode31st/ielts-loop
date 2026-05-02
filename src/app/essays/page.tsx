@@ -50,7 +50,7 @@ export default async function EssaysPage() {
             <p className="text-xs text-slate-400 mt-1">Submit your first essay to get personalized IELTS feedback.</p>
           </div>
           <Link href="/essay/new">
-            <Button className="bg-brand-600 hover:bg-brand-700 text-white border-0 rounded-lg text-sm">Submit Essay</Button>
+            <Button className="bg-brand-600 hover:bg-brand-700 text-white border-0 rounded-lg text-sm">New Essay</Button>
           </Link>
         </div>
       ) : (

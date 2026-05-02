@@ -138,7 +138,7 @@ export default function TemplatesPage() {
           <p className="text-sm font-semibold text-slate-800 mb-1">Ready to practise?</p>
           <p className="text-xs text-slate-500 mb-3">Submit an essay and get examiner-level feedback in under 60 seconds.</p>
           <Link href="/essay/new" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 text-white text-xs font-semibold hover:bg-brand-700 transition-colors">
-            Submit an Essay
+            New Essay
           </Link>
         </div>
       </div>

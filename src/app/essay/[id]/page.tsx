@@ -123,7 +123,7 @@ export default async function EssayDetailPage({
           <DeleteEssayButton essayId={essay.id} />
           <Link href="/essay/new">
             <Button size="sm" className="gap-1.5 bg-brand-600 hover:bg-brand-700 text-white border-0">
-              <PenLine className="h-3.5 w-3.5" /> Submit New Essay
+              <PenLine className="h-3.5 w-3.5" /> New Essay
             </Button>
           </Link>
         </div>
