@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { TrendingUp, Award, Target, ArrowUp, ArrowDown, Minus, ExternalLink } from "lucide-react";
+import { TrendingUp, Award, Target, ExternalLink, ChevronUp, ChevronDown, Minus } from "lucide-react";
 import { ProgressChart } from "./progress-chart";
 import { ErrorPatterns } from "@/components/error-patterns";
 import { getStudentMemoryContext } from "@/lib/memory";
@@ -16,26 +16,14 @@ const BAND_LABEL: Record<number, string> = {
   9: "Expert", 8: "Very Good", 7: "Good", 6: "Competent",
   5: "Modest", 4: "Limited", 3: "Extremely Limited",
 };
-function getBandLabel(band: number) {
-  return BAND_LABEL[Math.floor(band)] ?? "";
-}
+function getBandLabel(b: number) { return BAND_LABEL[Math.floor(b)] ?? ""; }
 
-function trendColor(d: number) {
-  if (d > 0.09) return "text-emerald-600";
-  if (d < -0.09) return "text-red-500";
-  return "text-slate-400";
-}
-function trendArrow(d: number) {
-  if (d > 0.09) return "↑";
-  if (d < -0.09) return "↓";
-  return "→";
-}
-
+// Plain-English criterion names — students don't think in abbreviations
 const CRITERIA = [
-  { key: "taskAchievement",   label: "Task Achievement",     abbr: "TA", color: "bg-emerald-500" },
-  { key: "coherenceCohesion", label: "Coherence & Cohesion", abbr: "CC", color: "bg-blue-500"    },
-  { key: "lexicalResource",   label: "Lexical Resource",     abbr: "LR", color: "bg-violet-500"  },
-  { key: "grammaticalRange",  label: "Grammatical Range",    abbr: "GR", color: "bg-amber-500"   },
+  { key: "taskAchievement",   label: "Task Achievement"     },
+  { key: "coherenceCohesion", label: "Coherence & Cohesion" },
+  { key: "lexicalResource",   label: "Vocabulary"           },
+  { key: "grammaticalRange",  label: "Grammar"              },
 ] as const;
 
 export default async function ProgressPage() {
@@ -48,10 +36,9 @@ export default async function ProgressPage() {
   ]);
 
   const n = essayHistory.length;
-  const isEmpty = n === 0;
 
   const progressData: ProgressDataPoint[] = essayHistory.map((e) => ({
-    date: format(new Date(e.submittedAt!), "MMM d"),
+    date:              format(new Date(e.submittedAt!), "MMM d"),
     overallBand:       parseFloat(String(e.overallBand))       || 0,
     taskAchievement:   parseFloat(String(e.taskAchievement))   || 0,
     coherenceCohesion: parseFloat(String(e.coherenceCohesion)) || 0,
@@ -60,26 +47,19 @@ export default async function ProgressPage() {
   }));
 
   const latest = n > 0 ? progressData[n - 1] : null;
+  const first  = n > 0 ? progressData[0]     : null;
   const prev   = n > 1 ? progressData[n - 2] : null;
-  const first  = n > 0 ? progressData[0] : null;
 
-  const bestOverall  = n > 0 ? Math.max(...progressData.map((d) => d.overallBand)) : 0;
-  const overallDelta = latest && prev ? latest.overallBand - prev.overallBand : null;
+  const bestBand         = n > 0 ? Math.max(...progressData.map((d) => d.overallBand)) : 0;
+  const totalImprovement = latest && first && n > 1 ? latest.overallBand - first.overallBand : null;
 
-  // Total improvement: first essay → latest essay
-  const totalImprovement = latest && first && n > 1
-    ? latest.overallBand - first.overallBand
-    : null;
-
-  // Weakest criterion from latest essay
-  const weakest = latest
+  // Weakest criterion in plain English
+  const weakestCriterion = latest
     ? CRITERIA.reduce((w, c) =>
-        (latest[c.key as keyof ProgressDataPoint] as number) < (latest[w.key as keyof ProgressDataPoint] as number) ? c : w
+        (latest[c.key as keyof ProgressDataPoint] as number) <
+        (latest[w.key as keyof ProgressDataPoint] as number) ? c : w
       )
     : null;
-
-  const delta = (key: keyof ProgressDataPoint) =>
-    latest && prev ? (latest[key] as number) - (prev[key] as number) : 0;
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
@@ -91,245 +71,195 @@ export default async function ProgressPage() {
             <TrendingUp className="h-5 w-5 text-brand-600" />
             My Progress
           </h1>
-          <p className="text-sm text-slate-400 mt-0.5">
-            Deep-dive into your band scores, trends, and patterns over time.
-          </p>
+          <p className="text-sm text-slate-400 mt-0.5">How your writing has improved over time.</p>
         </div>
         {n > 0 && (
-          <Link
-            href="/essay/new"
-            className="shrink-0 text-xs font-semibold px-3.5 py-2 rounded-xl bg-brand-600 text-white hover:bg-brand-700 transition-colors"
-          >
+          <Link href="/essay/new"
+            className="shrink-0 text-xs font-semibold px-3.5 py-2 rounded-xl bg-brand-600 text-white hover:bg-brand-700 transition-colors">
             + Submit Essay
           </Link>
         )}
       </div>
 
-      {isEmpty ? (
+      {n === 0 ? (
+        /* ── Empty state ── */
         <div className="bg-white border border-slate-200 rounded-2xl p-14 text-center space-y-4">
           <div className="w-14 h-14 rounded-2xl bg-brand-50 border border-brand-100 flex items-center justify-center mx-auto">
             <TrendingUp className="h-7 w-7 text-brand-300" />
           </div>
           <div>
-            <p className="font-semibold text-slate-800">No progress data yet</p>
+            <p className="font-semibold text-slate-800">Nothing to show yet</p>
             <p className="text-sm text-slate-400 mt-1 max-w-xs mx-auto">
-              Submit your first essay to start tracking your band scores and error patterns.
+              Submit your first essay and your progress will appear here.
             </p>
           </div>
-          <Link
-            href="/essay/new"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 transition-colors"
-          >
+          <Link href="/essay/new"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 transition-colors">
             Submit First Essay
           </Link>
         </div>
       ) : (
         <>
-          {/* ── Hero Stats (all unique to Progress, not on Dashboard) ── */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {/* ── 3 hero stats — all unique to this page ── */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
 
-            {/* Latest Band */}
-            <div className="col-span-2 sm:col-span-1 bg-brand-600 rounded-2xl p-5 text-white flex flex-col justify-between min-h-[110px]">
-              <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Latest Band</p>
+            {/* Current level */}
+            <div className="bg-brand-600 rounded-2xl p-5 text-white flex flex-col justify-between min-h-[120px]">
+              <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Your Current Level</p>
               <div>
                 <div className="flex items-end gap-2">
-                  <span className="text-5xl font-extrabold tabular-nums leading-none">
-                    {latest!.overallBand.toFixed(1)}
-                  </span>
-                  {overallDelta !== null && overallDelta !== 0 && (
-                    <span className={`text-sm font-bold pb-1 ${overallDelta > 0 ? "text-emerald-300" : "text-red-300"}`}>
-                      {overallDelta > 0 ? "+" : ""}{overallDelta.toFixed(1)}
+                  <span className="text-5xl font-extrabold tabular-nums leading-none">{latest!.overallBand.toFixed(1)}</span>
+                  {prev && (
+                    <span className={`text-sm font-bold pb-1 ${latest!.overallBand > prev.overallBand ? "text-emerald-300" : latest!.overallBand < prev.overallBand ? "text-red-300" : "opacity-50"}`}>
+                      {latest!.overallBand > prev.overallBand ? `+${(latest!.overallBand - prev.overallBand).toFixed(1)}` :
+                       latest!.overallBand < prev.overallBand ? (latest!.overallBand - prev.overallBand).toFixed(1) : ""}
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] opacity-60 mt-1">{getBandLabel(latest!.overallBand)}</p>
-              </div>
-            </div>
-
-            {/* Best ever */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between min-h-[110px]">
-              <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
-                <Award className="h-4 w-4 text-emerald-500" />
-              </div>
-              <div>
-                <div className="text-3xl font-extrabold text-emerald-600 tabular-nums">{bestOverall.toFixed(1)}</div>
-                <p className="text-xs text-slate-400 mt-0.5">Best overall</p>
-              </div>
-            </div>
-
-            {/* Total improvement since first essay */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between min-h-[110px]">
-              <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
-                totalImprovement === null ? "bg-slate-50"
-                : totalImprovement > 0 ? "bg-emerald-50"
-                : totalImprovement < 0 ? "bg-red-50"
-                : "bg-slate-50"
-              }`}>
-                {totalImprovement === null || totalImprovement === 0
-                  ? <Minus className="h-4 w-4 text-slate-400" />
-                  : totalImprovement > 0
-                  ? <ArrowUp className="h-4 w-4 text-emerald-500" />
-                  : <ArrowDown className="h-4 w-4 text-red-500" />
-                }
-              </div>
-              <div>
-                <div className={`text-3xl font-extrabold tabular-nums ${
-                  totalImprovement === null ? "text-slate-300"
-                  : totalImprovement > 0 ? "text-emerald-600"
-                  : totalImprovement < 0 ? "text-red-500"
-                  : "text-slate-400"
-                }`}>
-                  {totalImprovement === null
-                    ? "—"
-                    : `${totalImprovement > 0 ? "+" : ""}${totalImprovement.toFixed(1)}`}
-                </div>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  {totalImprovement === null
-                    ? "Submit more essays"
-                    : totalImprovement > 0
-                    ? `since first essay (${first!.overallBand.toFixed(1)} → ${latest!.overallBand.toFixed(1)})`
-                    : totalImprovement < 0
-                    ? `since first essay (${first!.overallBand.toFixed(1)} → ${latest!.overallBand.toFixed(1)})`
-                    : "No change yet"}
+                <p className="text-xs opacity-60 mt-1">
+                  Band {latest!.overallBand.toFixed(1)} — {getBandLabel(latest!.overallBand)}
                 </p>
               </div>
             </div>
 
-            {/* Weakest criterion — actionable focus */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between min-h-[110px]">
-              <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center">
-                <Target className="h-4 w-4 text-amber-500" />
-              </div>
-              <div>
-                <div className="text-3xl font-extrabold text-amber-600 tabular-nums">
-                  {weakest ? (latest![weakest.key as keyof ProgressDataPoint] as number).toFixed(1) : "—"}
-                </div>
-                <p className="text-xs text-slate-400 mt-0.5 leading-snug">
-                  {weakest ? `${weakest.abbr} — focus here first` : "No data"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Score Breakdown: latest essay scores + trend vs previous ── */}
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            {/* Improvement since start */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between min-h-[120px]">
               <div className="flex items-center gap-2">
-                <Target className="h-4 w-4 text-slate-400" />
-                <h2 className="text-sm font-bold text-slate-800">Latest Score by Criterion</h2>
-              </div>
-              {n > 1 && (
-                <span className="text-[10px] text-slate-400">trend = vs previous essay</span>
-              )}
-            </div>
-            <div className="divide-y divide-slate-50">
-              {CRITERIA.map(({ key, label, abbr, color }) => {
-                const val  = latest![key as keyof ProgressDataPoint] as number ?? 0;
-                const d    = delta(key as keyof ProgressDataPoint);
-                return (
-                  <div key={key} className="px-5 py-3.5 flex items-center gap-4">
-                    <span className="shrink-0 w-7 text-center text-[10px] font-bold text-slate-400">{abbr}</span>
-                    <span className="w-44 shrink-0 text-sm text-slate-700">{label}</span>
-                    <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${color} transition-all duration-700`}
-                        style={{ width: `${(val / 9) * 100}%` }} />
-                    </div>
-                    <span className="shrink-0 w-10 text-right text-sm font-bold text-slate-800 tabular-nums">
-                      {val.toFixed(1)}
-                    </span>
-                    <span className={`shrink-0 w-16 text-right text-xs font-semibold tabular-nums ${n > 1 ? trendColor(d) : "text-transparent"}`}>
-                      {n > 1 ? `${trendArrow(d)} ${d !== 0 ? `${d > 0 ? "+" : ""}${d.toFixed(1)}` : "same"}` : "—"}
-                    </span>
+                {totalImprovement === null ? (
+                  <Minus className="h-4 w-4 text-slate-300" />
+                ) : totalImprovement > 0 ? (
+                  <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <ChevronUp className="h-4 w-4 text-emerald-600" />
                   </div>
-                );
-              })}
+                ) : totalImprovement < 0 ? (
+                  <div className="w-7 h-7 rounded-full bg-red-100 flex items-center justify-center">
+                    <ChevronDown className="h-4 w-4 text-red-500" />
+                  </div>
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center">
+                    <Minus className="h-4 w-4 text-slate-400" />
+                  </div>
+                )}
+                <p className="text-xs font-semibold text-slate-500">Overall improvement</p>
+              </div>
+              <div>
+                {totalImprovement !== null ? (
+                  <>
+                    <p className={`text-3xl font-extrabold tabular-nums ${totalImprovement > 0 ? "text-emerald-600" : totalImprovement < 0 ? "text-red-500" : "text-slate-400"}`}>
+                      {totalImprovement > 0 ? "+" : ""}{totalImprovement.toFixed(1)} bands
+                    </p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      since your first essay ({first!.overallBand.toFixed(1)} → {latest!.overallBand.toFixed(1)})
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-3xl font-extrabold text-slate-300">—</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Submit more essays to track improvement</p>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Focus area — most actionable stat */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between min-h-[120px]">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center">
+                  <Target className="h-4 w-4 text-amber-500" />
+                </div>
+                <p className="text-xs font-semibold text-slate-500">Focus on next</p>
+              </div>
+              <div>
+                {weakestCriterion ? (
+                  <>
+                    <p className="text-base font-bold text-slate-800 leading-snug">{weakestCriterion.label}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Your lowest score ({(latest![weakestCriterion.key as keyof ProgressDataPoint] as number).toFixed(1)}) — improving this will raise your band fastest
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-sm text-slate-300">Submit an essay to find out</p>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* ── Band Score Trend Chart ── */}
+          {/* ── Band score chart — the unique centrepiece of this page ── */}
           <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-slate-400" />
-                <h2 className="text-sm font-bold text-slate-800">Band Score Over Time</h2>
+              <div>
+                <h2 className="text-sm font-bold text-slate-800">How your band score has changed</h2>
+                <p className="text-xs text-slate-400 mt-0.5">Overall band is the bold line · individual criteria are faint</p>
               </div>
-              <span className="text-[10px] text-slate-400">{n} essay{n !== 1 ? "s" : ""} · Overall band bold</span>
+              {n === 1 && (
+                <span className="text-xs text-slate-400 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5">
+                  Submit more essays to see a trend
+                </span>
+              )}
             </div>
             <div className="p-4">
               <ProgressChart data={progressData} />
             </div>
           </div>
 
-          {/* ── Essay History ── */}
+          {/* ── Essay History — full list, not available on Dashboard ── */}
           <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-100">
-              <h2 className="text-sm font-bold text-slate-800">Essay History</h2>
-              <p className="text-xs text-slate-400 mt-0.5">All {n} essays — click to view full feedback</p>
+              <h2 className="text-sm font-bold text-slate-800">All your essays</h2>
+              <p className="text-xs text-slate-400 mt-0.5">Newest first · click any essay to re-read the feedback</p>
             </div>
             <div className="divide-y divide-slate-50">
               {[...essayHistory].reverse().map((essay, idx) => {
                 const band = essay.overallBand ? parseFloat(String(essay.overallBand)) : null;
-                const ta   = essay.taskAchievement   ? parseFloat(String(essay.taskAchievement))   : null;
-                const cc   = essay.coherenceCohesion ? parseFloat(String(essay.coherenceCohesion)) : null;
-                const lr   = essay.lexicalResource   ? parseFloat(String(essay.lexicalResource))   : null;
-                const gr   = essay.grammaticalRange  ? parseFloat(String(essay.grammaticalRange))  : null;
-
-                // Improvement vs previous (essays are reversed so idx 0 = latest)
-                const prevIdx = essayHistory.length - 1 - idx - 1;
-                const prevBand = prevIdx >= 0 && essayHistory[prevIdx].overallBand
-                  ? parseFloat(String(essayHistory[prevIdx].overallBand))
+                // Compare to the essay before this one (in chronological order)
+                const chronIdx = essayHistory.length - 1 - idx;
+                const prevBand = chronIdx > 0 && essayHistory[chronIdx - 1].overallBand
+                  ? parseFloat(String(essayHistory[chronIdx - 1].overallBand))
                   : null;
                 const diff = band !== null && prevBand !== null ? band - prevBand : null;
+                const isFirst = chronIdx === 0;
 
                 return (
                   <Link key={essay.id} href={`/essay/${essay.id}`}>
-                    <div className="px-5 py-3.5 flex items-center gap-4 hover:bg-slate-50/70 transition-colors group">
+                    <div className="px-5 py-4 flex items-center gap-4 hover:bg-slate-50/70 transition-colors group">
+
                       {/* Essay number */}
-                      <span className="shrink-0 text-xs font-bold text-slate-300 w-5 text-center tabular-nums">
+                      <span className="shrink-0 text-xs text-slate-300 font-bold tabular-nums w-6 text-center">
                         {essayHistory.length - idx}
                       </span>
 
-                      {/* Band */}
-                      <span className={`shrink-0 text-xl font-extrabold tabular-nums w-12 ${band ? getBandColor(band) : "text-slate-200"}`}>
+                      {/* Band score */}
+                      <span className={`shrink-0 text-2xl font-extrabold tabular-nums w-14 ${band ? getBandColor(band) : "text-slate-200"}`}>
                         {band?.toFixed(1) ?? "—"}
                       </span>
 
-                      {/* Delta vs previous */}
-                      <span className={`shrink-0 w-12 text-xs font-semibold tabular-nums ${
-                        diff === null ? "text-transparent"
-                        : diff > 0 ? "text-emerald-600"
-                        : diff < 0 ? "text-red-500"
-                        : "text-slate-300"
+                      {/* Change pill */}
+                      <span className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full tabular-nums ${
+                        isFirst ? "bg-slate-100 text-slate-400"
+                        : diff === null ? "text-transparent"
+                        : diff > 0 ? "bg-emerald-100 text-emerald-700"
+                        : diff < 0 ? "bg-red-100 text-red-600"
+                        : "bg-slate-100 text-slate-400"
                       }`}>
-                        {diff !== null ? (diff > 0 ? `+${diff.toFixed(1)}` : diff === 0 ? "same" : diff.toFixed(1)) : "—"}
+                        {isFirst ? "first essay"
+                          : diff === null ? "—"
+                          : diff > 0 ? `↑ +${diff.toFixed(1)}`
+                          : diff < 0 ? `↓ ${diff.toFixed(1)}`
+                          : "→ same"}
                       </span>
 
                       {/* Task type + date */}
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                          {essay.taskType === "task1" ? "T1" : "T2"}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+                          {essay.taskType === "task1" ? "Task 1" : "Task 2"}
                         </span>
-                        <span className="text-xs text-slate-400 tabular-nums">
+                        <span className="text-xs text-slate-400 hidden sm:block">
                           {format(new Date(essay.submittedAt!), "d MMM yyyy")}
                         </span>
                       </div>
 
-                      {/* Sub-scores */}
-                      <div className="flex-1 hidden sm:flex items-center gap-3">
-                        {[
-                          { abbr: "TA", val: ta },
-                          { abbr: "CC", val: cc },
-                          { abbr: "LR", val: lr },
-                          { abbr: "GR", val: gr },
-                        ].map(({ abbr, val }) => (
-                          <span key={abbr} className="text-[10px] text-slate-400 tabular-nums">
-                            <span className="font-semibold text-slate-500">{abbr}</span> {val?.toFixed(1) ?? "—"}
-                          </span>
-                        ))}
-                      </div>
-
                       {/* Prompt preview */}
-                      <p className="flex-1 text-xs text-slate-400 line-clamp-1 hidden lg:block">
+                      <p className="flex-1 text-xs text-slate-400 line-clamp-1 hidden md:block">
                         {essay.prompt}
                       </p>
 
@@ -339,9 +269,19 @@ export default async function ProgressPage() {
                 );
               })}
             </div>
+
+            {/* Best score callout */}
+            {n > 1 && (
+              <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
+                <Award className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                <p className="text-xs text-slate-500">
+                  Your best essay scored <span className="font-bold text-emerald-600">{bestBand.toFixed(1)}</span> — keep pushing for a new personal best!
+                </p>
+              </div>
+            )}
           </div>
 
-          {/* ── Error Patterns + Skill Profile ── */}
+          {/* ── Error patterns & skill profile ── */}
           <ErrorPatterns memory={memory} />
         </>
       )}

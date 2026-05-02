@@ -96,13 +96,13 @@ async function DashboardContent({ userId }: { userId: string }) {
             <>
               <p className="text-sm font-bold text-slate-800 leading-snug capitalize mt-0.5">{topErrors[0].errorType}</p>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className={`text-[10px] font-bold px-1.5 py-px rounded border ${
+                <span className={`text-[10px] font-bold px-1.5 py-px rounded border capitalize ${
                   topErrors[0].errorCategory === "grammar"    ? "bg-red-50 text-red-600 border-red-100"
                   : topErrors[0].errorCategory === "vocabulary" ? "bg-amber-50 text-amber-600 border-amber-100"
                   : topErrors[0].errorCategory === "structure"  ? "bg-blue-50 text-blue-600 border-blue-100"
                   : "bg-emerald-50 text-emerald-600 border-emerald-100"
                 }`}>
-                  {topErrors[0].errorCategory === "grammar" ? "GRA" : topErrors[0].errorCategory === "vocabulary" ? "LR" : topErrors[0].errorCategory === "structure" ? "CC" : "TA"}
+                  {topErrors[0].errorCategory}
                 </span>
                 <span className="text-[11px] text-slate-400">seen ×{topErrors[0].frequency ?? 1}</span>
               </div>
@@ -185,10 +185,10 @@ async function DashboardContent({ userId }: { userId: string }) {
           {/* Score by Criterion — averaged across all essays */}
           {(() => {
             const criteriaRows = [
-              { label: "Task Achievement",     abbr: "TA", val: criteriaAvg?.avgTA },
-              { label: "Coherence & Cohesion", abbr: "CC", val: criteriaAvg?.avgCC },
-              { label: "Lexical Resource",     abbr: "LR", val: criteriaAvg?.avgLR },
-              { label: "Grammatical Range",    abbr: "GR", val: criteriaAvg?.avgGR },
+              { label: "Task Achievement",     val: criteriaAvg?.avgTA },
+              { label: "Coherence & Cohesion", val: criteriaAvg?.avgCC },
+              { label: "Vocabulary",           val: criteriaAvg?.avgLR },
+              { label: "Grammar",              val: criteriaAvg?.avgGR },
             ].map(r => ({ ...r, score: r.val != null ? parseFloat(String(r.val)) : null }));
 
             const hasData = criteriaRows.some(r => r.score != null);
@@ -213,29 +213,33 @@ async function DashboardContent({ userId }: { userId: string }) {
                   </div>
                 ) : (
                   <div className="p-4 space-y-3.5">
-                    {criteriaRows.map(({ label, abbr, score }) => {
+                    {criteriaRows.map(({ label, score }) => {
                       if (score == null) return null;
                       const gap = Math.max(0, targetBand - score);
                       const isWeakest = score === minScore;
                       const barColor = score >= 7 ? "bg-emerald-400" : score >= 6 ? "bg-amber-400" : "bg-red-400";
                       const textColor = score >= 7 ? "text-emerald-600" : score >= 6 ? "text-amber-600" : "text-red-500";
                       return (
-                        <div key={abbr}>
+                        <div key={label}>
                           <div className="flex items-center justify-between mb-1.5">
                             <div className="flex items-center gap-2">
-                              <span className={`text-[10px] font-bold w-6 ${isWeakest ? "text-red-500" : "text-slate-400"}`}>{abbr}</span>
-                              <span className="text-xs text-slate-600">{label}</span>
-                              {isWeakest && <span className="text-[9px] font-bold text-red-400 bg-red-50 border border-red-100 px-1.5 py-px rounded-full">Weakest</span>}
+                              <span className="text-xs text-slate-700 font-medium">{label}</span>
+                              {isWeakest && (
+                                <span className="text-[9px] font-bold text-red-500 bg-red-50 border border-red-100 px-1.5 py-px rounded-full">
+                                  Needs work
+                                </span>
+                              )}
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
                               <span className={`text-xs font-bold tabular-nums ${textColor}`}>{score.toFixed(1)}</span>
-                              {gap > 0 && <span className="text-[9px] text-slate-400 tabular-nums">+{gap.toFixed(1)} needed</span>}
+                              {gap > 0 && (
+                                <span className="text-[9px] text-slate-400 tabular-nums">+{gap.toFixed(1)} to target</span>
+                              )}
                             </div>
                           </div>
                           <div className="relative h-2 bg-slate-100 rounded-full overflow-hidden">
                             <div className={`h-full rounded-full ${barColor} transition-all duration-500`}
                               style={{ width: `${(score / 9) * 100}%` }} />
-                            {/* Target marker */}
                             <div className="absolute top-0 h-full w-0.5 bg-slate-400/40"
                               style={{ left: `${(targetBand / 9) * 100}%` }} />
                           </div>
@@ -243,7 +247,7 @@ async function DashboardContent({ userId }: { userId: string }) {
                       );
                     })}
                     <p className="text-[10px] text-slate-400 pt-1 leading-relaxed border-t border-[var(--border)]">
-                      Vertical line marks your Band {targetBand.toFixed(1)} target. Improve your weakest criterion first for the fastest score gain.
+                      The line on each bar is your Band {targetBand.toFixed(1)} target. Work on your weakest area first — it gives the fastest score boost.
                     </p>
                   </div>
                 )}
