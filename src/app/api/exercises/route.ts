@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 export const maxDuration = 60; // Vercel hobby plan max
-import { exercises, users } from "@/lib/db/schema";
+import { exercises, users, essays } from "@/lib/db/schema";
 import { generateExercises } from "@/lib/claude";
 import { getStudentMemoryContext } from "@/lib/memory";
 import { eq, desc, gte, count } from "drizzle-orm";
@@ -76,14 +76,31 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // ── Require at least one essay ────────────────────────────────────────
+    const [essayCount] = await db
+      .select({ value: count() })
+      .from(essays)
+      .where(eq(essays.userId, session.user.id));
+
+    if ((essayCount?.value ?? 0) === 0) {
+      return NextResponse.json(
+        {
+          error: "Submit at least one essay first. Exercises are personalised to your actual mistakes — without an essay there's nothing to target.",
+          noEssays: true,
+        },
+        { status: 400 }
+      );
+    }
+
     // ── Generate ──────────────────────────────────────────────────────────
     const studentMemory = await getStudentMemoryContext(session.user.id);
 
     const targetErrors =
       studentMemory.topErrorPatterns.slice(0, 5).map((e) => e.errorType);
 
+    // If essays exist but patterns aren't extracted yet, use broad IELTS areas
     if (targetErrors.length === 0) {
-      targetErrors.push("article usage", "sentence variety", "cohesive devices");
+      targetErrors.push("grammatical range", "lexical resource", "coherence and cohesion");
     }
 
     const generatedExercises = await generateExercises({ studentMemory, targetErrors });

@@ -8,7 +8,9 @@ import {
   RefreshCw,
   CheckCircle,
   Sparkles,
+  PenLine,
 } from "lucide-react";
+import Link from "next/link";
 import type { Exercise, ExerciseContent } from "@/types";
 
 export default function ExercisesPage() {
@@ -16,6 +18,7 @@ export default function ExercisesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [noEssays, setNoEssays] = useState(false);
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -54,6 +57,10 @@ export default function ExercisesPage() {
       const data = await res.json();
       if (res.status === 429) {
         setError(data.error);
+        return;
+      }
+      if (res.status === 400 && data.noEssays) {
+        setNoEssays(true);
         return;
       }
       if (!res.ok) throw new Error(data.error);
@@ -106,8 +113,8 @@ export default function ExercisesPage() {
 
         <button
           onClick={generateExercises}
-          disabled={isGenerating}
-          className="shrink-0 flex items-center gap-1.5 text-sm font-medium px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:text-brand-700 hover:bg-brand-50 transition-colors disabled:opacity-50"
+          disabled={isGenerating || noEssays}
+          className="shrink-0 flex items-center gap-1.5 text-sm font-medium px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:text-brand-700 hover:bg-brand-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isGenerating ? (
             <>
@@ -141,34 +148,57 @@ export default function ExercisesPage() {
       ) : exercises.length === 0 ? (
 
         /* ── Empty state ─────────────────────────────────────────────── */
-        <div className="text-center py-20 space-y-4">
-          <div className="w-14 h-14 rounded-2xl bg-brand-50 border border-brand-100 flex items-center justify-center mx-auto">
-            <BookOpen className="h-7 w-7 text-brand-300" />
+        noEssays ? (
+          /* No essays submitted yet */
+          <div className="text-center py-20 space-y-4">
+            <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center mx-auto">
+              <PenLine className="h-7 w-7 text-amber-400" />
+            </div>
+            <div>
+              <p className="text-slate-700 font-semibold">Submit an essay first</p>
+              <p className="text-slate-400 text-sm mt-1 max-w-xs mx-auto">
+                Exercises are personalised to your actual mistakes. Submit an essay so the AI knows what to target.
+              </p>
+            </div>
+            <Link
+              href="/essay/new"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition-colors"
+            >
+              <PenLine className="h-4 w-4" />
+              Submit an Essay
+            </Link>
           </div>
-          <div>
-            <p className="text-slate-700 font-semibold">No exercises yet</p>
-            <p className="text-slate-400 text-sm mt-1 max-w-xs mx-auto">
-              Generate exercises based on your error patterns, or submit an essay first.
-            </p>
+        ) : (
+          /* Has essays but no exercises generated yet */
+          <div className="text-center py-20 space-y-4">
+            <div className="w-14 h-14 rounded-2xl bg-brand-50 border border-brand-100 flex items-center justify-center mx-auto">
+              <BookOpen className="h-7 w-7 text-brand-300" />
+            </div>
+            <div>
+              <p className="text-slate-700 font-semibold">No exercises yet</p>
+              <p className="text-slate-400 text-sm mt-1 max-w-xs mx-auto">
+                Generate exercises targeted at your specific error patterns.
+              </p>
+            </div>
+            <button
+              onClick={generateExercises}
+              disabled={isGenerating}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Generating…
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4" />
+                  Generate Exercises
+                </>
+              )}
+            </button>
           </div>
-          <button
-            onClick={generateExercises}
-            disabled={isGenerating}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Generating…
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-4 w-4" />
-                Generate Exercises
-              </>
-            )}
-          </button>
-        </div>
+        )
       ) : (
         <div className="space-y-8">
 
