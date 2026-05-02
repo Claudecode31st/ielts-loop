@@ -67,10 +67,9 @@ function GuideModeDemo() {
       } else {
         setTyping(false);
         setTimeout(() => setScores(true), 700);
-        setTimeout(() => setSugs(1), 1300);
-        setTimeout(() => setSugs(2), 1900);
-        setTimeout(() => setSugs(3), 2500);
-        // Loop: restart after pause
+        setTimeout(() => setSugs(1), 1200);
+        setTimeout(() => setSugs(2), 1700);
+        setTimeout(() => setSugs(3), 2200);
         setTimeout(() => {
           idx.current = 0;
           setText("");
@@ -88,15 +87,15 @@ function GuideModeDemo() {
   const sc = { task: 6.5, cc: 6.0, lex: 6.5, gram: 6.5, overall: 6.5 };
 
   return (
-    <div className="flex gap-3 min-h-[300px]">
+    <div className="flex gap-3 h-[280px]">
       {/* Textarea mockup */}
       <div className="flex-1 min-w-0 bg-white border border-slate-200 rounded-xl p-3 text-[11px] text-slate-700 leading-relaxed overflow-hidden">
         {text}
         {typing && <span className="animate-pulse text-brand-600 font-bold ml-px">|</span>}
       </div>
 
-      {/* Guide panel */}
-      <div className="w-44 shrink-0 flex flex-col gap-2">
+      {/* Guide panel — fixed height, cards fade in without layout shift */}
+      <div className="w-44 shrink-0 flex flex-col gap-1.5">
         <div className="flex items-center gap-1.5 pb-1.5 border-b border-slate-100">
           <div className="w-5 h-5 rounded bg-brand-600 flex items-center justify-center shrink-0">
             <Sparkles className="h-2.5 w-2.5 text-white" />
@@ -105,36 +104,30 @@ function GuideModeDemo() {
           {typing && <Loader2 className="h-3 w-3 animate-spin text-brand-500 ml-auto" />}
         </div>
 
-        {scores && (
-          <div className="rounded-lg border border-amber-100 bg-amber-50 p-2">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[8px] font-bold uppercase tracking-wide text-slate-400">Live Band</span>
-              <span className="text-sm font-extrabold text-amber-500">{sc.overall.toFixed(1)}</span>
-            </div>
-            <div className="grid grid-cols-4 gap-0.5">
-              {([ ["Task", sc.task], ["CC", sc.cc], ["Lex", sc.lex], ["Gram", sc.gram] ] as [string,number][]).map(([lbl, val]) => (
-                <div key={lbl} className="flex flex-col items-center bg-white/70 rounded py-1">
-                  <span className={`text-[10px] font-bold ${bandColor(val)}`}>{val.toFixed(1)}</span>
-                  <span className="text-[8px] text-slate-400">{lbl}</span>
-                </div>
-              ))}
-            </div>
+        {/* Scores card — always occupies space, fades in */}
+        <div className={`rounded-lg border border-amber-100 bg-amber-50 p-1.5 transition-opacity duration-500 ${scores ? "opacity-100" : "opacity-0"}`}>
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[8px] font-bold uppercase tracking-wide text-slate-400">Live Band</span>
+            <span className="text-sm font-extrabold text-amber-500">{sc.overall.toFixed(1)}</span>
           </div>
-        )}
+          <div className="grid grid-cols-4 gap-0.5">
+            {([ ["Task", sc.task], ["CC", sc.cc], ["Lex", sc.lex], ["Gram", sc.gram] ] as [string,number][]).map(([lbl, val]) => (
+              <div key={lbl} className="flex flex-col items-center bg-white/70 rounded py-0.5">
+                <span className={`text-[10px] font-bold ${bandColor(val)}`}>{val.toFixed(1)}</span>
+                <span className="text-[8px] text-slate-400">{lbl}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
-        {GUIDE_SUGGESTIONS.slice(0, sugs).map((s, i) => (
-          <div key={i} className={`rounded-lg border p-2 ${s.bg} ${s.border}`}>
+        {/* Suggestion cards — always occupy space, fade in one by one */}
+        {GUIDE_SUGGESTIONS.map((s, i) => (
+          <div key={i} className={`rounded-lg border p-1.5 ${s.bg} ${s.border} transition-opacity duration-500 ${sugs > i ? "opacity-100" : "opacity-0"}`}>
             <div className={`text-[8px] font-bold uppercase tracking-wide ${s.color} mb-0.5`}>{s.label}</div>
             <p className="text-[9px] italic text-slate-400 mb-0.5 truncate">"{s.excerpt}"</p>
-            <p className="text-[9px] text-slate-600 leading-relaxed line-clamp-2">{s.tip}</p>
+            <p className="text-[9px] text-slate-600 leading-snug line-clamp-2">{s.tip}</p>
           </div>
         ))}
-
-        {!scores && (
-          <p className="text-[9px] text-slate-400 text-center mt-2 leading-relaxed">
-            Feedback appears<br />as you write…
-          </p>
-        )}
       </div>
     </div>
   );
@@ -144,7 +137,7 @@ function GuideModeDemo() {
 
 function EssayFeedbackDemo() {
   return (
-    <div className="space-y-3 min-h-[300px]">
+    <div className="space-y-3 h-[280px] overflow-y-auto">
       {/* Band scores */}
       <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-4">
         <div className="text-center shrink-0">
@@ -238,7 +231,7 @@ function ExerciseDemo() {
   }
 
   return (
-    <div className="min-h-[300px] flex flex-col gap-4">
+    <div className="h-[280px] flex flex-col gap-3 overflow-y-auto">
       <div className="bg-white border border-slate-200 rounded-xl p-5">
         {/* Header */}
         <div className="flex items-center gap-2 mb-4">
