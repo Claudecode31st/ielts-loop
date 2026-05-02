@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, Zap } from "lucide-react";
+import { Check } from "lucide-react";
 import { UpgradeButton } from "@/components/upgrade-button";
 
 const freeFeatures = [
@@ -86,10 +86,7 @@ export default function PricingPage() {
               ))}
             </ul>
 
-            <UpgradeButton className="w-full bg-brand-600 hover:bg-brand-700 text-white border-0 justify-center">
-              <Zap className="h-4 w-4 mr-2" />
-              Upgrade to Pro
-            </UpgradeButton>
+            <UpgradeButton className="w-full bg-brand-600 hover:bg-brand-700 text-white border-0 justify-center" />
           </div>
         </div>
 
