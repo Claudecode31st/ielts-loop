@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   AlertCircle, Loader2, PenLine, Info,
   ImagePlus, X, GraduationCap, BookOpen,
-  Clock, AlertTriangle, EyeOff, Sparkles, Zap, CheckCircle2,
+  Clock, AlertTriangle, EyeOff, Sparkles, Zap, CheckCircle2, ClipboardList,
 } from "lucide-react";
 import { GuidePanel, detectRepeatedWords } from "@/components/guide-panel";
 import type { GuideSuggestion, BandScores } from "@/components/guide-panel";
@@ -363,6 +363,26 @@ export default function NewEssayPage() {
           <div className={`h-1 rounded-full transition-all duration-300 ${isGood ? "bg-green-500" : isUnderMin ? "bg-amber-400" : "bg-slate-300"}`}
             style={{ width: `${Math.min((wordCount / recWords) * 100, 100)}%` }} />
         </div>
+
+        {/* How-to hint — shown only when essay is empty */}
+        {!essay.trim() && (
+          <div className="flex flex-wrap items-start gap-3 px-1">
+            <div className="flex items-start gap-2 flex-1 min-w-[220px] bg-white border border-slate-200 rounded-xl px-3.5 py-3">
+              <ClipboardList className="h-4 w-4 text-brand-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-semibold text-slate-700">Paste & check</p>
+                <p className="text-xs text-slate-400 mt-0.5 leading-snug">Paste your essay below, then hit <strong className="text-slate-500">Analyse</strong> — get band scores across all 4 criteria and detailed AI feedback.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2 flex-1 min-w-[220px] bg-white border border-slate-200 rounded-xl px-3.5 py-3">
+              <Zap className="h-4 w-4 text-brand-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-semibold text-slate-700">Write with Guide Mode</p>
+                <p className="text-xs text-slate-400 mt-0.5 leading-snug">Turn on <strong className="text-slate-500">Guide Mode</strong> above, then write your essay — the AI tutor gives live tips every ~10 words as you type.</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Essay + Guide panel side by side */}
         <div className="flex gap-3 items-start">
