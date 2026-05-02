@@ -7,7 +7,7 @@ import {
   Dialog, DialogContent, DialogDescription,
   DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, CheckCircle, Zap, LogOut, Target, Trash2 } from "lucide-react";
+import { Loader2, CheckCircle, Zap, LogOut, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 const BAND_OPTIONS = ["5.0", "5.5", "6.0", "6.5", "7.0", "7.5", "8.0", "8.5", "9.0"];
@@ -30,7 +30,6 @@ export default function ProfilePage() {
       ]);
       if (memRes.ok) {
         const mem = await memRes.json();
-        // Load saved target band if present
         if (mem?.targetBand) setTargetBand(String(mem.targetBand));
       }
       if (usageRes.ok) {
@@ -51,7 +50,7 @@ export default function ProfilePage() {
         body: JSON.stringify({ targetBand: parseFloat(targetBand) }),
       });
       setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
+      setTimeout(() => setSaveSuccess(false), 2500);
     } finally { setIsSaving(false); }
   }
 
@@ -73,101 +72,80 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-10 space-y-3">
+    <div className="min-h-screen bg-[#F3F4F6] flex flex-col items-center justify-start py-12 px-4">
+      <div className="w-full max-w-md space-y-2">
 
-      {/* ── Account ── */}
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Account</p>
-        </div>
-        <div className="px-5 py-5 flex items-center gap-4">
+        {/* ── Profile header ── */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4">
           {session?.user?.image ? (
-            <img src={session.user.image} alt="" className="w-12 h-12 rounded-full shrink-0" />
+            <img src={session.user.image} alt="" className="w-11 h-11 rounded-full shrink-0" />
           ) : (
-            <div className="w-12 h-12 rounded-full bg-brand-100 flex items-center justify-center shrink-0 text-brand-600 font-bold text-lg">
+            <div className="w-11 h-11 rounded-full bg-brand-100 flex items-center justify-center shrink-0 font-bold text-brand-600">
               {session?.user?.name?.[0] ?? "?"}
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-slate-900 truncate">{session?.user?.name}</p>
+            <p className="font-semibold text-slate-900 truncate leading-tight">{session?.user?.name}</p>
             <p className="text-sm text-slate-400 truncate">{session?.user?.email}</p>
-            <p className="text-xs text-slate-400 mt-0.5">Signed in with Google</p>
           </div>
-        </div>
-        <div className="px-5 pb-4">
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="flex items-center gap-2 text-sm text-red-500 hover:text-red-700 transition-colors"
+            className="shrink-0 flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-red-500 transition-colors"
           >
             <LogOut className="h-3.5 w-3.5" />
             Sign out
           </button>
         </div>
-      </div>
 
-      {/* ── Plan ── */}
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Plan</p>
-        </div>
-        <div className="px-5 py-5 flex items-center justify-between gap-4">
-          <div>
+        {/* ── Settings card ── */}
+        <div className="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100">
+
+          {/* Plan row */}
+          <div className="px-5 py-4 flex items-center gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium text-slate-800">Plan</p>
+                {plan === "pro" ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-100 text-brand-700">
+                    <Zap className="h-2.5 w-2.5" /> Pro
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">Free</span>
+                )}
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {plan === "pro" ? "Unlimited essays · full analytics · priority AI" : "2 essays per month"}
+              </p>
+            </div>
             {plan === "pro" ? (
-              <>
-                <div className="flex items-center gap-1.5">
-                  <Zap className="h-4 w-4 text-brand-600" />
-                  <p className="font-semibold text-slate-900">Pro</p>
-                </div>
-                <p className="text-xs text-slate-400 mt-0.5">Unlimited essays · full analytics · priority AI</p>
-              </>
+              <button
+                onClick={handleManageBilling}
+                disabled={isPortalLoading}
+                className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50"
+              >
+                {isPortalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Manage billing"}
+              </button>
             ) : (
-              <>
-                <p className="font-semibold text-slate-900">Free</p>
-                <p className="text-xs text-slate-400 mt-0.5">2 essays per month · upgrade for unlimited access</p>
-              </>
+              <Link
+                href="/pricing"
+                className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg bg-brand-600 text-white hover:bg-brand-700 transition-colors"
+              >
+                Upgrade →
+              </Link>
             )}
           </div>
-          {plan === "pro" ? (
-            <button
-              onClick={handleManageBilling}
-              disabled={isPortalLoading}
-              className="shrink-0 text-xs font-semibold px-3.5 py-2 rounded-xl border border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50 transition-colors disabled:opacity-50"
-            >
-              {isPortalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Manage billing"}
-            </button>
-          ) : (
-            <Link
-              href="/pricing"
-              className="shrink-0 text-xs font-semibold px-3.5 py-2 rounded-xl bg-brand-600 text-white hover:bg-brand-700 transition-colors"
-            >
-              Upgrade to Pro
-            </Link>
-          )}
-        </div>
-      </div>
 
-      {/* ── Settings ── */}
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Settings</p>
-        </div>
-        <div className="px-5 py-5 space-y-4">
-          {/* Target band */}
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <Target className="h-3.5 w-3.5 text-amber-500" />
-                <p className="text-sm font-medium text-slate-800">Target Band</p>
-              </div>
-              <p className="text-xs text-slate-400">
-                Used to show how far you are from your goal on your dashboard.
-              </p>
+          {/* Target band row */}
+          <div className="px-5 py-4 flex items-center gap-4">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-slate-800">Target Band</p>
+              <p className="text-xs text-slate-400 mt-0.5">Sets your goal on the dashboard progress bars</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <select
                 value={targetBand}
                 onChange={(e) => setTargetBand(e.target.value)}
-                className="text-sm font-semibold text-slate-800 border border-slate-200 rounded-lg px-3 py-1.5 bg-white hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                className="text-sm font-semibold text-slate-700 border border-slate-200 rounded-lg px-2.5 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               >
                 {BAND_OPTIONS.map((b) => (
                   <option key={b} value={b}>Band {b}</option>
@@ -175,76 +153,64 @@ export default function ProfilePage() {
               </select>
               <button
                 onClick={handleSaveTarget}
-                disabled={isSaving}
-                className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-brand-600 text-white hover:bg-brand-700 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                disabled={isSaving || saveSuccess}
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-brand-600 text-white hover:bg-brand-700 transition-colors disabled:opacity-70 flex items-center gap-1.5 min-w-[52px] justify-center"
               >
-                {isSaving ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : saveSuccess ? (
-                  <><CheckCircle className="h-3.5 w-3.5" /> Saved</>
-                ) : (
-                  "Save"
-                )}
+                {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  : saveSuccess ? <><CheckCircle className="h-3.5 w-3.5" /> Saved</>
+                  : "Save"}
               </button>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* ── Danger zone ── */}
-      <div className="bg-white border border-red-100 rounded-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-red-100">
-          <p className="text-xs font-bold text-red-400 uppercase tracking-widest">Danger Zone</p>
-        </div>
-        <div className="px-5 py-5 flex items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <Trash2 className="h-3.5 w-3.5 text-red-400" />
+          {/* Reset row */}
+          <div className="px-5 py-4 flex items-center gap-4">
+            <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-slate-800">Reset AI Memory</p>
+              <p className="text-xs text-slate-400 mt-0.5">Clears error patterns · your essays stay · cannot be undone</p>
             </div>
-            <p className="text-xs text-slate-400">
-              Clears all your error patterns and learning data. Your essays won&apos;t be deleted. Cannot be undone.
-            </p>
+            <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+              <DialogTrigger asChild>
+                <button className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition-colors">
+                  Reset
+                </button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Reset AI Memory?</DialogTitle>
+                  <DialogDescription>
+                    This will permanently delete all your error patterns and learning data.
+                    Your essay history will stay. This cannot be undone.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <button
+                    onClick={() => setResetOpen(false)}
+                    className="text-sm px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleResetMemory}
+                    disabled={isResetting}
+                    className="text-sm font-semibold px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {isResetting ? <><Loader2 className="h-4 w-4 animate-spin" /> Resetting…</> : <><Trash2 className="h-4 w-4" /> Yes, reset</>}
+                  </button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
-          <Dialog open={resetOpen} onOpenChange={setResetOpen}>
-            <DialogTrigger asChild>
-              <button className="shrink-0 text-xs font-semibold px-3.5 py-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-colors">
-                Reset
-              </button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Reset AI Memory?</DialogTitle>
-                <DialogDescription>
-                  This will permanently delete all your error patterns and learning data.
-                  Your essay history will stay. This cannot be undone.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <button
-                  onClick={() => setResetOpen(false)}
-                  className="text-sm px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleResetMemory}
-                  disabled={isResetting}
-                  className="text-sm font-semibold px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center gap-2"
-                >
-                  {isResetting ? <><Loader2 className="h-4 w-4 animate-spin" /> Resetting…</> : "Yes, reset"}
-                </button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
 
-      {/* Footer links */}
-      <div className="flex items-center justify-center gap-4 pt-2 pb-6">
-        <Link href="/privacy" className="text-xs text-slate-400 hover:text-slate-600 transition-colors">Privacy Policy</Link>
-        <span className="text-slate-200">·</span>
-        <Link href="/terms" className="text-xs text-slate-400 hover:text-slate-600 transition-colors">Terms of Service</Link>
+        </div>
+
+        {/* ── Footer ── */}
+        <div className="flex items-center justify-center gap-4 pt-3">
+          <Link href="/privacy" className="text-xs text-slate-400 hover:text-slate-600 transition-colors">Privacy</Link>
+          <span className="text-slate-300">·</span>
+          <Link href="/terms" className="text-xs text-slate-400 hover:text-slate-600 transition-colors">Terms</Link>
+        </div>
+
       </div>
     </div>
   );
