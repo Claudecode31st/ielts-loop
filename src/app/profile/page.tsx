@@ -167,7 +167,7 @@ export default function ProfilePage() {
           <div className="px-5 py-4 flex items-center gap-4">
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-slate-800">Reset AI Memory</p>
-              <p className="text-xs text-slate-400 mt-0.5">Clears error patterns · your essays stay · cannot be undone</p>
+              <p className="text-xs text-slate-400 mt-0.5">Wipes your score blockers and writing history. Your essays are kept. Cannot be undone.</p>
             </div>
             <Dialog open={resetOpen} onOpenChange={setResetOpen}>
               <DialogTrigger asChild>
