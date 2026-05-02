@@ -293,16 +293,13 @@ export function EssayFeedback({ essay, prompt, recurringErrors = [] }: EssayFeed
         {/* #1 Priority — below Examiner Assessment, no indent */}
         {essay.feedbackSummary && (
           <div className="p-4 bg-brand-50 border border-brand-100 rounded-2xl">
-            <div className="flex items-center gap-1.5 mb-2">
+            <div className="flex items-center gap-1.5 mb-0.5">
               <Lightbulb className="h-3.5 w-3.5 text-brand-600 shrink-0" />
               <p className="text-[10px] font-bold text-brand-600 uppercase tracking-widest">Your #1 Priority</p>
-              <span className="ml-auto text-[10px] text-brand-400 font-medium tabular-nums">
-                {essay.taskType === "task1" ? "Task 1" : "Task 2"}
-                {essay.submittedAt
-                  ? ` · ${new Date(essay.submittedAt).toLocaleDateString("en", { day: "numeric", month: "short" })}`
-                  : ""}
-              </span>
             </div>
+            <p className="text-[10px] text-brand-400 mb-2 pl-5">
+              AI coaching tip — the single change that will raise your score most
+            </p>
             <p className="text-xs text-brand-900 leading-relaxed">{essay.feedbackSummary}</p>
           </div>
         )}
