@@ -56,19 +56,23 @@ export function RebuildMemoryButton() {
           </>
         ) : (
           <>
-            <Sparkles className="h-3.5 w-3.5" />
-            Update Insights
+            <RefreshCw className="h-3.5 w-3.5" />
+            Recalculate
           </>
         )}
       </button>
 
       {/* Tooltip */}
       {showTooltip && state === "idle" && (
-        <div className="absolute right-0 top-6 z-50 w-64 p-3 bg-slate-900 text-white rounded-xl shadow-xl text-xs leading-relaxed">
-          <p className="font-semibold mb-1">✨ Update your writing insights</p>
+        <div className="absolute right-0 top-6 z-50 w-72 p-3.5 bg-slate-900 text-white rounded-xl shadow-xl text-xs leading-relaxed">
+          <p className="font-semibold mb-1.5">Recalculate Score Blockers</p>
           <p className="text-slate-300">
-            Re-analyses all your past essays with the latest improvements —
-            refreshing your error profile, weekly focus, and score blockers.
+            If your score blockers or error patterns look incorrect or outdated,
+            this re-reads all your past essays and rebuilds them from scratch.
+          </p>
+          <p className="text-slate-400 mt-2">
+            New essays are always processed automatically — you only need this
+            if something looks wrong.
           </p>
           <div className="absolute -top-1.5 right-3 w-3 h-3 bg-slate-900 rotate-45 rounded-sm" />
         </div>
