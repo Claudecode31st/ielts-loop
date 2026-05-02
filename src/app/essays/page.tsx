@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Clock, FileText, PenLine } from "lucide-react";
 import { getBandColor, getBandBgColor, formatDate } from "@/lib/utils";
+import { DeleteEssayButton } from "@/components/delete-essay-button";
 
 export default async function EssaysPage() {
   const session = await auth();
@@ -62,8 +63,12 @@ export default async function EssaysPage() {
             const gr   = parseFloat(String(essay.grammaticalRange));
 
             return (
-              <Link key={essay.id} href={`/essay/${essay.id}`}>
-                <div className={`flex items-start gap-4 px-4 py-3.5 hover:bg-slate-50/70 transition-colors cursor-pointer ${i !== 0 ? "border-t border-[var(--border)]" : ""}`}>
+              <div
+                key={essay.id}
+                className={`flex items-center gap-3 px-4 py-3.5 group ${i !== 0 ? "border-t border-[var(--border)]" : ""}`}
+              >
+                {/* Clickable content area */}
+                <Link href={`/essay/${essay.id}`} className="flex items-start gap-4 flex-1 min-w-0 hover:bg-transparent">
 
                   {/* Band score */}
                   <div className="shrink-0 w-12 text-right">
@@ -89,7 +94,7 @@ export default async function EssaysPage() {
                       </span>
                     </div>
 
-                    <p className="text-sm text-slate-700 line-clamp-1 leading-snug mb-2">
+                    <p className="text-sm text-slate-700 line-clamp-1 leading-snug mb-2 group-hover:text-slate-900 transition-colors">
                       {essay.prompt}
                     </p>
 
@@ -110,8 +115,13 @@ export default async function EssaysPage() {
                       ))}
                     </div>
                   </div>
+                </Link>
+
+                {/* Delete — visible on hover */}
+                <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <DeleteEssayButton essayId={essay.id} variant="icon" redirectTo="/essays" />
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>

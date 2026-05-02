@@ -13,6 +13,7 @@ import { ArrowLeft, Clock, FileText, PenLine } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import type { Essay, ErrorPattern, DetailedFeedback } from "@/types";
 import { SampleEssay } from "@/components/sample-essay";
+import { DeleteEssayButton } from "@/components/delete-essay-button";
 
 export default async function EssayDetailPage({
   params,
@@ -118,11 +119,14 @@ export default async function EssayDetailPage({
             </span>
           </div>
         </div>
-        <Link href="/essay/new">
-          <Button size="sm" className="gap-1.5 bg-brand-600 hover:bg-brand-700 text-white border-0">
-            <PenLine className="h-3.5 w-3.5" /> Submit New Essay
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <DeleteEssayButton essayId={essay.id} />
+          <Link href="/essay/new">
+            <Button size="sm" className="gap-1.5 bg-brand-600 hover:bg-brand-700 text-white border-0">
+              <PenLine className="h-3.5 w-3.5" /> Submit New Essay
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Feedback grid */}
