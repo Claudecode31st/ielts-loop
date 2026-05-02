@@ -135,38 +135,33 @@ export function ExerciseCard({
       <button
         disabled={isLocked}
         onClick={startQuiz}
-        className={`w-full text-left rounded-xl bg-white border border-slate-200 shadow-sm transition-all duration-200 group
-          ${isLocked ? "opacity-40 cursor-not-allowed" : "hover:border-brand-300 hover:shadow-md cursor-pointer"}`}
+        className={`w-full text-left rounded-xl bg-white border border-slate-200 transition-all duration-200 group
+          ${isLocked ? "opacity-40 cursor-not-allowed" : "hover:border-brand-200 hover:bg-brand-50/30 cursor-pointer"}`}
       >
-        <div className="px-4 py-3.5 flex items-center gap-3">
-          {/* Left accent bar */}
-          <div className={`shrink-0 w-1 h-10 rounded-full ${style.bar}`} />
+        <div className="px-3.5 py-3 flex items-center gap-2.5">
+          {/* Type dot */}
+          <div className={`shrink-0 w-2 h-2 rounded-full ${style.dot}`} />
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-0.5">
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${style.badge}`}>
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${style.badge}`}>
                 {exercise.exerciseType}
               </span>
-              <span className="text-xs text-slate-400">
+              <span className="text-[10px] text-slate-400">
                 {questions.length}Q
               </span>
             </div>
-            <p className="text-sm font-semibold text-slate-800 leading-snug truncate">
+            <p className="text-sm font-medium text-slate-800 leading-snug truncate">
               {exercise.content?.title ?? "Practice Exercise"}
-            </p>
-            <p className="text-xs text-slate-400 truncate mt-0.5">
-              {exercise.content?.targetSkill ?? exercise.targetError}
             </p>
           </div>
 
           {/* Right indicator */}
           {isLocked ? (
-            <Lock className="h-4 w-4 text-slate-300 shrink-0" />
+            <Lock className="h-3.5 w-3.5 text-slate-300 shrink-0" />
           ) : (
-            <div className="shrink-0 w-7 h-7 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center group-hover:bg-brand-100 group-hover:border-brand-200 transition-colors">
-              <Play className="h-3 w-3 text-brand-600 ml-0.5" />
-            </div>
+            <Play className="h-3.5 w-3.5 text-slate-300 group-hover:text-brand-500 shrink-0 transition-colors ml-0.5" />
           )}
         </div>
       </button>
@@ -368,68 +363,34 @@ export function ExerciseCard({
     : "Keep practising";
 
   return (
-    <div className="rounded-xl bg-white border border-slate-200 shadow-sm overflow-hidden">
-      {/* Score banner */}
-      <div
-        className={`bg-gradient-to-r ${resultGradient} text-white px-4 py-3.5 flex items-center gap-3`}
-      >
-        <div className="text-3xl font-extrabold tabular-nums leading-none">
+    <div className="rounded-xl bg-white border border-slate-200 overflow-hidden">
+      {/* Compact score row */}
+      <div className="px-3.5 py-3 flex items-center gap-2.5">
+        {/* Score pill */}
+        <span className={`shrink-0 text-xs font-bold px-2 py-0.5 rounded-full text-white bg-gradient-to-r ${resultGradient}`}>
           {finalScore}%
-        </div>
+        </span>
+
+        {/* Title */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold">
-            {resultEmoji} {resultMsg}
+          <p className="text-sm font-medium text-slate-700 truncate">
+            {exercise.content?.title ?? "Exercise"}
           </p>
-          <p className="text-xs opacity-70 mt-0.5 truncate">
-            {hasAnswerData ? `${correctCount}/${questions.length} correct · ` : ""}
-            {exercise.content?.title}
-          </p>
+          {hasAnswerData && (
+            <p className="text-[10px] text-slate-400 mt-0.5">
+              {resultEmoji} {resultMsg} · {correctCount}/{questions.length} correct
+            </p>
+          )}
         </div>
-        {/* Inline retry */}
+
+        {/* Retry */}
         <button
           onClick={startQuiz}
-          className="shrink-0 flex items-center gap-1.5 text-xs font-semibold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors"
+          className="shrink-0 flex items-center gap-1 text-xs text-slate-400 hover:text-brand-600 transition-colors"
         >
           <RotateCcw className="h-3 w-3" />
-          Retry
         </button>
       </div>
-
-      {/* Compact review */}
-      {questions.length > 0 && (
-        <div className="px-4 py-3 space-y-1.5">
-          {questions.map((question, i) => {
-            const userAnswer = allAnswers[question.id];
-            const wasCorrect = userAnswer === question.correctAnswer;
-            const hasData = !!userAnswer;
-            return (
-              <div key={question.id} className="flex items-start gap-2 text-xs">
-                {hasData ? (
-                  wasCorrect ? (
-                    <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0 mt-0.5" />
-                  ) : (
-                    <XCircle className="h-3.5 w-3.5 text-red-400 shrink-0 mt-0.5" />
-                  )
-                ) : (
-                  <span className="w-3.5 h-3.5 shrink-0 mt-0.5 rounded-full border border-slate-200 inline-block" />
-                )}
-                <span
-                  className={`flex-1 leading-snug line-clamp-1 ${
-                    wasCorrect ? "text-slate-400" : "text-slate-600"
-                  }`}
-                >
-                  {question.question}
-                </span>
-                {hasData && !wasCorrect && (
-                  <span className="shrink-0 text-green-600 font-medium ml-1 truncate max-w-[90px]">
-                    {question.correctAnswer}
-                  </span>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 }

@@ -184,7 +184,7 @@ export default function ExercisesPage() {
                   {pending.length}
                 </span>
               </div>
-              <div className="space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {pending.map((exercise) => (
                   <ExerciseCard
                     key={exercise.id}
@@ -213,7 +213,7 @@ export default function ExercisesPage() {
                   {completed.length}
                 </span>
               </div>
-              <div className="space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {completed.map((exercise) => (
                   <ExerciseCard
                     key={exercise.id}
