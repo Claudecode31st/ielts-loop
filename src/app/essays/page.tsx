@@ -99,18 +99,16 @@ export default async function EssaysPage() {
                     </p>
 
                     {/* Sub-scores */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 flex-wrap">
                       {[
-                        { label: "TA", value: ta },
-                        { label: "CC", value: cc },
-                        { label: "LR", value: lr },
-                        { label: "GR", value: gr },
+                        { label: "Task",       value: ta },
+                        { label: "Coherence",  value: cc },
+                        { label: "Vocabulary", value: lr },
+                        { label: "Grammar",    value: gr },
                       ].map(({ label, value }) => (
-                        <div key={label} className="flex items-center gap-1">
-                          <span className="text-[10px] text-slate-400">{label}</span>
-                          <span className={`text-[11px] font-semibold px-1 py-px rounded ${getBandBgColor(value)}`}>
-                            {value.toFixed(1)}
-                          </span>
+                        <div key={label} className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-medium ${getBandBgColor(value)}`}>
+                          <span className="text-slate-500">{label}</span>
+                          <span className="font-bold">{value.toFixed(1)}</span>
                         </div>
                       ))}
                     </div>
