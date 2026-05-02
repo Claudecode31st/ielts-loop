@@ -247,37 +247,31 @@ export default function NewEssayPage() {
       )}
 
       {/* ── Settings row ── */}
-      <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-wrap items-center gap-4">
+      <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-wrap items-center gap-3">
         {/* IELTS Type */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide w-10">Type</span>
-          <div className="flex rounded-lg border border-slate-200 overflow-hidden text-sm">
-            {(["academic", "general"] as IeltsMode[]).map((mode) => (
-              <button key={mode} onClick={() => confirmSwitch(() => { setIeltsMode(mode); setChartData(null); setPrompt(""); })}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 font-medium transition-colors ${ieltsMode === mode ? "bg-brand-600 text-white" : "text-slate-600 hover:bg-slate-50"}`}>
-                {mode === "academic" ? <><GraduationCap className="h-3.5 w-3.5" />Academic</> : <><BookOpen className="h-3.5 w-3.5" />General</>}
-              </button>
-            ))}
-          </div>
+        <div className="flex rounded-lg border border-slate-200 overflow-hidden text-sm">
+          {(["academic", "general"] as IeltsMode[]).map((mode) => (
+            <button key={mode} onClick={() => confirmSwitch(() => { setIeltsMode(mode); setChartData(null); setPrompt(""); })}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 font-medium transition-colors ${ieltsMode === mode ? "bg-brand-600 text-white" : "text-slate-600 hover:bg-slate-50"}`}>
+              {mode === "academic" ? <><GraduationCap className="h-3.5 w-3.5" />Academic</> : <><BookOpen className="h-3.5 w-3.5" />General</>}
+            </button>
+          ))}
         </div>
 
-        <div className="w-px h-5 bg-slate-200 hidden sm:block" />
+        <div className="w-px h-5 bg-slate-200" />
 
         {/* Task */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide w-10">Task</span>
-          <div className="flex rounded-lg border border-slate-200 overflow-hidden text-sm">
-            {(["task1", "task2"] as TaskType[]).map((type) => (
-              <button key={type} onClick={() => confirmSwitch(() => { setTaskType(type); setShowWordWarning(false); setChartData(null); setPrompt(""); })}
-                className={`px-4 py-1.5 font-medium transition-colors ${taskType === type ? "bg-brand-600 text-white" : "text-slate-600 hover:bg-slate-50"}`}>
-                {type === "task1" ? "Task 1" : "Task 2"}
-              </button>
-            ))}
-          </div>
+        <div className="flex rounded-lg border border-slate-200 overflow-hidden text-sm">
+          {(["task1", "task2"] as TaskType[]).map((type) => (
+            <button key={type} onClick={() => confirmSwitch(() => { setTaskType(type); setShowWordWarning(false); setChartData(null); setPrompt(""); })}
+              className={`px-4 py-1.5 font-medium transition-colors ${taskType === type ? "bg-brand-600 text-white" : "text-slate-600 hover:bg-slate-50"}`}>
+              {type === "task1" ? "Task 1" : "Task 2"}
+            </button>
+          ))}
         </div>
 
         {/* Task description */}
-        <p className="text-xs text-slate-400 ml-auto hidden sm:block">
+        <p className="text-xs text-slate-400">
           {taskType === "task1" ? task1Label : "Respond to a point of view or argument. Min 250 words."}
         </p>
       </div>
