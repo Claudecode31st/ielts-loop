@@ -189,7 +189,7 @@ export default async function ProgressPage() {
             <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
               <div>
                 <h2 className="text-sm font-bold text-slate-800">How your band score has changed</h2>
-                <p className="text-xs text-slate-400 mt-0.5">Overall band is the bold line · individual criteria are faint</p>
+                <p className="text-xs text-slate-400 mt-0.5">Overall · Task · Coherence · Vocabulary · Grammar</p>
               </div>
               {n === 1 && (
                 <span className="text-xs text-slate-400 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5">
