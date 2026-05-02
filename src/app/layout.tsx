@@ -21,6 +21,7 @@ export default async function RootLayout({
 }) {
   const session = await auth();
   const isLoggedIn = !!session?.user;
+  const isAdmin = session?.user?.email === process.env.ADMIN_EMAIL;
 
   return (
     <html lang="en" className="h-full">
@@ -28,7 +29,7 @@ export default async function RootLayout({
             style={{ background: "var(--bg)", color: "var(--text)" }}>
         <SessionProvider session={session}>
           <div className="min-h-full flex flex-col">
-            <Nav user={session?.user ?? undefined} />
+            <Nav user={session?.user ?? undefined} isAdmin={isAdmin} />
             {/* Extra bottom padding on mobile when logged in to clear the bottom nav */}
             <main className={`flex-1 ${isLoggedIn ? "pb-16 md:pb-0" : ""}`}>
               {children}

@@ -17,6 +17,7 @@ interface NavProps {
     email?: string | null;
     image?: string | null;
   };
+  isAdmin?: boolean;
 }
 
 const navLinks = [
@@ -53,7 +54,7 @@ const resourceItems = [
   },
 ];
 
-export function Nav({ user }: NavProps) {
+export function Nav({ user, isAdmin }: NavProps) {
   const pathname = usePathname();
   const [resourcesOpen, setResourcesOpen] = useState(false);
 
@@ -129,6 +130,16 @@ export function Nav({ user }: NavProps) {
                   <Zap className="h-3.5 w-3.5" />
                   Upgrade
                 </Link>
+
+                {/* Admin link — desktop, owner only */}
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold text-brand-600 bg-brand-50 hover:bg-brand-100 transition-colors shrink-0"
+                  >
+                    Admin
+                  </Link>
+                )}
 
                 {/* Profile + sign-out — desktop */}
                 <div className="hidden md:flex items-center gap-1">
