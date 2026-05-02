@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import Anthropic from "@anthropic-ai/sdk";
+import { checkIsPro } from "@/lib/is-pro";
 
 const anthropic = new Anthropic();
 
@@ -27,9 +28,7 @@ export async function GET(_req: NextRequest) {
     .where(eq(users.id, session.user.id))
     .limit(1);
 
-  const isActivePro =
-    user?.plan === "pro" &&
-    (user.planExpiresAt == null || user.planExpiresAt > new Date());
+  const isActivePro = checkIsPro(user, session.user.email);
 
   const monthKey = currentMonthKey();
   const used = user?.promptMonthKey === monthKey ? (user.promptCount ?? 0) : 0;
@@ -51,9 +50,7 @@ export async function POST(req: NextRequest) {
     .where(eq(users.id, session.user.id))
     .limit(1);
 
-  const isActivePro =
-    user?.plan === "pro" &&
-    (user.planExpiresAt == null || user.planExpiresAt > new Date());
+  const isActivePro = checkIsPro(user, session.user.email);
 
   const monthKey = currentMonthKey();
   const sameMonth = user?.promptMonthKey === monthKey;

@@ -7,6 +7,7 @@ import { exercises, users, essays } from "@/lib/db/schema";
 import { generateExercises } from "@/lib/claude";
 import { getStudentMemoryContext } from "@/lib/memory";
 import { eq, desc, gte, count } from "drizzle-orm";
+import { checkIsPro } from "@/lib/is-pro";
 
 // Free: monthly limit. Pro: daily limit. Each generation = 3 exercises.
 const FREE_MONTHLY_GENERATIONS = 3;  // 9 exercises/month
@@ -46,9 +47,7 @@ export async function POST(req: NextRequest) {
       .where(eq(users.id, session.user.id))
       .limit(1);
 
-    const isActivePro =
-      user?.plan === "pro" &&
-      (user.planExpiresAt == null || user.planExpiresAt > new Date());
+    const isActivePro = checkIsPro(user, session.user.email);
 
     if (isActivePro) {
       const dailyUsed = await getDailyGenerationCount(session.user.id);

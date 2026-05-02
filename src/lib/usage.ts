@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { essays, users } from "@/lib/db/schema";
 import { and, eq, gte, count } from "drizzle-orm";
 import { FREE_ESSAY_LIMIT } from "@/lib/stripe";
+import { checkIsPro } from "@/lib/is-pro";
 
 const PRO_DAILY_LIMIT = 5;
 
@@ -37,15 +38,12 @@ export async function canSubmitEssay(userId: string): Promise<{
   reason?: "monthly_limit" | "daily_limit";
 }> {
   const [user] = await db
-    .select({ plan: users.plan, planExpiresAt: users.planExpiresAt })
+    .select({ plan: users.plan, planExpiresAt: users.planExpiresAt, email: users.email })
     .from(users)
     .where(eq(users.id, userId))
     .limit(1);
 
-  const plan = user?.plan ?? "free";
-  const isActivePro =
-    plan === "pro" &&
-    (user?.planExpiresAt == null || user.planExpiresAt > new Date());
+  const isActivePro = checkIsPro(user, user?.email);
 
   if (isActivePro) {
     const used = await getMonthlyEssayCount(userId);
