@@ -9,14 +9,21 @@ import {
   CheckCircle,
   Sparkles,
   PenLine,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
+import {
+  Dialog, DialogContent, DialogDescription,
+  DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
 import type { Exercise, ExerciseContent } from "@/types";
 
 export default function ExercisesPage() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
+  const [clearOpen, setClearOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [noEssays, setNoEssays] = useState(false);
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
@@ -74,6 +81,19 @@ export default function ExercisesPage() {
     }
   }
 
+  async function clearExercises() {
+    try {
+      setIsClearing(true);
+      await fetch("/api/exercises", { method: "DELETE" });
+      setExercises([]);
+      setClearOpen(false);
+    } catch {
+      setError("Failed to clear exercises.");
+    } finally {
+      setIsClearing(false);
+    }
+  }
+
   async function handleComplete(id: string, score: number) {
     setActiveExerciseId(null);
     if (score < 0) return;
@@ -111,23 +131,59 @@ export default function ExercisesPage() {
           </p>
         </div>
 
-        <button
-          onClick={generateExercises}
-          disabled={isGenerating || noEssays}
-          className="shrink-0 flex items-center gap-1.5 text-sm font-medium px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:text-brand-700 hover:bg-brand-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Generating…
-            </>
-          ) : (
-            <>
-              <RefreshCw className="h-3.5 w-3.5" />
-              Generate
-            </>
+        <div className="flex items-center gap-2 shrink-0">
+          {exercises.length > 0 && (
+            <Dialog open={clearOpen} onOpenChange={setClearOpen}>
+              <DialogTrigger asChild>
+                <button className="flex items-center gap-1.5 text-sm font-medium px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-400 hover:border-red-200 hover:text-red-500 hover:bg-red-50 transition-colors">
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Clear
+                </button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Clear all exercises?</DialogTitle>
+                  <DialogDescription>
+                    This will permanently delete all {exercises.length} exercise{exercises.length !== 1 ? "s" : ""}, including completed ones. Your essay history and AI memory are not affected. This cannot be undone.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <button
+                    onClick={() => setClearOpen(false)}
+                    className="text-sm px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={clearExercises}
+                    disabled={isClearing}
+                    className="text-sm font-semibold px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {isClearing ? <><Loader2 className="h-4 w-4 animate-spin" /> Clearing…</> : <><Trash2 className="h-4 w-4" /> Yes, clear all</>}
+                  </button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           )}
-        </button>
+
+          <button
+            onClick={generateExercises}
+            disabled={isGenerating || noEssays}
+            className="flex items-center gap-1.5 text-sm font-medium px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:text-brand-700 hover:bg-brand-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Generating…
+              </>
+            ) : (
+              <>
+                <RefreshCw className="h-3.5 w-3.5" />
+                Generate
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* ── Error ──────────────────────────────────────────────────────── */}

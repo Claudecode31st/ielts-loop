@@ -7,7 +7,7 @@ import {
   Dialog, DialogContent, DialogDescription,
   DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, CheckCircle, Zap, LogOut, Trash2 } from "lucide-react";
+import { Loader2, CheckCircle, Zap, LogOut, Trash2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 
 const BAND_OPTIONS = ["5.0", "5.5", "6.0", "6.5", "7.0", "7.5", "8.0", "8.5", "9.0"];
@@ -19,6 +19,8 @@ export default function ProfilePage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [resetOpen, setResetOpen]   = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deleteAccountOpen, setDeleteAccountOpen] = useState(false);
   const [plan, setPlan]             = useState<"free" | "pro">("free");
   const [isPortalLoading, setIsPortalLoading] = useState(false);
 
@@ -69,6 +71,16 @@ export default function ProfilePage() {
       await fetch("/api/memory", { method: "DELETE" });
       setResetOpen(false);
     } finally { setIsResetting(false); }
+  }
+
+  async function handleDeleteAccount() {
+    setIsDeletingAccount(true);
+    try {
+      const res = await fetch("/api/account", { method: "DELETE" });
+      if (res.ok) {
+        await signOut({ callbackUrl: "/" });
+      }
+    } finally { setIsDeletingAccount(false); }
   }
 
   return (
@@ -196,6 +208,63 @@ export default function ProfilePage() {
                     className="text-sm font-semibold px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center gap-2"
                   >
                     {isResetting ? <><Loader2 className="h-4 w-4 animate-spin" /> Resetting…</> : <><Trash2 className="h-4 w-4" /> Yes, reset</>}
+                  </button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Delete account row */}
+          <div className="px-5 py-4 flex items-center gap-4">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-red-600">Delete Account</p>
+              <p className="text-xs text-slate-400 mt-0.5">Permanently deletes your account, essays, exercises, and all data. Cannot be undone.</p>
+            </div>
+            <Dialog open={deleteAccountOpen} onOpenChange={setDeleteAccountOpen}>
+              <DialogTrigger asChild>
+                <button className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg border border-red-300 bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
+                  Delete
+                </button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-red-500" />
+                    Delete your account?
+                  </DialogTitle>
+                  <DialogDescription asChild>
+                    <div className="space-y-2 text-sm text-slate-500">
+                      <p>This will permanently delete:</p>
+                      <ul className="list-disc list-inside space-y-1 text-slate-600">
+                        <li>All your essays and feedback</li>
+                        <li>All exercises and scores</li>
+                        <li>Your AI memory and error history</li>
+                        <li>Your account and profile</li>
+                      </ul>
+                      {plan === "pro" && (
+                        <p className="text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mt-2">
+                          Your Pro subscription will be cancelled automatically.
+                        </p>
+                      )}
+                      <p className="font-medium text-slate-700 pt-1">This cannot be undone.</p>
+                    </div>
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <button
+                    onClick={() => setDeleteAccountOpen(false)}
+                    className="text-sm px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDeleteAccount}
+                    disabled={isDeletingAccount}
+                    className="text-sm font-semibold px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {isDeletingAccount
+                      ? <><Loader2 className="h-4 w-4 animate-spin" /> Deleting…</>
+                      : <><Trash2 className="h-4 w-4" /> Yes, delete everything</>}
                   </button>
                 </DialogFooter>
               </DialogContent>

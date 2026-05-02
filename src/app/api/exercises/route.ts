@@ -160,3 +160,22 @@ export async function GET(_req: NextRequest) {
     );
   }
 }
+
+export async function DELETE(_req: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    await db.delete(exercises).where(eq(exercises.userId, session.user.id));
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Clear exercises error:", error);
+    return NextResponse.json(
+      { error: "Failed to clear exercises" },
+      { status: 500 }
+    );
+  }
+}
