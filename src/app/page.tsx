@@ -1,24 +1,13 @@
 import Link from "next/link";
 import { FeatureDemos } from "@/components/feature-demos";
 import { Button } from "@/components/ui/button";
+import { PricingCards, CostComparison } from "@/components/pricing-cards";
 import {
   CheckCircle, Brain, NotebookPen, Zap, BarChart3, Crosshair,
   Target, PenLine, ChevronRight, Star,
   Clock, TrendingUp, ShieldCheck, Users,
   BookOpen, Sparkles, MessageSquare,
 } from "lucide-react";
-
-function PricingCell({ value, brand }: { value: boolean | string; brand?: boolean }) {
-  const base = "px-4 py-3.5 text-center border-l border-[var(--border)] flex items-center justify-center";
-  const bg = brand ? "bg-brand-50" : "";
-  return (
-    <div className={`${base} ${bg}`}>
-      {value === true  ? <CheckCircle className={`h-4 w-4 ${brand ? "text-brand-600" : "text-emerald-500"}`} /> :
-       value === false ? <span className="text-slate-200 font-bold text-lg leading-none">—</span> :
-       <span className={`text-sm font-medium ${brand ? "text-brand-700" : "text-slate-500"}`}>{value}</span>}
-    </div>
-  );
-}
 
 export default function LandingPage() {
   return (
@@ -537,111 +526,23 @@ export default function LandingPage() {
         </section>
 
         {/* ── Pricing ── */}
-        <section id="pricing">
-          <div className="text-center mb-10">
+        <section id="pricing" className="space-y-8">
+          <div className="text-center">
             <p className="text-xs font-semibold text-brand-600 uppercase tracking-widest mb-2">Pricing</p>
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3">
               Start free. Upgrade when you&apos;re ready.
             </h2>
             <p className="text-slate-500 text-sm max-w-md mx-auto">
-              Every plan includes AI feedback, error memory, and targeted exercises. Pro removes the limits and adds the tools serious candidates need.
+              Every plan includes AI feedback, error memory, and targeted exercises. Pro removes the limits.
             </p>
           </div>
 
-          {/* Comparison table */}
-          <div className="bg-white border border-[var(--border)] rounded-xl shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden mb-6">
-            {/* Header */}
-            <div className="grid grid-cols-[1fr_140px_160px] border-b border-[var(--border)]">
-              <div className="px-6 py-5" />
-              <div className="px-4 py-5 text-center border-l border-[var(--border)]">
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Free</p>
-                <p className="text-2xl font-bold text-slate-900">$0</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">forever</p>
-              </div>
-              <div className="px-4 py-5 text-center border-l border-[var(--border)] bg-brand-50 relative">
-                <div className="absolute -top-px left-0 right-0 h-0.5 bg-brand-600" />
-                <p className="text-[11px] font-bold text-brand-600 uppercase tracking-widest mb-1">Pro</p>
-                <p className="text-2xl font-bold text-slate-900">$12<span className="text-xs font-normal text-slate-400">/mo</span></p>
-                <p className="text-[11px] text-brand-600 font-medium mt-0.5">Most popular</p>
-              </div>
-            </div>
+          <PricingCards />
 
-            {/* Section: Writing */}
-            <div className="grid grid-cols-[1fr_140px_160px] bg-slate-50/60 border-b border-[var(--border)]">
-              <div className="px-6 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest col-span-3">Writing & Feedback</div>
-            </div>
-            {[
-              { label: "Essays per month",                    free: "2 essays",   pro: "Unlimited" },
-              { label: "Daily essay limit",                   free: "2/day",      pro: "5/day" },
-              { label: "AI examiner feedback (all criteria)", free: true,         pro: true },
-              { label: "Task 1 & Task 2 supported",           free: true,         pro: true },
-              { label: "Task 1 image / chart upload",         free: true,         pro: true },
-              { label: "Guided writing (live AI coaching)",   free: "5/day",      pro: "50/day" },
-            ].map((row, i) => (
-              <div key={i} className="grid grid-cols-[1fr_140px_160px] border-b border-[var(--border)]">
-                <div className="px-6 py-3.5 text-sm text-slate-600">{row.label}</div>
-                <PricingCell value={row.free} />
-                <PricingCell value={row.pro} brand />
-              </div>
-            ))}
-
-            {/* Section: Memory & Practice */}
-            <div className="grid grid-cols-[1fr_140px_160px] bg-slate-50/60 border-b border-[var(--border)]">
-              <div className="px-6 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest col-span-3">Memory & Practice</div>
-            </div>
-            {[
-              { label: "AI error memory across all essays",   free: true,         pro: true },
-              { label: "Score blocker tracking",              free: true,         pro: true },
-              { label: "Targeted practice exercises",         free: true,         pro: true },
-              { label: "Examples from your own writing",      free: true,         pro: true },
-            ].map((row, i) => (
-              <div key={i} className="grid grid-cols-[1fr_140px_160px] border-b border-[var(--border)]">
-                <div className="px-6 py-3.5 text-sm text-slate-600">{row.label}</div>
-                <PricingCell value={row.free} />
-                <PricingCell value={row.pro} brand />
-              </div>
-            ))}
-
-            {/* Section: Progress */}
-            <div className="grid grid-cols-[1fr_140px_160px] bg-slate-50/60 border-b border-[var(--border)]">
-              <div className="px-6 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest col-span-3">Progress & Analytics</div>
-            </div>
-            {[
-              { label: "Band score progress charts",          free: false,        pro: true },
-              { label: "Full essay history & trends",         free: false,        pro: true },
-              { label: "Per-criterion progress tracking",     free: false,        pro: true },
-              { label: "Priority AI processing",              free: false,        pro: true },
-            ].map((row, i) => (
-              <div key={i} className={`grid grid-cols-[1fr_140px_160px] ${i < 3 ? "border-b border-[var(--border)]" : ""}`}>
-                <div className="px-6 py-3.5 text-sm text-slate-600">{row.label}</div>
-                <PricingCell value={row.free} />
-                <PricingCell value={row.pro} brand />
-              </div>
-            ))}
-          </div>
-
-          {/* Cost comparison */}
-          <div className="grid sm:grid-cols-3 gap-4 mb-8">
-            {[
-              { label: "IELTS exam fee",  value: "$200–250", sub: "one time" },
-              { label: "Human tutor",     value: "$30–80",   sub: "per hour" },
-              { label: "IELTS Memo Pro",  value: "$12",      sub: "per month", brand: true },
-            ].map(({ label, value, sub, brand }) => (
-              <div key={label} className={`rounded-xl border p-5 text-center ${brand ? "border-brand-200 bg-brand-50" : "border-[var(--border)] bg-white"}`}>
-                <p className="text-xs text-slate-500 mb-1">{label}</p>
-                <p className={`text-2xl font-bold ${brand ? "text-brand-600" : "text-slate-800"}`}>{value}</p>
-                <p className="text-xs text-slate-400 mt-0.5">{sub}</p>
-              </div>
-            ))}
-          </div>
+          <CostComparison />
 
           <div className="text-center">
-            <Link href="/auth/signin">
-              <Button className="bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg h-10 px-6 text-sm border-0">
-                Start free — no card needed <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            </Link>
-            <p className="text-slate-400 text-xs mt-3">Free forever · Upgrade anytime · Cancel in one click</p>
+            <p className="text-slate-400 text-xs">Free forever · Upgrade anytime · Cancel in one click</p>
           </div>
         </section>
 
