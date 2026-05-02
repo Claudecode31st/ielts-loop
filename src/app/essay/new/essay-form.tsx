@@ -377,7 +377,7 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
             <div className="flex items-start gap-2 flex-1 min-w-[220px] bg-white border border-slate-200 rounded-xl px-3.5 py-3">
               <Zap className="h-4 w-4 text-brand-500 shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs font-semibold text-slate-700">Write with Guide Mode</p>
+                <p className="text-xs font-semibold text-slate-700">Write</p>
                 <p className="text-xs text-slate-400 mt-0.5 leading-snug">Turn on <strong className="text-slate-500">Guide Mode</strong> above, then write your essay — the AI tutor gives live tips every ~10 words as you type.</p>
               </div>
             </div>
