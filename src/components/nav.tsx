@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   NotebookPen, LayoutDashboard, PenLine, BookOpen,
-  TrendingUp, LogOut, User, Zap,
+  TrendingUp, LogOut, User, Zap, Library,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,10 +18,14 @@ interface NavProps {
 }
 
 const navLinks = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/essay/new", label: "Submit",    icon: PenLine },
-  { href: "/exercises", label: "Exercises", icon: BookOpen },
-  { href: "/progress",  label: "Progress",  icon: TrendingUp },
+  { href: "/dashboard",           label: "Dashboard", icon: LayoutDashboard },
+  { href: "/essay/new",           label: "Submit",    icon: PenLine },
+  { href: "/exercises",           label: "Exercises", icon: BookOpen },
+  { href: "/progress",            label: "Progress",  icon: TrendingUp },
+];
+
+const mobileOnlyLinks = [
+  { href: "/resources/templates", label: "Resources", icon: Library },
 ];
 
 export function Nav({ user }: NavProps) {
@@ -125,7 +129,7 @@ export function Nav({ user }: NavProps) {
       {/* ── Mobile bottom nav (logged-in only) ── */}
       {user && (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[var(--border)] flex items-stretch">
-          {navLinks.map(({ href, label, icon: Icon }) => {
+          {[...navLinks, ...mobileOnlyLinks].map(({ href, label, icon: Icon }) => {
             const active = isActive(href);
             return (
               <Link
@@ -136,7 +140,7 @@ export function Nav({ user }: NavProps) {
                   active ? "text-brand-600" : "text-slate-400 hover:text-slate-600"
                 )}
               >
-                <Icon className={cn("h-5 w-5", active ? "text-brand-600" : "text-slate-400")} />
+                <Icon className={cn("h-[18px] w-[18px]", active ? "text-brand-600" : "text-slate-400")} />
                 {label}
               </Link>
             );
@@ -148,8 +152,8 @@ export function Nav({ user }: NavProps) {
               pathname === "/profile" ? "text-brand-600" : "text-slate-400 hover:text-slate-600"
             )}
           >
-            <User className={cn("h-5 w-5", pathname === "/profile" ? "text-brand-600" : "text-slate-400")} />
-            Profile
+            <User className={cn("h-[18px] w-[18px]", pathname === "/profile" ? "text-brand-600" : "text-slate-400")} />
+            Me
           </Link>
         </nav>
       )}

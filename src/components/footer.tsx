@@ -1,11 +1,15 @@
 import Link from "next/link";
 import { NotebookPen } from "lucide-react";
 
-export function Footer() {
+interface FooterProps {
+  isLoggedIn?: boolean;
+}
+
+export function Footer({ isLoggedIn }: FooterProps) {
   return (
     <footer className="border-t border-[var(--border)] bg-white mt-auto">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-8">
+        <div className={`grid gap-8 mb-8 ${isLoggedIn ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-2 sm:grid-cols-4"}`}>
 
           {/* Brand */}
           <div className="col-span-2 sm:col-span-1">
@@ -20,26 +24,28 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Product */}
-          <div>
-            <p className="text-xs font-semibold text-slate-700 mb-3">Product</p>
-            <ul className="space-y-2">
-              {[
-                { label: "Dashboard",    href: "/dashboard" },
-                { label: "Submit Essay", href: "/essay/new" },
-                { label: "Exercises",    href: "/exercises" },
-                { label: "Progress",     href: "/progress" },
-              ].map(({ label, href }) => (
-                <li key={label}>
-                  <Link href={href} className="text-xs text-slate-400 hover:text-slate-700 transition-colors">
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Product — only shown to logged-in users */}
+          {isLoggedIn && (
+            <div>
+              <p className="text-xs font-semibold text-slate-700 mb-3">Product</p>
+              <ul className="space-y-2">
+                {[
+                  { label: "Dashboard",    href: "/dashboard" },
+                  { label: "Submit Essay", href: "/essay/new" },
+                  { label: "Exercises",    href: "/exercises" },
+                  { label: "Progress",     href: "/progress" },
+                ].map(({ label, href }) => (
+                  <li key={label}>
+                    <Link href={href} className="text-xs text-slate-400 hover:text-slate-700 transition-colors">
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-          {/* Writing Resources */}
+          {/* Writing Resources — always visible */}
           <div>
             <p className="text-xs font-semibold text-slate-700 mb-3">Writing Resources</p>
             <ul className="space-y-2">
@@ -57,7 +63,7 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Legal */}
+          {/* Legal — always visible */}
           <div>
             <p className="text-xs font-semibold text-slate-700 mb-3">Legal</p>
             <ul className="space-y-2">

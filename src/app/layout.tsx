@@ -33,9 +33,9 @@ export default async function RootLayout({
             <main className={`flex-1 ${isLoggedIn ? "pb-16 md:pb-0" : ""}`}>
               {children}
             </main>
-            {/* Hide footer on mobile when logged in — bottom nav takes its place */}
-            <div className={isLoggedIn ? "hidden md:block" : ""}>
-              <Footer />
+            {/* On mobile when logged in, add bottom padding so footer clears the fixed nav bar */}
+            <div className={isLoggedIn ? "pb-16 md:pb-0" : ""}>
+              <Footer isLoggedIn={isLoggedIn} />
             </div>
           </div>
         </SessionProvider>
