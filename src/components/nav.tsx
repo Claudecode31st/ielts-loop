@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
-  NotebookPen, LayoutDashboard, PenLine, BookOpen,
+  NotebookPen, LayoutDashboard, BookOpen,
   TrendingUp, LogOut, Zap, Library, ScrollText,
   FileText, MessageSquareQuote, BookMarked, X,
 } from "lucide-react";
@@ -22,7 +22,6 @@ interface NavProps {
 const navLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/essays",    label: "Essays",    icon: ScrollText    },
-  { href: "/essay/new", label: "Submit",    icon: PenLine       },
   { href: "/exercises", label: "Exercises", icon: BookOpen      },
   { href: "/progress",  label: "Progress",  icon: TrendingUp    },
 ];
