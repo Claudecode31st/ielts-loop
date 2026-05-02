@@ -70,7 +70,6 @@ export function EssayFeedback({ essay, prompt, recurringErrors = [] }: EssayFeed
   };
 
   const errors: ErrorItem[] = essay.detailedFeedback?.errors ?? [];
-  const segments = buildSegments(essay.content, errors);
 
   const grammarCount   = errors.filter((e) => e.category === "grammar").length;
   const vocabCount     = errors.filter((e) => e.category === "vocabulary").length;
@@ -130,62 +129,67 @@ export function EssayFeedback({ essay, prompt, recurringErrors = [] }: EssayFeed
             )}
           </div>
 
-          {/* Essay text */}
-          <div className="p-5">
-            <p className="text-sm text-slate-700 leading-8 whitespace-pre-wrap">
-              {segments.map((seg, i) => {
-                if (seg.errorIndex === undefined) {
-                  return <span key={i}>{seg.text}</span>;
-                }
-                const err      = errors[seg.errorIndex];
-                const style    = cs(err.category);
-                const isActive = activeIdx === seg.errorIndex;
-                return (
-                  <span key={i} className="relative inline">
-                    <button
-                      onClick={() => setActiveIdx((prev) => (prev === seg.errorIndex ? null : seg.errorIndex!))}
-                      className={`inline cursor-pointer rounded-sm px-0.5 transition-colors duration-150 focus:outline-none ${
-                        isActive ? style.active : style.base
-                      }`}
-                    >
-                      {seg.text}
-                      <sup className="text-[9px] font-bold text-slate-400 ml-px select-none leading-none">
-                        {seg.errorIndex! + 1}
-                      </sup>
-                    </button>
+          {/* Essay text — split into paragraphs to avoid whitespace-pre-wrap blowout */}
+          <div className="p-5 space-y-4">
+            {essay.content.split(/\n\n+/).filter(Boolean).map((para, paraIdx) => {
+              const paraSegments = buildSegments(para, errors);
+              return (
+                <p key={paraIdx} className="text-sm text-slate-700 leading-7">
+                  {paraSegments.map((seg, i) => {
+                    if (seg.errorIndex === undefined) {
+                      return <span key={i}>{seg.text}</span>;
+                    }
+                    const err      = errors[seg.errorIndex];
+                    const style    = cs(err.category);
+                    const isActive = activeIdx === seg.errorIndex;
+                    return (
+                      <span key={i} className="relative inline">
+                        <button
+                          onClick={() => setActiveIdx((prev) => (prev === seg.errorIndex ? null : seg.errorIndex!))}
+                          className={`inline cursor-pointer rounded-sm px-0.5 transition-colors duration-150 focus:outline-none ${
+                            isActive ? style.active : style.base
+                          }`}
+                        >
+                          {seg.text}
+                          <sup className="text-[9px] font-bold text-slate-400 ml-px select-none leading-none">
+                            {seg.errorIndex! + 1}
+                          </sup>
+                        </button>
 
-                    {/* Mobile-only floating tooltip — hidden on lg+ */}
-                    <span className={`lg:hidden pointer-events-none absolute z-50 bottom-[calc(100%+10px)] left-1/2 -translate-x-1/2 w-72 transition-opacity duration-150 ${isActive ? "opacity-100" : "opacity-0"}`}>
-                      <span className="block bg-white rounded-xl border border-[var(--border)] shadow-[0_8px_24px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.06)] p-3 text-left">
-                        <span className="flex items-center gap-2 mb-2.5">
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${style.badge}`}>
-                            {err.category}
+                        {/* Mobile-only floating tooltip — hidden on lg+ */}
+                        <span className={`lg:hidden pointer-events-none absolute z-50 bottom-[calc(100%+10px)] left-1/2 -translate-x-1/2 w-72 transition-opacity duration-150 ${isActive ? "opacity-100" : "opacity-0"}`}>
+                          <span className="block bg-white rounded-xl border border-[var(--border)] shadow-[0_8px_24px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.06)] p-3 text-left">
+                            <span className="flex items-center gap-2 mb-2.5">
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${style.badge}`}>
+                                {err.category}
+                              </span>
+                              <span className="text-[10px] text-slate-400">Error #{seg.errorIndex! + 1}</span>
+                            </span>
+                            <span className="block space-y-1.5 mb-2.5">
+                              <span className="flex items-start gap-1.5">
+                                <AlertCircle className="h-3 w-3 text-red-400 shrink-0 mt-0.5" />
+                                <span className="text-xs text-slate-500 line-through leading-snug">&ldquo;{err.text}&rdquo;</span>
+                              </span>
+                              <span className="flex items-start gap-1.5">
+                                <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0 mt-0.5" />
+                                <span className="text-xs font-semibold text-emerald-700 leading-snug">&ldquo;{err.correction}&rdquo;</span>
+                              </span>
+                            </span>
+                            <span className="block text-xs text-slate-500 leading-relaxed border-t border-slate-100 pt-2">
+                              {err.explanation}
+                            </span>
                           </span>
-                          <span className="text-[10px] text-slate-400">Error #{seg.errorIndex! + 1}</span>
-                        </span>
-                        <span className="block space-y-1.5 mb-2.5">
-                          <span className="flex items-start gap-1.5">
-                            <AlertCircle className="h-3 w-3 text-red-400 shrink-0 mt-0.5" />
-                            <span className="text-xs text-slate-500 line-through leading-snug">&ldquo;{err.text}&rdquo;</span>
+                          {/* Tooltip arrow */}
+                          <span className="flex justify-center -mt-px">
+                            <span className="block w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-white" />
                           </span>
-                          <span className="flex items-start gap-1.5">
-                            <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0 mt-0.5" />
-                            <span className="text-xs font-semibold text-emerald-700 leading-snug">&ldquo;{err.correction}&rdquo;</span>
-                          </span>
-                        </span>
-                        <span className="block text-xs text-slate-500 leading-relaxed border-t border-slate-100 pt-2">
-                          {err.explanation}
                         </span>
                       </span>
-                      {/* Tooltip arrow */}
-                      <span className="flex justify-center -mt-px">
-                        <span className="block w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-white" />
-                      </span>
-                    </span>
-                  </span>
-                );
-              })}
-            </p>
+                    );
+                  })}
+                </p>
+              );
+            })}
             {errors.length > 0 && (
               <p className="text-[11px] text-slate-400 mt-4 pt-3 border-t border-slate-100">
                 <span className="font-medium text-slate-500">{errors.length} error{errors.length !== 1 ? "s" : ""} highlighted.</span>{" "}
