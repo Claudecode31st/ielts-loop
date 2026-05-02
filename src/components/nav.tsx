@@ -160,6 +160,16 @@ export function Nav({ user, isAdmin }: NavProps) {
                   </button>
                 </div>
 
+                {/* Admin link — mobile header only */}
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    className="md:hidden items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold text-brand-600 bg-brand-50 hover:bg-brand-100 transition-colors shrink-0 flex"
+                  >
+                    Admin
+                  </Link>
+                )}
+
                 {/* Profile avatar — mobile top header only */}
                 <Link href="/profile" className="md:hidden shrink-0">
                   <div className={cn(
