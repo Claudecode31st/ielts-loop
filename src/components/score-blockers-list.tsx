@@ -35,12 +35,11 @@ function catColor(cat: string) {
     ? { badge: "bg-blue-50 text-blue-600 border-blue-100", bar: "bg-blue-400" }
     : { badge: "bg-emerald-50 text-emerald-600 border-emerald-100", bar: "bg-emerald-400" };
 }
-function impactConfig(freq: number) {
-  return freq >= 5
-    ? { label: "Recurring mistake", color: "text-red-600 bg-red-50 border-red-100" }
-    : freq >= 3
-    ? { label: "Seen a few times", color: "text-amber-600 bg-amber-50 border-amber-100" }
-    : { label: "Seen once", color: "text-slate-500 bg-slate-50 border-slate-200" };
+function impactConfig(freq: number): { label: string; color: string } | null {
+  if (freq >= 5) return { label: "Recurring",  color: "text-red-600 bg-red-50 border-red-100"       };
+  if (freq >= 3) return { label: "Pattern",    color: "text-amber-600 bg-amber-50 border-amber-100"  };
+  if (freq >= 2) return { label: "Repeat",     color: "text-slate-600 bg-slate-50 border-slate-200"  };
+  return null; // ×1 on the bar already says it — no redundant badge needed
 }
 const CATEGORY_TIPS: Record<string, string> = {
   grammar:    "Fixing this will improve your Grammar score.",
@@ -89,7 +88,7 @@ export function ScoreBlockersList({ errors }: Props) {
                   <div className="flex items-center gap-2 flex-wrap mb-1">
                     <span className="text-sm font-semibold text-slate-800 capitalize">{error.errorType}</span>
                     <span className={`text-[10px] font-bold px-1.5 py-px rounded border ${cc.badge}`}>{catLabel(error.errorCategory)}</span>
-                    <span className={`text-[10px] font-semibold px-1.5 py-px rounded border ${imp.color}`}>{imp.label}</span>
+                    {imp && <span className={`text-[10px] font-semibold px-1.5 py-px rounded border ${imp.color}`}>{imp.label}</span>}
                   </div>
                   {/* Tip */}
                   <p className="text-[11px] text-slate-400 leading-relaxed mb-2">{tip}</p>
