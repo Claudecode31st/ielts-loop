@@ -106,8 +106,8 @@ export default async function EssaysPage() {
                         { label: "Vocabulary", value: lr },
                         { label: "Grammar",    value: gr },
                       ].map(({ label, value }) => (
-                        <div key={label} className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-medium ${getBandBgColor(value)}`}>
-                          <span className="text-slate-500">{label}</span>
+                        <div key={label} className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs ${getBandBgColor(value)}`}>
+                          <span className="font-medium opacity-70">{label}</span>
                           <span className="font-bold">{value.toFixed(1)}</span>
                         </div>
                       ))}
