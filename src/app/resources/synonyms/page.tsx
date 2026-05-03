@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "IELTS Synonyms & Vocabulary Upgrades | IELTS Memo",
@@ -104,9 +103,6 @@ export default function SynonymsPage() {
       <div className="max-w-3xl mx-auto">
 
         <div className="mb-8">
-          <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors mb-4">
-            <ArrowLeft className="h-3.5 w-3.5" /> Back to home
-          </Link>
           <p className="text-xs font-bold text-brand-600 uppercase tracking-widest mb-2">Writing Resources</p>
           <h1 className="text-3xl font-bold text-slate-900 mb-2">Synonyms & Vocabulary Upgrades</h1>
           <p className="text-slate-500 text-sm max-w-xl">
