@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { ExerciseCard } from "@/components/exercise-card";
 import {
   BookOpen,
@@ -19,6 +20,9 @@ import {
 import type { Exercise, ExerciseContent } from "@/types";
 
 export default function ExercisesPage() {
+  const searchParams = useSearchParams();
+  const focus = searchParams.get("focus"); // specific error type from score-blockers CTA
+
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -28,8 +32,14 @@ export default function ExercisesPage() {
   const [noEssays, setNoEssays] = useState(false);
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
 
+  // On mount: if a focus topic was passed, auto-generate for that topic
   useEffect(() => {
-    fetchExercises();
+    if (focus) {
+      generateExercises(focus);
+    } else {
+      fetchExercises();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function fetchExercises() {
@@ -56,11 +66,16 @@ export default function ExercisesPage() {
     }
   }
 
-  async function generateExercises() {
+  async function generateExercises(focusTopic?: string) {
     try {
       setIsGenerating(true);
+      setIsLoading(false);
       setError(null);
-      const res = await fetch("/api/exercises", { method: "POST" });
+      const res = await fetch("/api/exercises", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(focusTopic ? { focus: focusTopic } : {}),
+      });
       const data = await res.json();
       if (res.status === 429) {
         setError(data.error);
@@ -127,7 +142,9 @@ export default function ExercisesPage() {
             Exercises
           </h1>
           <p className="text-slate-400 text-sm mt-0.5">
-            Targeted to your weaknesses — updated as you improve.
+            {focus
+              ? <>Focused on: <span className="font-medium text-slate-600">{focus}</span></>
+              : "Targeted to your weaknesses — updated as you improve."}
           </p>
         </div>
 
@@ -167,7 +184,7 @@ export default function ExercisesPage() {
           )}
 
           <button
-            onClick={generateExercises}
+            onClick={() => generateExercises()}
             disabled={isGenerating || noEssays}
             className="flex items-center gap-1.5 text-sm font-medium px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:text-brand-700 hover:bg-brand-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -237,7 +254,7 @@ export default function ExercisesPage() {
               </p>
             </div>
             <button
-              onClick={generateExercises}
+              onClick={() => generateExercises()}
               disabled={isGenerating}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
             >

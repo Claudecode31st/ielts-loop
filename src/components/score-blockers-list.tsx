@@ -164,7 +164,7 @@ export function ScoreBlockersList({ errors }: Props) {
 
                 {/* CTA */}
                 <Link
-                  href="/exercises"
+                  href={`/exercises?focus=${encodeURIComponent(error.errorType)}`}
                   className="mt-3.5 flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-brand-700 transition-colors pt-3 border-t border-slate-200"
                 >
                   <Sparkles className="h-3.5 w-3.5" />

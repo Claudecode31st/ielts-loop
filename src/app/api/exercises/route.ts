@@ -92,10 +92,16 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Generate ──────────────────────────────────────────────────────────
+    const body = await req.json().catch(() => ({}));
+    const focus: string | undefined = body.focus;
+
     const studentMemory = await getStudentMemoryContext(session.user.id);
 
-    const targetErrors =
-      studentMemory.topErrorPatterns.slice(0, 5).map((e) => e.errorType);
+    // If a specific topic was requested (from the error-pattern CTA), target only that.
+    // Otherwise fall back to the student's top error patterns.
+    const targetErrors: string[] = focus
+      ? [focus]
+      : studentMemory.topErrorPatterns.slice(0, 5).map((e) => e.errorType);
 
     // If essays exist but patterns aren't extracted yet, use broad IELTS areas
     if (targetErrors.length === 0) {
