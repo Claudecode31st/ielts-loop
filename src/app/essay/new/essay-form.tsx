@@ -104,7 +104,8 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
         const draft: Draft = JSON.parse(saved);
         if (draft.essay) setEssay(draft.essay);
         if (draft.prompt) setPrompt(draft.prompt);
-        setDraftRestored(true);
+        // Only show banner if there's actual content to restore
+        if (draft.essay || draft.prompt) setDraftRestored(true);
       }
     } catch { /* ignore */ }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -114,7 +115,6 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
   useEffect(() => {
     const id = setInterval(() => {
       const { prompt, essay, taskType, ieltsMode } = draftValuesRef.current;
-      if (!essay.trim() && !prompt.trim()) return;
       try {
         const draft: Draft = { prompt, essay, savedAt: Date.now() };
         localStorage.setItem(draftKey(taskType, ieltsMode), JSON.stringify(draft));
@@ -216,13 +216,11 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
     const { prompt: p, essay: e, taskType: t, ieltsMode: m } = draftValuesRef.current;
     if (t === newTaskType && m === newIeltsMode) return;
 
-    // Save current work as draft before leaving
-    if (p.trim() || e.trim()) {
-      try {
-        localStorage.setItem(draftKey(t, m), JSON.stringify({ prompt: p, essay: e, savedAt: Date.now() }));
-        setDraftSavedAt(new Date());
-      } catch { /* ignore */ }
-    }
+    // Save current work as draft before leaving (even if blank — preserves intentional clearing)
+    try {
+      localStorage.setItem(draftKey(t, m), JSON.stringify({ prompt: p, essay: e, savedAt: Date.now() }));
+      setDraftSavedAt(new Date());
+    } catch { /* ignore */ }
 
     // Switch state
     setTaskType(newTaskType);
@@ -243,7 +241,7 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
         const draft: Draft = JSON.parse(saved);
         setPrompt(draft.prompt ?? "");
         setEssay(draft.essay ?? "");
-        setDraftRestored(true);
+        if (draft.essay || draft.prompt) setDraftRestored(true);
       } else {
         setPrompt("");
         setEssay("");
