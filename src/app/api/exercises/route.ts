@@ -6,7 +6,7 @@ export const maxDuration = 60; // Vercel hobby plan max
 import { exercises, users, essays } from "@/lib/db/schema";
 import { generateExercises } from "@/lib/claude";
 import { getStudentMemoryContext } from "@/lib/memory";
-import { eq, desc, gte, count } from "drizzle-orm";
+import { eq, desc, gte, count, and } from "drizzle-orm";
 import { checkIsPro } from "@/lib/is-pro";
 
 // Free: monthly limit. Pro: daily limit. Each generation = 3 exercises.
@@ -19,7 +19,7 @@ async function getMonthlyGenerationCount(userId: string): Promise<number> {
   const [result] = await db
     .select({ value: count() })
     .from(exercises)
-    .where(eq(exercises.userId, userId) && gte(exercises.generatedAt, startOfMonth) as never);
+    .where(and(eq(exercises.userId, userId), gte(exercises.generatedAt, startOfMonth)));
   return Math.floor((result?.value ?? 0) / 3);
 }
 
@@ -29,7 +29,7 @@ async function getDailyGenerationCount(userId: string): Promise<number> {
   const [result] = await db
     .select({ value: count() })
     .from(exercises)
-    .where(eq(exercises.userId, userId) && gte(exercises.generatedAt, startOfDay) as never);
+    .where(and(eq(exercises.userId, userId), gte(exercises.generatedAt, startOfDay)));
   return Math.floor((result?.value ?? 0) / 3);
 }
 
