@@ -543,7 +543,7 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
         )}
 
         {/* Essay + Guide panel side by side */}
-        <div className="flex gap-3 items-start">
+        <div className="flex gap-3 items-stretch">
           <Textarea id="essay" ref={essayTextareaRef} value={essay}
             placeholder={taskType === "task1" ? (ieltsMode === "academic" ? "The chart illustrates…" : "Dear Sir or Madam,\n\nI am writing to…") : "In recent decades…"}
             className="flex-1 min-h-[320px] resize-y text-sm leading-relaxed"
@@ -556,7 +556,7 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
             }}
           />
           {guideMode && (
-            <div className="w-72 shrink-0 bg-white rounded-xl border border-slate-200 shadow-sm p-3 self-stretch min-h-[320px] flex flex-col">
+            <div className="w-72 shrink-0 bg-white rounded-xl border border-slate-200 shadow-sm p-3 min-h-[320px] flex flex-col">
               <GuidePanel
                 suggestions={continuationSuggestion ? [continuationSuggestion, ...analysisSuggestions] : analysisSuggestions}
                 isLoading={guideLoading}
