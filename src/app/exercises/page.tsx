@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ExerciseCard } from "@/components/exercise-card";
 import {
@@ -19,7 +19,8 @@ import {
 } from "@/components/ui/dialog";
 import type { Exercise, ExerciseContent } from "@/types";
 
-export default function ExercisesPage() {
+// useSearchParams must be inside a Suspense boundary in Next.js 14+
+function ExercisesContent() {
   const searchParams = useSearchParams();
   const focus = searchParams.get("focus"); // specific error type from score-blockers CTA
 
@@ -365,5 +366,17 @@ export default function ExercisesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ExercisesPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-7 w-7 animate-spin text-brand-600" />
+      </div>
+    }>
+      <ExercisesContent />
+    </Suspense>
   );
 }
