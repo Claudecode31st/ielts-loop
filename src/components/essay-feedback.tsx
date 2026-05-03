@@ -143,18 +143,20 @@ export function EssayFeedback({ essay, prompt, recurringErrors = [] }: EssayFeed
                     const style    = cs(err.category);
                     const isActive = activeIdx === seg.errorIndex;
                     return (
-                      <span key={i} className="relative inline">
-                        <button
-                          onClick={() => setActiveIdx((prev) => (prev === seg.errorIndex ? null : seg.errorIndex!))}
-                          className={`inline cursor-pointer rounded-sm px-0.5 transition-colors duration-150 focus:outline-none ${
-                            isActive ? style.active : style.base
-                          }`}
-                        >
-                          {seg.text}
-                          <sup className="text-[9px] font-bold text-slate-400 ml-px select-none leading-none">
-                            {seg.errorIndex! + 1}
-                          </sup>
-                        </button>
+                      <span
+                        key={i}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setActiveIdx((prev) => (prev === seg.errorIndex ? null : seg.errorIndex!))}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setActiveIdx((prev) => (prev === seg.errorIndex ? null : seg.errorIndex!)); }}
+                        className={`relative cursor-pointer rounded-sm px-0.5 transition-colors duration-150 focus:outline-none ${
+                          isActive ? style.active : style.base
+                        }`}
+                      >
+                        {seg.text}
+                        <sup className="text-[9px] font-bold text-slate-400 ml-px select-none leading-none">
+                          {seg.errorIndex! + 1}
+                        </sup>
 
                         {/* Mobile-only floating tooltip — hidden on lg+ */}
                         <span className={`lg:hidden pointer-events-none absolute z-50 bottom-[calc(100%+10px)] left-1/2 -translate-x-1/2 w-72 transition-opacity duration-150 ${isActive ? "opacity-100" : "opacity-0"}`}>
