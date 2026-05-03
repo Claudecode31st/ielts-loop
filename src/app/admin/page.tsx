@@ -65,6 +65,7 @@ export default async function AdminPage() {
   const monthStart = startOf("month");
   const weekStart  = startOf("week");
   const { start: prevStart, end: prevEnd } = prevMonthRange();
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
 
   // Run all queries in parallel
   const [
@@ -81,6 +82,9 @@ export default async function AdminPage() {
     recentEssays,
     dailySignups,
     exercisesByUser,
+    monthlyEssays,
+    monthlyExercises,
+    essaysThisMonthByUser,
   ] = await Promise.all([
     db.select({ total: count() }).from(users),
     db.select({ total: count() }).from(users).where(gte(users.createdAt, monthStart)),
@@ -123,6 +127,29 @@ export default async function AdminPage() {
     db.select({ userId: exercises.userId, exCount: count() })
       .from(exercises)
       .groupBy(exercises.userId),
+    // Monthly essay counts — last 6 months
+    db.select({
+      month: sql<string>`TO_CHAR(DATE_TRUNC('month', ${essays.submittedAt}), 'YYYY-MM')`.as("month"),
+      cnt: count(),
+    })
+    .from(essays)
+    .where(gte(essays.submittedAt, sixMonthsAgo))
+    .groupBy(sql`DATE_TRUNC('month', ${essays.submittedAt})`)
+    .orderBy(sql`DATE_TRUNC('month', ${essays.submittedAt})`),
+    // Monthly exercise counts — last 6 months
+    db.select({
+      month: sql<string>`TO_CHAR(DATE_TRUNC('month', ${exercises.generatedAt}), 'YYYY-MM')`.as("month"),
+      cnt: count(),
+    })
+    .from(exercises)
+    .where(gte(exercises.generatedAt, sixMonthsAgo))
+    .groupBy(sql`DATE_TRUNC('month', ${exercises.generatedAt})`)
+    .orderBy(sql`DATE_TRUNC('month', ${exercises.generatedAt})`),
+    // Essays submitted this month, per user
+    db.select({ userId: essays.userId, cnt: count() })
+      .from(essays)
+      .where(gte(essays.submittedAt, monthStart))
+      .groupBy(essays.userId),
   ]);
 
   // Build a full 14-day map for the chart
@@ -153,8 +180,26 @@ export default async function AdminPage() {
   const costGuide      = te  * 1.5  * COST_PER_GUIDE;   // ~1.5 guide calls per essay on average
   const costTotal      = costEssays + costExercises + costPrompts + costGuide;
 
-  // Build lookup: userId → exercise count
+  // Build lookup: userId → exercise count (all-time)
   const exByUser = new Map(exercisesByUser.map((r) => [r.userId, Number(r.exCount)]));
+
+  // Build lookup: userId → essays this month
+  const essaysThisMonthMap = new Map(essaysThisMonthByUser.map((r) => [r.userId, Number(r.cnt)]));
+
+  // Build 6-month cost trend
+  const mEssaysMap = new Map(monthlyEssays.map((r) => [r.month, Number(r.cnt)]));
+  const mExMap     = new Map(monthlyExercises.map((r) => [r.month, Number(r.cnt)]));
+  const monthlyCost = Array.from({ length: 6 }, (_, i) => {
+    const d      = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+    const key    = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const label  = d.toLocaleDateString("en", { month: "short", year: "2-digit" });
+    const eCnt   = mEssaysMap.get(key) ?? 0;
+    const exBatch = Math.floor((mExMap.get(key) ?? 0) / 3);
+    const cost   = eCnt * COST_PER_ESSAY + exBatch * COST_PER_EX_BATCH
+                 + eCnt * 0.4 * COST_PER_PROMPT + eCnt * 1.5 * COST_PER_GUIDE;
+    return { key, label, eCnt, exBatch, cost };
+  });
+  const costChartMax = Math.max(...monthlyCost.map((m) => m.cost), 0.01);
 
   function delta(curr: number, prev: number) {
     if (!prev) return null;
@@ -318,6 +363,40 @@ export default async function AdminPage() {
           </div>
         </div>
 
+        {/* Monthly cost trend */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-5">
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="text-sm font-bold text-slate-800">Monthly API Cost — Last 6 Months</h2>
+            <span className="text-xs text-slate-400">
+              This month: <span className="font-semibold text-rose-500">{fmtCost(monthlyCost[5]?.cost ?? 0)}</span>
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mb-5">Essays + exercises + estimated prompt &amp; guide spend</p>
+          <div className="flex items-end gap-3 h-36">
+            {monthlyCost.map((m, i) => {
+              const isCurrentMonth = i === 5;
+              const pct = Math.max(2, (m.cost / costChartMax) * 100);
+              return (
+                <div key={m.key} className="flex-1 flex flex-col items-center gap-1 group">
+                  <div className="relative w-full flex items-end justify-center" style={{ height: "110px" }}>
+                    <div
+                      className={`w-full rounded-t-sm transition-all duration-300 ${isCurrentMonth ? "bg-rose-500 group-hover:bg-rose-600" : "bg-rose-200 group-hover:bg-rose-300"}`}
+                      style={{ height: `${pct}%` }}
+                    />
+                    <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                      {fmtCost(m.cost)}
+                    </span>
+                  </div>
+                  <div className="text-center">
+                    <p className={`text-[10px] font-semibold ${isCurrentMonth ? "text-slate-600" : "text-slate-400"}`}>{m.label}</p>
+                    <p className="text-[9px] text-slate-300 tabular-nums">{m.eCnt} essays</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* API Cost Breakdown */}
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
@@ -363,7 +442,7 @@ export default async function AdminPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50">
-                  {["User", "Email", "Plan", "Essays", "Est. Cost", "Joined"].map((h) => (
+                  {["User", "Email", "Plan", "Essays", "This Month", "Est. Cost", "Joined"].map((h) => (
                     <th key={h} className="px-5 py-2.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                       {h}
                     </th>
@@ -375,9 +454,10 @@ export default async function AdminPage() {
                   const initials = u.name
                     ? u.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
                     : (u.email?.[0] ?? "?").toUpperCase();
-                  const uEssays  = Number(u.totalEssays ?? 0);
-                  const uExBatch = Math.floor((exByUser.get(u.id) ?? 0) / 3);
-                  const uCost    = uEssays * COST_PER_ESSAY + uExBatch * COST_PER_EX_BATCH;
+                  const uEssays       = Number(u.totalEssays ?? 0);
+                  const uExBatch      = Math.floor((exByUser.get(u.id) ?? 0) / 3);
+                  const uCost         = uEssays * COST_PER_ESSAY + uExBatch * COST_PER_EX_BATCH;
+                  const uThisMonth    = essaysThisMonthMap.get(u.id) ?? 0;
                   return (
                     <tr key={u.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-5 py-3">
@@ -404,6 +484,11 @@ export default async function AdminPage() {
                       </td>
                       <td className="px-5 py-3 text-xs text-slate-500 tabular-nums">
                         {uEssays}
+                      </td>
+                      <td className="px-5 py-3 text-xs tabular-nums">
+                        {uThisMonth > 0
+                          ? <span className="font-semibold text-brand-600">{uThisMonth}</span>
+                          : <span className="text-slate-300">—</span>}
                       </td>
                       <td className="px-5 py-3 text-xs tabular-nums font-medium text-rose-500">
                         {uCost > 0 ? fmtCost(uCost) : <span className="text-slate-300">—</span>}
