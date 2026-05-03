@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { users, essays, exercises } from "@/lib/db/schema";
-import { desc, gte, count, eq, countDistinct, sql } from "drizzle-orm";
+import { desc, gte, count, eq, countDistinct, sql, isNotNull } from "drizzle-orm";
 import { Users, FileText, Zap, Activity, TrendingUp, TrendingDown, Minus, BookOpen, DollarSign } from "lucide-react";
 
 // ── Claude API cost estimates ─────────────────────────────────────────────────
@@ -12,6 +12,7 @@ const COST_PER_ESSAY     = (3200 * 3.00 + 1600 * 15.00) / 1_000_000; // ~$0.034
 const COST_PER_EX_BATCH  = (2400 * 0.80 + 1100 *  4.00) / 1_000_000; // ~$0.006  (3 exercises)
 const COST_PER_PROMPT    = ( 500 * 0.80 +  350 *  4.00) / 1_000_000; // ~$0.002
 const COST_PER_GUIDE     = (2200 * 0.80 +  850 *  4.00) / 1_000_000; // ~$0.005
+const COST_PER_SAMPLE    = ( 500 * 3.00 +  600 * 15.00) / 1_000_000; // ~$0.0105 (sonnet, cached after 1st gen)
 
 function fmtCost(n: number) {
   if (n >= 1)   return `$${n.toFixed(2)}`;
@@ -85,6 +86,9 @@ export default async function AdminPage() {
     monthlyEssays,
     monthlyExercises,
     essaysThisMonthByUser,
+    [{ total: totalSamples }],
+    monthlySamplesRaw,
+    samplesByUser,
   ] = await Promise.all([
     db.select({ total: count() }).from(users),
     db.select({ total: count() }).from(users).where(gte(users.createdAt, monthStart)),
@@ -150,6 +154,24 @@ export default async function AdminPage() {
       .from(essays)
       .where(gte(essays.submittedAt, monthStart))
       .groupBy(essays.userId),
+    // Total model answers generated (cached after first gen)
+    db.select({ total: count() })
+      .from(essays)
+      .where(isNotNull(essays.sampleEssay)),
+    // Monthly model answer counts — last 6 months
+    db.select({
+      month: sql<string>`TO_CHAR(DATE_TRUNC('month', ${essays.submittedAt}), 'YYYY-MM')`.as("month"),
+      cnt: count(),
+    })
+    .from(essays)
+    .where(sql`${essays.sampleEssay} IS NOT NULL AND ${essays.submittedAt} >= ${sixMonthsAgo}`)
+    .groupBy(sql`DATE_TRUNC('month', ${essays.submittedAt})`)
+    .orderBy(sql`DATE_TRUNC('month', ${essays.submittedAt})`),
+    // Sample count per user (all-time)
+    db.select({ userId: essays.userId, cnt: count() })
+      .from(essays)
+      .where(isNotNull(essays.sampleEssay))
+      .groupBy(essays.userId),
   ]);
 
   // Build a full 14-day map for the chart
@@ -173,12 +195,20 @@ export default async function AdminPage() {
 
   // ── Cost estimates ────────────────────────────────────────────────────────
   const exBatchesTotal = Math.floor(tex / 3);
+  const tsa            = Number(totalSamples);
   const costEssays     = te  * COST_PER_ESSAY;
   const costExercises  = exBatchesTotal * COST_PER_EX_BATCH;
   // Prompt & guide costs estimated from essay volume (no global counter available)
   const costPrompts    = te  * 0.4  * COST_PER_PROMPT;  // ~40% of essays used a generated prompt
   const costGuide      = te  * 1.5  * COST_PER_GUIDE;   // ~1.5 guide calls per essay on average
-  const costTotal      = costEssays + costExercises + costPrompts + costGuide;
+  const costSamples    = tsa * COST_PER_SAMPLE;          // only first generation costs
+  const costTotal      = costEssays + costExercises + costPrompts + costGuide + costSamples;
+
+  // Build lookup: userId → sample count (all-time)
+  const samplesByUserMap = new Map(samplesByUser.map((r) => [r.userId, Number(r.cnt)]));
+
+  // Build monthly sample map
+  const mSamplesMap = new Map(monthlySamplesRaw.map((r) => [r.month, Number(r.cnt)]));
 
   // Build lookup: userId → exercise count (all-time)
   const exByUser = new Map(exercisesByUser.map((r) => [r.userId, Number(r.exCount)]));
@@ -193,11 +223,13 @@ export default async function AdminPage() {
     const d      = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
     const key    = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     const label  = d.toLocaleDateString("en", { month: "short", year: "2-digit" });
-    const eCnt   = mEssaysMap.get(key) ?? 0;
+    const eCnt    = mEssaysMap.get(key) ?? 0;
     const exBatch = Math.floor((mExMap.get(key) ?? 0) / 3);
-    const cost   = eCnt * COST_PER_ESSAY + exBatch * COST_PER_EX_BATCH
-                 + eCnt * 0.4 * COST_PER_PROMPT + eCnt * 1.5 * COST_PER_GUIDE;
-    return { key, label, eCnt, exBatch, cost };
+    const sCnt    = mSamplesMap.get(key) ?? 0;
+    const cost    = eCnt * COST_PER_ESSAY + exBatch * COST_PER_EX_BATCH
+                  + eCnt * 0.4 * COST_PER_PROMPT + eCnt * 1.5 * COST_PER_GUIDE
+                  + sCnt * COST_PER_SAMPLE;
+    return { key, label, eCnt, exBatch, sCnt, cost };
   });
   const costChartMax = Math.max(...monthlyCost.map((m) => m.cost), 0.01);
 
@@ -406,12 +438,13 @@ export default async function AdminPage() {
               Estimates · avg token counts per operation
             </span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-slate-100">
+          <div className="grid grid-cols-2 sm:grid-cols-5 divide-x divide-slate-100">
             {[
               { label: "Essay Analysis",    model: "Sonnet 4-6", cost: costEssays,    count: te,            unit: "essays",       perUnit: COST_PER_ESSAY,    color: "text-blue-600" },
               { label: "Exercise Gen",      model: "Haiku 4-5",  cost: costExercises, count: exBatchesTotal, unit: "batches",      perUnit: COST_PER_EX_BATCH, color: "text-purple-600" },
               { label: "Prompt Gen",        model: "Haiku 4-5",  cost: costPrompts,   count: Math.round(te * 0.4), unit: "est. calls", perUnit: COST_PER_PROMPT,  color: "text-amber-600" },
               { label: "Guide Mode",        model: "Haiku 4-5",  cost: costGuide,     count: Math.round(te * 1.5), unit: "est. calls", perUnit: COST_PER_GUIDE,   color: "text-emerald-600" },
+              { label: "Model Answers",     model: "Sonnet 4-5", cost: costSamples,   count: tsa,           unit: "generated",    perUnit: COST_PER_SAMPLE,   color: "text-rose-600" },
             ].map(({ label, model, cost, count: c, unit, perUnit, color }) => (
               <div key={label} className="px-5 py-4 space-y-1">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
@@ -423,8 +456,8 @@ export default async function AdminPage() {
           </div>
           <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
             <p className="text-[11px] text-slate-400">
-              Prompt & Guide costs are estimated (~40% essay prompts generated, ~1.5 guide calls/essay avg).
-              Actual spend may vary based on essay length and caching.
+              Prompt & Guide costs are estimated (~40% prompts generated, ~1.5 guide calls/essay avg).
+              Model Answers counted exactly — cached after first generation, no repeat cost.
             </p>
             <p className="text-sm font-bold text-slate-800 tabular-nums shrink-0 ml-4">
               Total: <span className="text-rose-600">{fmtCost(costTotal)}</span>
@@ -456,7 +489,8 @@ export default async function AdminPage() {
                     : (u.email?.[0] ?? "?").toUpperCase();
                   const uEssays       = Number(u.totalEssays ?? 0);
                   const uExBatch      = Math.floor((exByUser.get(u.id) ?? 0) / 3);
-                  const uCost         = uEssays * COST_PER_ESSAY + uExBatch * COST_PER_EX_BATCH;
+                  const uSamples      = samplesByUserMap.get(u.id) ?? 0;
+                  const uCost         = uEssays * COST_PER_ESSAY + uExBatch * COST_PER_EX_BATCH + uSamples * COST_PER_SAMPLE;
                   const uThisMonth    = essaysThisMonthMap.get(u.id) ?? 0;
                   return (
                     <tr key={u.id} className="hover:bg-slate-50 transition-colors">

@@ -134,7 +134,7 @@ export function EssayFeedback({ essay, prompt, recurringErrors = [] }: EssayFeed
             {essay.content.split(/\n\n+/).filter(Boolean).map((para, paraIdx) => {
               const paraSegments = buildSegments(para, errors);
               return (
-                <p key={paraIdx} className="text-sm text-slate-700 leading-7">
+                <p key={paraIdx} className="text-sm text-slate-700 leading-7 text-justify">
                   {paraSegments.map((seg, i) => {
                     if (seg.errorIndex === undefined) {
                       return <span key={i}>{seg.text}</span>;

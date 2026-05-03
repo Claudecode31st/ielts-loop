@@ -6,10 +6,10 @@ import { signOut } from "next-auth/react";
 import {
   NotebookPen, LayoutDashboard, BookOpen,
   TrendingUp, LogOut, Zap, Library, ScrollText,
-  FileText, MessageSquareQuote, BookMarked, X,
+  FileText, MessageSquareQuote, BookMarked, X, ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 interface NavProps {
   user?: {
@@ -57,6 +57,8 @@ const resourceItems = [
 export function Nav({ user, isAdmin }: NavProps) {
   const pathname = usePathname();
   const [resourcesOpen, setResourcesOpen] = useState(false);
+  const [desktopDropdownOpen, setDesktopDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const initials = user?.name
     ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
@@ -69,6 +71,17 @@ export function Nav({ user, isAdmin }: NavProps) {
 
   const isResourcesActive = pathname?.startsWith("/resources");
 
+  // Close desktop dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDesktopDropdownOpen(false);
+      }
+    }
+    if (desktopDropdownOpen) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [desktopDropdownOpen]);
+
   const Avatar = ({ size = "sm" }: { size?: "sm" | "md" }) => {
     const dim = size === "sm" ? "h-7 w-7" : "h-6 w-6";
     const text = size === "sm" ? "text-[11px]" : "text-[10px]";
@@ -80,6 +93,46 @@ export function Nav({ user, isAdmin }: NavProps) {
       </div>
     );
   };
+
+  // ── Desktop Resources dropdown (shown for all users) ──────────────────────
+  const ResourcesDropdown = () => (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setDesktopDropdownOpen((v) => !v)}
+        className={cn(
+          "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors duration-150",
+          isResourcesActive || desktopDropdownOpen
+            ? "bg-slate-100 text-slate-900 font-medium"
+            : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+        )}
+      >
+        <Library className="h-3.5 w-3.5" />
+        Resources
+        <ChevronDown className={cn("h-3 w-3 transition-transform", desktopDropdownOpen && "rotate-180")} />
+      </button>
+
+      {desktopDropdownOpen && (
+        <div className="absolute top-full left-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden z-50">
+          {resourceItems.map(({ href, label, desc, icon: Icon, color, bg }) => (
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setDesktopDropdownOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors"
+            >
+              <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", bg)}>
+                <Icon className={cn("h-4 w-4", color)} />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-slate-800">{label}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{desc}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <>
@@ -98,7 +151,7 @@ export function Nav({ user, isAdmin }: NavProps) {
               </span>
             </Link>
 
-            {/* Desktop nav links */}
+            {/* Desktop nav links (logged-in only) */}
             {user && (
               <div className="hidden md:flex items-center gap-0.5 flex-1">
                 {navLinks.map(({ href, label, icon: Icon }) => (
@@ -118,6 +171,11 @@ export function Nav({ user, isAdmin }: NavProps) {
                 ))}
               </div>
             )}
+
+            {/* Desktop Resources dropdown — visible for everyone */}
+            <div className="hidden md:flex items-center">
+              <ResourcesDropdown />
+            </div>
 
             {/* Right side — desktop */}
             {user ? (
@@ -181,12 +239,22 @@ export function Nav({ user, isAdmin }: NavProps) {
                 </Link>
               </>
             ) : (
-              <Link
-                href="/auth/signin"
-                className="bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
-              >
-                Sign In
-              </Link>
+              /* Not logged in: Resources (mobile) + Sign In */
+              <div className="flex items-center gap-2">
+                {/* Resources button — mobile only (desktop uses the dropdown above) */}
+                <button
+                  onClick={() => setResourcesOpen(true)}
+                  className="md:hidden flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                >
+                  <Library className="h-4 w-4" />
+                </button>
+                <Link
+                  href="/auth/signin"
+                  className="bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  Sign In
+                </Link>
+              </div>
             )}
           </div>
         </div>
@@ -225,54 +293,54 @@ export function Nav({ user, isAdmin }: NavProps) {
               Resources
             </button>
           </nav>
+        </>
+      )}
 
-          {/* ── Resources bottom sheet ── */}
-          {resourcesOpen && (
-            <>
-              {/* Backdrop */}
-              <div
-                className="md:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
-                onClick={() => setResourcesOpen(false)}
-              />
-              {/* Sheet */}
-              <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-xl">
-                {/* Handle + header */}
-                <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-100">
-                  <div>
-                    <div className="w-10 h-1 rounded-full bg-slate-200 mx-auto mb-3" />
-                    <p className="text-sm font-bold text-slate-900">Writing Resources</p>
-                    <p className="text-xs text-slate-400 mt-0.5">Free guides to boost your score</p>
-                  </div>
-                  <button
-                    onClick={() => setResourcesOpen(false)}
-                    className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-
-                {/* Resource cards */}
-                <div className="p-4 space-y-2.5 pb-24">
-                  {resourceItems.map(({ href, label, desc, icon: Icon, color, bg }) => (
-                    <Link
-                      key={href}
-                      href={href}
-                      onClick={() => setResourcesOpen(false)}
-                      className="flex items-center gap-3.5 p-4 bg-white rounded-2xl border border-slate-200 active:bg-slate-50 transition-colors"
-                    >
-                      <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", bg)}>
-                        <Icon className={cn("h-5 w-5", color)} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-slate-800">{label}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">{desc}</p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+      {/* ── Resources bottom sheet (all users on mobile) ── */}
+      {resourcesOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="md:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
+            onClick={() => setResourcesOpen(false)}
+          />
+          {/* Sheet */}
+          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-xl">
+            {/* Handle + header */}
+            <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-100">
+              <div>
+                <div className="w-10 h-1 rounded-full bg-slate-200 mx-auto mb-3" />
+                <p className="text-sm font-bold text-slate-900">Writing Resources</p>
+                <p className="text-xs text-slate-400 mt-0.5">Free guides to boost your score</p>
               </div>
-            </>
-          )}
+              <button
+                onClick={() => setResourcesOpen(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Resource cards */}
+            <div className={cn("p-4 space-y-2.5", user ? "pb-24" : "pb-8")}>
+              {resourceItems.map(({ href, label, desc, icon: Icon, color, bg }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setResourcesOpen(false)}
+                  className="flex items-center gap-3.5 p-4 bg-white rounded-2xl border border-slate-200 active:bg-slate-50 transition-colors"
+                >
+                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", bg)}>
+                    <Icon className={cn("h-5 w-5", color)} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">{label}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{desc}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
         </>
       )}
     </>
