@@ -75,6 +75,10 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
 
   const wordCount = countWords(essay);
   const minWords = MIN_WORDS[taskType];
+  // Last ~35 chars of essay for context in continuation phrase suggestions
+  const essaySnippet = essay.trim().length > 0
+    ? (essay.trim().length > 38 ? essay.trim().slice(-35) : essay.trim())
+    : "";
   const recWords = RECOMMENDED_WORDS[taskType];
   const isUnderMin = essay.trim().length > 0 && wordCount < minWords;
   const isGood = wordCount >= recWords;
@@ -565,6 +569,7 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
                 onInsert={handleInsertPhrase}
                 taskType={taskType}
                 ieltsMode={ieltsMode}
+                essaySnippet={essaySnippet}
               />
             </div>
           )}

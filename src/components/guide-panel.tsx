@@ -1,10 +1,10 @@
 "use client";
 
 import {
-  BookOpen, Sparkles, AlignLeft, CheckCircle2,
-  Loader2, Zap, AlertTriangle, Repeat2,
+  BookOpen, Sparkles, CheckCircle2,
+  Loader2, Zap, Repeat2,
   Link2, Shuffle, MessageSquareWarning, Target, Eye, LayoutTemplate,
-  PenLine, ArrowRight,
+  PenLine,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -39,92 +39,37 @@ interface GuidePanelProps {
   onInsert?: (text: string) => void;
   taskType?: string;
   ieltsMode?: string;
+  essaySnippet?: string; // last ~35 chars of essay for context in continuation phrases
 }
 
 // ── Static starter phrases per task type (instant, no API cost) ───────────
-const STARTERS: Record<string, Record<string, { label: string; phrases: string[] }[]>> = {
+const STARTERS: Record<string, Record<string, string[]>> = {
   task1: {
     academic: [
-      {
-        label: "Overview openers",
-        phrases: [
-          "The chart illustrates that",
-          "As can be seen from the graph,",
-          "The data reveals a clear trend in",
-          "Overall, the most striking feature is",
-        ],
-      },
-      {
-        label: "Comparison starters",
-        phrases: [
-          "In comparison, the figures for",
-          "While X increased significantly,",
-          "There was a notable difference between",
-          "The proportion of X was considerably higher than",
-        ],
-      },
+      "The chart illustrates that",
+      "As can be seen from the graph,",
+      "Overall, the most striking feature is",
+      "The data reveals a clear trend in",
     ],
     general: [
-      {
-        label: "Letter openers",
-        phrases: [
-          "Dear Sir or Madam,",
-          "I am writing to express my concern about",
-          "I am writing with reference to",
-          "I would like to bring to your attention",
-        ],
-      },
-      {
-        label: "Request phrases",
-        phrases: [
-          "I would be grateful if you could",
-          "I would appreciate it if",
-          "I look forward to hearing from you.",
-          "I hope you will take this matter seriously.",
-        ],
-      },
+      "Dear Sir or Madam,",
+      "I am writing to express my concern about",
+      "I am writing with reference to",
+      "I would be grateful if you could",
     ],
   },
   task2: {
     academic: [
-      {
-        label: "Introduction openers",
-        phrases: [
-          "In recent years, there has been growing debate over",
-          "It is widely acknowledged that",
-          "Nowadays, an increasing number of people believe that",
-          "The question of whether",
-        ],
-      },
-      {
-        label: "Argument starters",
-        phrases: [
-          "To begin with, it is evident that",
-          "Furthermore, it is widely recognised that",
-          "On the other hand, critics argue that",
-          "In conclusion, it can be argued that",
-        ],
-      },
+      "In recent years, there has been growing debate over",
+      "It is widely acknowledged that",
+      "Nowadays, an increasing number of people believe that",
+      "The question of whether",
     ],
     general: [
-      {
-        label: "Introduction openers",
-        phrases: [
-          "In recent years, there has been growing debate over",
-          "It is widely acknowledged that",
-          "Nowadays, an increasing number of people believe that",
-          "The question of whether",
-        ],
-      },
-      {
-        label: "Argument starters",
-        phrases: [
-          "To begin with, it is evident that",
-          "Furthermore, it is widely recognised that",
-          "On the other hand, critics argue that",
-          "In conclusion, it can be argued that",
-        ],
-      },
+      "In recent years, there has been growing debate over",
+      "It is widely acknowledged that",
+      "Nowadays, an increasing number of people believe that",
+      "The question of whether",
     ],
   },
 };
@@ -198,32 +143,42 @@ const POSITION_LABEL: Record<string, string> = {
   conclusion: "Conclusion",
 };
 
-function ContinuationCard({ s, onInsert }: { s: GuideSuggestion; onInsert?: (t: string) => void }) {
+function ContinuationCard({ s, essaySnippet, onInsert }: {
+  s: GuideSuggestion;
+  essaySnippet?: string;
+  onInsert?: (t: string) => void;
+}) {
+  // Show last ~32 chars of typed text as context before each suggestion
+  const tail = essaySnippet && essaySnippet.trim().length > 0
+    ? (essaySnippet.length > 34 ? "…" + essaySnippet.slice(-31) : essaySnippet)
+    : null;
+
   return (
-    <div className="rounded-xl border-2 border-brand-200 bg-brand-50 p-3">
-      <div className="flex items-center justify-between mb-1.5">
+    <div className="rounded-xl border border-brand-200 bg-brand-50/60 p-3">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">
           <PenLine className="h-3.5 w-3.5 text-brand-600 shrink-0" />
           <span className="text-[10px] font-bold uppercase tracking-wide text-brand-700">Continue Writing</span>
         </div>
         {s.position && POSITION_LABEL[s.position] && (
-          <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-brand-100 text-brand-600 border border-brand-200">
+          <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-brand-100 text-brand-600">
             {POSITION_LABEL[s.position]}
           </span>
         )}
       </div>
-      <p className="text-xs text-brand-800 leading-relaxed mb-2.5">{s.tip}</p>
+      {s.tip && <p className="text-[11px] text-brand-700 leading-relaxed mb-2.5">{s.tip}</p>}
       {s.phrases && s.phrases.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-[10px] font-semibold text-brand-600 uppercase tracking-wide">Click to insert →</p>
           {s.phrases.map((phrase, i) => (
             <button
               key={i}
               onClick={() => onInsert?.(phrase)}
-              className="w-full text-left text-xs px-3 py-2 rounded-lg bg-white border border-brand-200 text-slate-700 hover:bg-brand-600 hover:text-white hover:border-brand-600 transition-all duration-150 flex items-center gap-2 group"
+              className="w-full text-left text-xs px-3 py-2.5 rounded-lg bg-white border border-brand-200 hover:bg-brand-600 hover:border-brand-600 transition-all duration-150 group leading-snug"
             >
-              <ArrowRight className="h-3 w-3 shrink-0 text-brand-400 group-hover:text-white transition-colors" />
-              <span className="leading-snug italic">{phrase}</span>
+              {tail && (
+                <span className="text-slate-400 group-hover:text-brand-200">{tail} </span>
+              )}
+              <span className="text-slate-700 font-semibold group-hover:text-white">{phrase}</span>
             </button>
           ))}
         </div>
@@ -232,8 +187,8 @@ function ContinuationCard({ s, onInsert }: { s: GuideSuggestion; onInsert?: (t: 
   );
 }
 
-function SuggestionCard({ s, onInsert }: { s: GuideSuggestion; onInsert?: (t: string) => void }) {
-  if (s.type === "continuation") return <ContinuationCard s={s} onInsert={onInsert} />;
+function SuggestionCard({ s, essaySnippet, onInsert }: { s: GuideSuggestion; essaySnippet?: string; onInsert?: (t: string) => void }) {
+  if (s.type === "continuation") return <ContinuationCard s={s} essaySnippet={essaySnippet} onInsert={onInsert} />;
   const cfg = TYPE_CONFIG[s.type] ?? TYPE_CONFIG.grammar;
   const Icon = cfg.icon;
   return (
@@ -252,7 +207,7 @@ function SuggestionCard({ s, onInsert }: { s: GuideSuggestion; onInsert?: (t: st
   );
 }
 
-export function GuidePanel({ suggestions, isLoading, isContinuationLoading = false, wordCount, isProUser, repeatedWords = [], bandScores, onInsert, taskType = "task2", ieltsMode = "academic" }: GuidePanelProps) {
+export function GuidePanel({ suggestions, isLoading, isContinuationLoading = false, wordCount, isProUser, repeatedWords = [], bandScores, onInsert, taskType = "task2", ieltsMode = "academic", essaySnippet = "" }: GuidePanelProps) {
   if (!isProUser) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 h-full min-h-[200px] text-center p-4">
@@ -312,32 +267,28 @@ export function GuidePanel({ suggestions, isLoading, isContinuationLoading = fal
       {/* Content */}
       {wordCount < 15 ? (
         /* ── Getting started — instant phrase starters, no API needed ── */
-        <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
+        <div className="flex flex-col gap-2 flex-1 overflow-y-auto">
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
-            <div className="flex items-center gap-1.5 mb-2">
+            <div className="flex items-center gap-1.5 mb-1.5">
               <Sparkles className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-              <span className="text-[10px] font-bold uppercase tracking-wide text-emerald-700">Getting Started</span>
+              <span className="text-[10px] font-bold uppercase tracking-wide text-emerald-700">
+                {wordCount === 0 ? "Start writing" : "Keep going"}
+              </span>
             </div>
-            <p className="text-xs text-emerald-800 leading-relaxed mb-3">
-              {wordCount === 0 ? "Click a phrase below to start writing — or type your own opening." : "Keep going! Feedback starts after a few sentences."}
+            <p className="text-[11px] text-emerald-700 leading-relaxed mb-2.5">
+              {wordCount === 0 ? "Click a phrase to begin — or type your own." : "A few more words and the AI tutor kicks in."}
             </p>
-            {(STARTERS[taskType]?.[ieltsMode] ?? STARTERS.task2.academic).map((group) => (
-              <div key={group.label} className="mb-3 last:mb-0">
-                <p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wide mb-1.5">{group.label}</p>
-                <div className="space-y-1.5">
-                  {group.phrases.map((phrase, i) => (
-                    <button
-                      key={i}
-                      onClick={() => onInsert?.(phrase)}
-                      className="w-full text-left text-xs px-3 py-2 rounded-lg bg-white border border-emerald-200 text-slate-700 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all duration-150 flex items-center gap-2 group"
-                    >
-                      <ArrowRight className="h-3 w-3 shrink-0 text-emerald-400 group-hover:text-white transition-colors" />
-                      <span className="italic leading-snug">{phrase}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
+            <div className="space-y-1.5">
+              {(STARTERS[taskType]?.[ieltsMode] ?? STARTERS.task2.academic).map((phrase, i) => (
+                <button
+                  key={i}
+                  onClick={() => onInsert?.(phrase)}
+                  className="w-full text-left text-xs px-3 py-2 rounded-lg bg-white border border-emerald-200 text-slate-700 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all duration-150"
+                >
+                  {phrase}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       ) : isLoading && allSuggestions.length === 0 ? (
@@ -366,7 +317,7 @@ export function GuidePanel({ suggestions, isLoading, isContinuationLoading = fal
               <span>Suggesting what to write next…</span>
             </div>
           )}
-          {allSuggestions.map((s, i) => <SuggestionCard key={i} s={s} onInsert={onInsert} />)}
+          {allSuggestions.map((s, i) => <SuggestionCard key={i} s={s} essaySnippet={essaySnippet} onInsert={onInsert} />)}
           {isLoading && (
             <p className="text-[10px] text-slate-400 text-center flex items-center justify-center gap-1 mt-1">
               <Loader2 className="h-3 w-3 animate-spin" /> Updating…
