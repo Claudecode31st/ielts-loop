@@ -22,33 +22,33 @@ const TYPE_STYLE: Record<
   { badge: string; bar: string; dot: string; gradient: string }
 > = {
   grammar: {
-    badge: "bg-red-100 text-red-700",
-    bar: "bg-red-500",
-    dot: "bg-red-400",
-    gradient: "from-red-500 to-red-600",
+    badge: "bg-brand-50 text-brand-700",
+    bar: "bg-brand-500",
+    dot: "bg-brand-400",
+    gradient: "from-brand-600 to-brand-700",
   },
   vocabulary: {
-    badge: "bg-blue-100 text-blue-700",
-    bar: "bg-blue-500",
-    dot: "bg-blue-400",
-    gradient: "from-blue-500 to-blue-600",
+    badge: "bg-brand-50 text-brand-700",
+    bar: "bg-brand-500",
+    dot: "bg-brand-400",
+    gradient: "from-brand-600 to-brand-700",
   },
   structure: {
-    badge: "bg-amber-100 text-amber-700",
-    bar: "bg-amber-500",
-    dot: "bg-amber-400",
-    gradient: "from-amber-500 to-amber-600",
+    badge: "bg-brand-50 text-brand-700",
+    bar: "bg-brand-500",
+    dot: "bg-brand-400",
+    gradient: "from-brand-600 to-brand-700",
   },
   coherence: {
-    badge: "bg-orange-100 text-orange-700",
-    bar: "bg-orange-500",
-    dot: "bg-orange-400",
-    gradient: "from-orange-500 to-orange-600",
+    badge: "bg-brand-50 text-brand-700",
+    bar: "bg-brand-500",
+    dot: "bg-brand-400",
+    gradient: "from-brand-600 to-brand-700",
   },
 };
 
 const FALLBACK = {
-  badge: "bg-slate-100 text-slate-700",
+  badge: "bg-brand-50 text-brand-700",
   bar: "bg-brand-500",
   dot: "bg-brand-400",
   gradient: "from-brand-600 to-brand-700",

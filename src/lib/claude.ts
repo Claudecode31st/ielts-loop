@@ -190,6 +190,8 @@ export async function generateExercises(params: {
 
   const studentMemoryContent = buildStudentMemoryBlock(studentMemory);
 
+  const isSingleFocus = targetErrors.length === 1;
+
   const prompt = `Based on this IELTS student's error patterns, generate exactly 3 targeted practice exercises.
 
 ## Student's Profile
@@ -198,7 +200,12 @@ ${studentMemoryContent}
 ## Target Error Types to Address
 ${targetErrors.join(", ")}
 
-Generate 3 exercises that directly address these weaknesses. Each exercise should be practical and IELTS-focused.
+${isSingleFocus
+  ? `IMPORTANT: ALL 3 exercises MUST exclusively target "${targetErrors[0]}". Every question in every exercise must practise this specific skill. Do NOT create exercises on any other grammar, vocabulary, or structure topic — stay strictly on "${targetErrors[0]}" throughout.`
+  : `Generate 3 exercises that directly address these weaknesses. Make exercises varied: include at least one grammar correction exercise, one vocabulary/collocation exercise, and one structure/organization exercise.`
+}
+
+Each exercise should be practical and IELTS-focused with 4-5 questions.
 
 Return ONLY a valid JSON array with exactly 3 exercise objects:
 [
@@ -216,9 +223,7 @@ Return ONLY a valid JSON array with exactly 3 exercise objects:
       }
     ]
   }
-]
-
-Make exercises varied: include at least one grammar correction exercise, one vocabulary/collocation exercise, and one structure/organization exercise. Each exercise should have 4-5 questions.`;
+]`;
 
   const response = await anthropic.messages.create({
     model: "claude-haiku-4-5",

@@ -131,6 +131,22 @@ export default function ExercisesPage() {
   const pending = exercises.filter((e) => !e.isCompleted);
   const completed = exercises.filter((e) => e.isCompleted);
 
+  // Group all exercises by targetError, preserving order of first appearance
+  const topicOrder: string[] = [];
+  const byTopic: Record<string, Exercise[]> = {};
+  for (const ex of exercises) {
+    const topic = ex.targetError || "General";
+    if (!byTopic[topic]) {
+      byTopic[topic] = [];
+      topicOrder.push(topic);
+    }
+    byTopic[topic].push(ex);
+  }
+  // Within each topic: pending first, then completed
+  for (const topic of topicOrder) {
+    byTopic[topic].sort((a, b) => Number(a.isCompleted) - Number(b.isCompleted));
+  }
+
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
 
@@ -273,62 +289,79 @@ export default function ExercisesPage() {
           </div>
         )
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-6">
 
-          {/* ── Pending ──────────────────────────────────────────────── */}
-          {pending.length > 0 && (
-            <section className="space-y-2.5">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-3.5 w-3.5 text-brand-500" />
-                <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                  Practice Now
-                </h2>
-                <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-brand-100 text-brand-700 tabular-nums">
-                  {pending.length}
+          {/* ── Summary bar ──────────────────────────────────────────────── */}
+          <div className="flex items-center gap-3">
+            {pending.length > 0 && (
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="h-3 w-3 text-brand-500" />
+                <span className="text-xs text-slate-500">
+                  <span className="font-bold text-brand-700">{pending.length}</span> to do
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {pending.map((exercise) => (
-                  <ExerciseCard
-                    key={exercise.id}
-                    exercise={exercise}
-                    isLocked={
-                      activeExerciseId !== null &&
-                      activeExerciseId !== exercise.id
-                    }
-                    onActivate={() => setActiveExerciseId(exercise.id)}
-                    onComplete={handleComplete}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* ── Completed ────────────────────────────────────────────── */}
-          {completed.length > 0 && (
-            <section className="space-y-2.5">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-3.5 w-3.5 text-green-500" />
-                <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                  Completed
-                </h2>
-                <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 tabular-nums">
-                  {completed.length}
+            )}
+            {completed.length > 0 && (
+              <div className="flex items-center gap-1.5">
+                <CheckCircle className="h-3 w-3 text-green-500" />
+                <span className="text-xs text-slate-500">
+                  <span className="font-bold text-green-700">{completed.length}</span> completed
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {completed.map((exercise) => (
-                  <ExerciseCard
-                    key={exercise.id}
-                    exercise={exercise}
-                    isLocked={false}
-                    onActivate={() => {}}
-                    onComplete={handleComplete}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
+            )}
+            <span className="text-xs text-slate-300">·</span>
+            <span className="text-xs text-slate-400">{topicOrder.length} topic{topicOrder.length !== 1 ? "s" : ""}</span>
+          </div>
+
+          {/* ── By topic ─────────────────────────────────────────────────── */}
+          {topicOrder.map((topic) => {
+            const topicExercises = byTopic[topic];
+            const topicPending   = topicExercises.filter((e) => !e.isCompleted);
+            const topicDone      = topicExercises.filter((e) => e.isCompleted);
+            const allDone        = topicPending.length === 0;
+
+            return (
+              <section key={topic} className="space-y-2.5">
+                {/* Topic header */}
+                <div className="flex items-center gap-2">
+                  {allDone
+                    ? <CheckCircle className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                    : <Sparkles className="h-3.5 w-3.5 text-brand-500 shrink-0" />
+                  }
+                  <h2 className="text-xs font-bold text-slate-600 uppercase tracking-widest capitalize truncate">
+                    {topic}
+                  </h2>
+                  {topicPending.length > 0 && (
+                    <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-brand-100 text-brand-700 tabular-nums shrink-0">
+                      {topicPending.length}
+                    </span>
+                  )}
+                  {allDone && (
+                    <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 tabular-nums shrink-0">
+                      {topicDone.length}
+                    </span>
+                  )}
+                </div>
+
+                {/* Exercise cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {topicExercises.map((exercise) => (
+                    <ExerciseCard
+                      key={exercise.id}
+                      exercise={exercise}
+                      isLocked={
+                        !exercise.isCompleted &&
+                        activeExerciseId !== null &&
+                        activeExerciseId !== exercise.id
+                      }
+                      onActivate={() => setActiveExerciseId(exercise.id)}
+                      onComplete={handleComplete}
+                    />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
         </div>
       )}
     </div>
