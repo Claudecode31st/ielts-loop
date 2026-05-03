@@ -165,7 +165,7 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
   const triggerContinuation = useCallback((essayText: string) => {
     if (!guideMode) return;
     const words = essayText.trim().split(/\s+/).filter(Boolean).length;
-    if (words < 50) return;
+    if (words < 20) return;
     if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current);
     pauseTimerRef.current = setTimeout(async () => {
       const now = Date.now();
@@ -563,6 +563,8 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
                 repeatedWords={repeatedWords}
                 bandScores={bandScores}
                 onInsert={handleInsertPhrase}
+                taskType={taskType}
+                ieltsMode={ieltsMode}
               />
             </div>
           )}

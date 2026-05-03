@@ -37,7 +37,97 @@ interface GuidePanelProps {
   repeatedWords?: string[]; // client-side detected
   bandScores?: BandScores | null;
   onInsert?: (text: string) => void;
+  taskType?: string;
+  ieltsMode?: string;
 }
+
+// ── Static starter phrases per task type (instant, no API cost) ───────────
+const STARTERS: Record<string, Record<string, { label: string; phrases: string[] }[]>> = {
+  task1: {
+    academic: [
+      {
+        label: "Overview openers",
+        phrases: [
+          "The chart illustrates that",
+          "As can be seen from the graph,",
+          "The data reveals a clear trend in",
+          "Overall, the most striking feature is",
+        ],
+      },
+      {
+        label: "Comparison starters",
+        phrases: [
+          "In comparison, the figures for",
+          "While X increased significantly,",
+          "There was a notable difference between",
+          "The proportion of X was considerably higher than",
+        ],
+      },
+    ],
+    general: [
+      {
+        label: "Letter openers",
+        phrases: [
+          "Dear Sir or Madam,",
+          "I am writing to express my concern about",
+          "I am writing with reference to",
+          "I would like to bring to your attention",
+        ],
+      },
+      {
+        label: "Request phrases",
+        phrases: [
+          "I would be grateful if you could",
+          "I would appreciate it if",
+          "I look forward to hearing from you.",
+          "I hope you will take this matter seriously.",
+        ],
+      },
+    ],
+  },
+  task2: {
+    academic: [
+      {
+        label: "Introduction openers",
+        phrases: [
+          "In recent years, there has been growing debate over",
+          "It is widely acknowledged that",
+          "Nowadays, an increasing number of people believe that",
+          "The question of whether",
+        ],
+      },
+      {
+        label: "Argument starters",
+        phrases: [
+          "To begin with, it is evident that",
+          "Furthermore, it is widely recognised that",
+          "On the other hand, critics argue that",
+          "In conclusion, it can be argued that",
+        ],
+      },
+    ],
+    general: [
+      {
+        label: "Introduction openers",
+        phrases: [
+          "In recent years, there has been growing debate over",
+          "It is widely acknowledged that",
+          "Nowadays, an increasing number of people believe that",
+          "The question of whether",
+        ],
+      },
+      {
+        label: "Argument starters",
+        phrases: [
+          "To begin with, it is evident that",
+          "Furthermore, it is widely recognised that",
+          "On the other hand, critics argue that",
+          "In conclusion, it can be argued that",
+        ],
+      },
+    ],
+  },
+};
 
 const TYPE_CONFIG: Record<GuideSuggestion["type"], {
   label: string;
@@ -162,7 +252,7 @@ function SuggestionCard({ s, onInsert }: { s: GuideSuggestion; onInsert?: (t: st
   );
 }
 
-export function GuidePanel({ suggestions, isLoading, isContinuationLoading = false, wordCount, isProUser, repeatedWords = [], bandScores, onInsert }: GuidePanelProps) {
+export function GuidePanel({ suggestions, isLoading, isContinuationLoading = false, wordCount, isProUser, repeatedWords = [], bandScores, onInsert, taskType = "task2", ieltsMode = "academic" }: GuidePanelProps) {
   if (!isProUser) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 h-full min-h-[200px] text-center p-4">
@@ -221,8 +311,34 @@ export function GuidePanel({ suggestions, isLoading, isContinuationLoading = fal
 
       {/* Content */}
       {wordCount < 15 ? (
-        <div className="flex flex-col items-center justify-center gap-2 flex-1 text-center py-8">
-          <p className="text-xs text-slate-400">Start writing your essay<br />and I'll give you live feedback…</p>
+        /* ── Getting started — instant phrase starters, no API needed ── */
+        <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+            <div className="flex items-center gap-1.5 mb-2">
+              <Sparkles className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+              <span className="text-[10px] font-bold uppercase tracking-wide text-emerald-700">Getting Started</span>
+            </div>
+            <p className="text-xs text-emerald-800 leading-relaxed mb-3">
+              {wordCount === 0 ? "Click a phrase below to start writing — or type your own opening." : "Keep going! Feedback starts after a few sentences."}
+            </p>
+            {(STARTERS[taskType]?.[ieltsMode] ?? STARTERS.task2.academic).map((group) => (
+              <div key={group.label} className="mb-3 last:mb-0">
+                <p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wide mb-1.5">{group.label}</p>
+                <div className="space-y-1.5">
+                  {group.phrases.map((phrase, i) => (
+                    <button
+                      key={i}
+                      onClick={() => onInsert?.(phrase)}
+                      className="w-full text-left text-xs px-3 py-2 rounded-lg bg-white border border-emerald-200 text-slate-700 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all duration-150 flex items-center gap-2 group"
+                    >
+                      <ArrowRight className="h-3 w-3 shrink-0 text-emerald-400 group-hover:text-white transition-colors" />
+                      <span className="italic leading-snug">{phrase}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : isLoading && allSuggestions.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 flex-1 py-8">
