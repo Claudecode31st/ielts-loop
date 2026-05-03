@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 
-import { ArrowLeft, Clock, FileText, PenLine } from "lucide-react";
+import { ArrowLeft, Clock, FileText, PenLine, Download } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import type { Essay, ErrorPattern, DetailedFeedback } from "@/types";
 import { SampleEssay } from "@/components/sample-essay";
@@ -121,6 +121,11 @@ export default async function EssayDetailPage({
         </div>
         <div className="flex items-center gap-3">
           <DeleteEssayButton essayId={essay.id} />
+          <Link href={`/essay/${essay.id}/print`} target="_blank" rel="noopener noreferrer">
+            <Button variant="outline" size="sm" className="gap-1.5 text-slate-600 border-slate-200">
+              <Download className="h-3.5 w-3.5" /> Export PDF
+            </Button>
+          </Link>
           <Link href="/essay/new">
             <Button size="sm" className="gap-1.5 bg-brand-600 hover:bg-brand-700 text-white border-0">
               <PenLine className="h-3.5 w-3.5" /> New Essay
