@@ -156,10 +156,48 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
     }, 4000);
   }, [guideMode, prompt, taskType, ieltsMode, knownErrors]);
 
-  const confirmSwitch = useCallback((onConfirm: () => void) => {
-    if (!prompt.trim()) { onConfirm(); return; }
-    if (window.confirm("Switching will clear the current prompt and chart. Continue?")) onConfirm();
-  }, [prompt]);
+  // Save current draft then load the draft for the new task/mode combination
+  const handleSwitch = useCallback((newTaskType: TaskType, newIeltsMode: IeltsMode) => {
+    const { prompt: p, essay: e, taskType: t, ieltsMode: m } = draftValuesRef.current;
+    if (t === newTaskType && m === newIeltsMode) return;
+
+    // Save current work as draft before leaving
+    if (p.trim() || e.trim()) {
+      try {
+        localStorage.setItem(draftKey(t, m), JSON.stringify({ prompt: p, essay: e, savedAt: Date.now() }));
+        setDraftSavedAt(new Date());
+      } catch { /* ignore */ }
+    }
+
+    // Switch state
+    setTaskType(newTaskType);
+    setIeltsMode(newIeltsMode);
+    setChartData(null);
+    setShowWordWarning(false);
+    setDraftRestored(false);
+    if (newTaskType !== "task1" || newIeltsMode !== "academic") {
+      // clear image if leaving task1-academic
+      setImageBase64(null);
+      setImagePreview(null);
+    }
+
+    // Load draft for the new combination, or blank fields
+    try {
+      const saved = localStorage.getItem(draftKey(newTaskType, newIeltsMode));
+      if (saved) {
+        const draft: Draft = JSON.parse(saved);
+        setPrompt(draft.prompt ?? "");
+        setEssay(draft.essay ?? "");
+        setDraftRestored(true);
+      } else {
+        setPrompt("");
+        setEssay("");
+      }
+    } catch {
+      setPrompt("");
+      setEssay("");
+    }
+  }, []); // stable — reads current values from ref, new values as args
 
   const generatePrompt = useCallback(async () => {
     setIsGeneratingPrompt(true); setError(null);
@@ -307,7 +345,7 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
         {/* IELTS Type */}
         <div className="flex rounded-lg border border-slate-200 overflow-hidden text-sm">
           {(["academic", "general"] as IeltsMode[]).map((mode) => (
-            <button key={mode} onClick={() => confirmSwitch(() => { setIeltsMode(mode); setChartData(null); setPrompt(""); })}
+            <button key={mode} onClick={() => handleSwitch(taskType, mode)}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 font-medium transition-colors ${ieltsMode === mode ? "bg-brand-600 text-white" : "text-slate-600 hover:bg-slate-50"}`}>
               {mode === "academic" ? <><GraduationCap className="h-3.5 w-3.5" />Academic</> : <><BookOpen className="h-3.5 w-3.5" />General</>}
             </button>
@@ -319,7 +357,7 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
         {/* Task */}
         <div className="flex rounded-lg border border-slate-200 overflow-hidden text-sm">
           {(["task1", "task2"] as TaskType[]).map((type) => (
-            <button key={type} onClick={() => confirmSwitch(() => { setTaskType(type); setShowWordWarning(false); setChartData(null); setPrompt(""); })}
+            <button key={type} onClick={() => handleSwitch(type, ieltsMode)}
               className={`px-4 py-1.5 font-medium transition-colors ${taskType === type ? "bg-brand-600 text-white" : "text-slate-600 hover:bg-slate-50"}`}>
               {type === "task1" ? "Task 1" : "Task 2"}
             </button>
