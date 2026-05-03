@@ -5,7 +5,7 @@ import { essays } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { formatDate } from "@/lib/utils";
 import type { DetailedFeedback } from "@/types";
-import { AutoPrint } from "./auto-print";
+import { AutoPrint, PrintCloseButton } from "./auto-print";
 
 // ── Band helpers ──────────────────────────────────────────────────────────
 
@@ -112,15 +112,7 @@ export default async function EssayPrintPage({ params }: { params: Promise<{ id:
       <div className="max-w-[780px] mx-auto px-6 py-8 text-slate-800" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
 
         {/* ── Close button (screen only) ── */}
-        <div className="no-print mb-6 flex items-center justify-between">
-          <p className="text-sm text-slate-500">Your browser will open a print dialog. Choose <strong>Save as PDF</strong>.</p>
-          <button
-            onClick={() => window.close()}
-            className="text-xs px-3 py-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors"
-          >
-            ✕ Close
-          </button>
-        </div>
+        <PrintCloseButton />
 
         {/* ═══════════════════════════════════════════════════════════════
             SECTION 1 — Header + Scores + Assessment
