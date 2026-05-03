@@ -1,17 +1,21 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
-export const proxy = auth((req) => {
+export default auth((req) => {
   const { pathname } = req.nextUrl;
 
-  // Public routes
-  const publicRoutes = ["/", "/auth/signin", "/auth/error"];
-  const isPublicRoute =
-    publicRoutes.includes(pathname) ||
+  // Routes accessible without signing in
+  const isPublic =
+    pathname === "/" ||
+    pathname === "/pricing" ||
+    pathname === "/terms" ||
+    pathname === "/privacy" ||
+    pathname.startsWith("/resources") ||
+    pathname.startsWith("/auth") ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/debug-auth");
 
-  if (!req.auth && !isPublicRoute) {
+  if (!req.auth && !isPublic) {
     const signInUrl = new URL("/auth/signin", req.nextUrl.origin);
     signInUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(signInUrl);
