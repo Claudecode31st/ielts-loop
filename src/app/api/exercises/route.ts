@@ -123,7 +123,9 @@ export async function POST(req: NextRequest) {
         .values({
           userId: session.user.id,
           exerciseType,
-          targetError: ex.targetSkill || targetErrors[0],
+          // When generated for a specific focus topic, keep all exercises under that one group.
+          // Otherwise use Claude's targetSkill so each error type gets its own group.
+          targetError: focus || ex.targetSkill || targetErrors[0],
           content: ex as unknown as Record<string, unknown>,
           isCompleted: false,
         })
