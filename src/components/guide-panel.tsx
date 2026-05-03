@@ -4,15 +4,20 @@ import {
   BookOpen, Sparkles, AlignLeft, CheckCircle2,
   Loader2, Zap, AlertTriangle, Repeat2,
   Link2, Shuffle, MessageSquareWarning, Target, Eye, LayoutTemplate,
+  PenLine, ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 
 export interface GuideSuggestion {
   type:
     | "grammar" | "vocabulary" | "repeated_words" | "cohesion"
-    | "sentence_variety" | "formality" | "task" | "clarity" | "structure";
+    | "sentence_variety" | "formality" | "task" | "clarity" | "structure"
+    | "continuation";
   tip: string;
   excerpt?: string | null;
+  // continuation only
+  phrases?: string[];
+  position?: string;
 }
 
 export interface BandScores {
@@ -26,10 +31,12 @@ export interface BandScores {
 interface GuidePanelProps {
   suggestions: GuideSuggestion[];
   isLoading: boolean;
+  isContinuationLoading?: boolean;
   wordCount: number;
   isProUser: boolean;
   repeatedWords?: string[]; // client-side detected
   bandScores?: BandScores | null;
+  onInsert?: (text: string) => void;
 }
 
 const TYPE_CONFIG: Record<GuideSuggestion["type"], {
@@ -48,6 +55,7 @@ const TYPE_CONFIG: Record<GuideSuggestion["type"], {
   task:             { label: "Task Response",      icon: Target,               color: "text-brand-600",    bg: "bg-brand-50",    border: "border-brand-100" },
   clarity:          { label: "Clarity",            icon: Eye,                  color: "text-slate-600",    bg: "bg-slate-50",    border: "border-slate-200" },
   structure:        { label: "Structure",          icon: LayoutTemplate,       color: "text-green-700",    bg: "bg-green-50",    border: "border-green-100" },
+  continuation:     { label: "Continue Writing",   icon: PenLine,              color: "text-brand-700",    bg: "bg-brand-50",    border: "border-brand-200" },
 };
 
 function bandColor(score: number): string {
@@ -92,7 +100,50 @@ function BandScoreStrip({ scores }: { scores: BandScores }) {
   );
 }
 
-function SuggestionCard({ s }: { s: GuideSuggestion }) {
+const POSITION_LABEL: Record<string, string> = {
+  intro: "Introduction",
+  body_paragraph_1: "Body ¶1",
+  body_paragraph_2: "Body ¶2",
+  body_paragraph_3: "Body ¶3",
+  conclusion: "Conclusion",
+};
+
+function ContinuationCard({ s, onInsert }: { s: GuideSuggestion; onInsert?: (t: string) => void }) {
+  return (
+    <div className="rounded-xl border-2 border-brand-200 bg-brand-50 p-3">
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center gap-1.5">
+          <PenLine className="h-3.5 w-3.5 text-brand-600 shrink-0" />
+          <span className="text-[10px] font-bold uppercase tracking-wide text-brand-700">Continue Writing</span>
+        </div>
+        {s.position && POSITION_LABEL[s.position] && (
+          <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-brand-100 text-brand-600 border border-brand-200">
+            {POSITION_LABEL[s.position]}
+          </span>
+        )}
+      </div>
+      <p className="text-xs text-brand-800 leading-relaxed mb-2.5">{s.tip}</p>
+      {s.phrases && s.phrases.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-[10px] font-semibold text-brand-600 uppercase tracking-wide">Click to insert →</p>
+          {s.phrases.map((phrase, i) => (
+            <button
+              key={i}
+              onClick={() => onInsert?.(phrase)}
+              className="w-full text-left text-xs px-3 py-2 rounded-lg bg-white border border-brand-200 text-slate-700 hover:bg-brand-600 hover:text-white hover:border-brand-600 transition-all duration-150 flex items-center gap-2 group"
+            >
+              <ArrowRight className="h-3 w-3 shrink-0 text-brand-400 group-hover:text-white transition-colors" />
+              <span className="leading-snug italic">{phrase}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SuggestionCard({ s, onInsert }: { s: GuideSuggestion; onInsert?: (t: string) => void }) {
+  if (s.type === "continuation") return <ContinuationCard s={s} onInsert={onInsert} />;
   const cfg = TYPE_CONFIG[s.type] ?? TYPE_CONFIG.grammar;
   const Icon = cfg.icon;
   return (
@@ -111,7 +162,7 @@ function SuggestionCard({ s }: { s: GuideSuggestion }) {
   );
 }
 
-export function GuidePanel({ suggestions, isLoading, wordCount, isProUser, repeatedWords = [], bandScores }: GuidePanelProps) {
+export function GuidePanel({ suggestions, isLoading, isContinuationLoading = false, wordCount, isProUser, repeatedWords = [], bandScores, onInsert }: GuidePanelProps) {
   if (!isProUser) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 h-full min-h-[200px] text-center p-4">
@@ -179,13 +230,27 @@ export function GuidePanel({ suggestions, isLoading, wordCount, isProUser, repea
           <p className="text-xs text-slate-400">Analysing your essay…</p>
         </div>
       ) : allSuggestions.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-2 flex-1 text-center py-8">
-          <CheckCircle2 className="h-6 w-6 text-green-500" />
-          <p className="text-xs text-slate-500">Looking great — keep writing!</p>
+        <div className="flex flex-col gap-2 flex-1">
+          <div className="flex flex-col items-center justify-center gap-2 text-center py-4">
+            <CheckCircle2 className="h-6 w-6 text-green-500" />
+            <p className="text-xs text-slate-500">Looking great — keep writing!</p>
+          </div>
+          {isContinuationLoading && (
+            <div className="flex items-center justify-center gap-2 py-2 text-[11px] text-brand-600">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <span>Suggesting what to write next…</span>
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex flex-col gap-2 flex-1 overflow-y-auto">
-          {allSuggestions.map((s, i) => <SuggestionCard key={i} s={s} />)}
+          {isContinuationLoading && (
+            <div className="flex items-center justify-center gap-2 py-1.5 text-[11px] text-brand-600 bg-brand-50 rounded-lg border border-brand-100">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <span>Suggesting what to write next…</span>
+            </div>
+          )}
+          {allSuggestions.map((s, i) => <SuggestionCard key={i} s={s} onInsert={onInsert} />)}
           {isLoading && (
             <p className="text-[10px] text-slate-400 text-center flex items-center justify-center gap-1 mt-1">
               <Loader2 className="h-3 w-3 animate-spin" /> Updating…
@@ -195,7 +260,7 @@ export function GuidePanel({ suggestions, isLoading, wordCount, isProUser, repea
       )}
 
       <p className="text-[10px] text-slate-300 text-center mt-auto pt-2">
-        Updates a few seconds after you stop typing
+        Pause writing for a moment to get phrase suggestions
       </p>
     </div>
   );

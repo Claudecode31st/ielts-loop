@@ -62,9 +62,13 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
   const [bandScores, setBandScores] = useState<BandScores | null>(null);
   const [draftSavedAt, setDraftSavedAt] = useState<Date | null>(null);
   const [draftRestored, setDraftRestored] = useState(false);
+  const [isContinuationLoading, setIsContinuationLoading] = useState(false);
   const lastAnalysedWordCount = useRef(0);
   const guideDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastContinuationRef = useRef(0); // timestamp of last continuation call
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const essayTextareaRef = useRef<HTMLTextAreaElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // Keep a ref of current draft values so the interval doesn't need to re-register
   const draftValuesRef = useRef({ prompt, essay, taskType, ieltsMode });
@@ -157,6 +161,57 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
   }, [guideMode, prompt, taskType, ieltsMode, knownErrors]);
 
   // Save current draft then load the draft for the new task/mode combination
+  // Pause-triggered continuation phrases (fires 3s after typing stops, min 50 words, 30s cooldown)
+  const triggerContinuation = useCallback((essayText: string) => {
+    if (!guideMode) return;
+    const words = essayText.trim().split(/\s+/).filter(Boolean).length;
+    if (words < 50) return;
+    if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current);
+    pauseTimerRef.current = setTimeout(async () => {
+      const now = Date.now();
+      if (now - lastContinuationRef.current < 30_000) return; // 30s cooldown
+      lastContinuationRef.current = now;
+      setIsContinuationLoading(true);
+      try {
+        const { prompt: p, taskType: t, ieltsMode: m } = draftValuesRef.current;
+        const res = await fetch("/api/guide", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ essay: essayText, prompt: p, taskType: t, ieltsMode: m, knownErrors, mode: "continue" }),
+        });
+        const data = await res.json();
+        if (res.ok && data.suggestions?.length) {
+          setGuideSuggestions(prev => {
+            const without = prev.filter((s: { type: string }) => s.type !== "continuation");
+            return [data.suggestions[0], ...without];
+          });
+        }
+      } catch { /* silent */ } finally { setIsContinuationLoading(false); }
+    }, 3_000);
+  }, [guideMode, knownErrors]);
+
+  // Insert text at textarea cursor position
+  const handleInsertPhrase = useCallback((phrase: string) => {
+    const textarea = essayTextareaRef.current;
+    if (!textarea) return;
+    const start = textarea.selectionStart ?? essay.length;
+    const end = textarea.selectionEnd ?? essay.length;
+    const before = essay.slice(0, start);
+    const after = essay.slice(end);
+    // Add a space before if needed
+    const separator = before.length > 0 && !before.endsWith(" ") && !before.endsWith("\n") ? " " : "";
+    const newText = before + separator + phrase + " " + after;
+    setEssay(newText);
+    // Move cursor to end of inserted phrase
+    const newCursorPos = start + separator.length + phrase.length + 1;
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+    // Remove the continuation suggestion since it was used
+    setGuideSuggestions(prev => prev.filter((s: { type: string }) => s.type !== "continuation"));
+  }, [essay]);
+
   const handleSwitch = useCallback((newTaskType: TaskType, newIeltsMode: IeltsMode) => {
     const { prompt: p, essay: e, taskType: t, ieltsMode: m } = draftValuesRef.current;
     if (t === newTaskType && m === newIeltsMode) return;
@@ -488,19 +543,29 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
 
         {/* Essay + Guide panel side by side */}
         <div className="flex gap-3 items-start">
-          <Textarea id="essay" value={essay}
+          <Textarea id="essay" ref={essayTextareaRef} value={essay}
             placeholder={taskType === "task1" ? (ieltsMode === "academic" ? "The chart illustrates…" : "Dear Sir or Madam,\n\nI am writing to…") : "In recent decades…"}
             className="flex-1 min-h-[320px] resize-y text-sm leading-relaxed"
             onChange={e => {
               setEssay(e.target.value);
               setShowWordWarning(false);
               triggerGuideAnalysis(e.target.value);
+              triggerContinuation(e.target.value);
               if (guideMode) setRepeatedWords(detectRepeatedWords(e.target.value));
             }}
           />
           {guideMode && (
-            <div className="w-68 shrink-0 bg-white rounded-xl border border-slate-200 shadow-sm p-3 self-stretch min-h-[320px] flex flex-col">
-              <GuidePanel suggestions={guideSuggestions} isLoading={guideLoading} wordCount={wordCount} isProUser={isProUser} repeatedWords={repeatedWords} bandScores={bandScores} />
+            <div className="w-72 shrink-0 bg-white rounded-xl border border-slate-200 shadow-sm p-3 self-stretch min-h-[320px] flex flex-col">
+              <GuidePanel
+                suggestions={guideSuggestions}
+                isLoading={guideLoading}
+                isContinuationLoading={isContinuationLoading}
+                wordCount={wordCount}
+                isProUser={isProUser}
+                repeatedWords={repeatedWords}
+                bandScores={bandScores}
+                onInsert={handleInsertPhrase}
+              />
             </div>
           )}
         </div>
