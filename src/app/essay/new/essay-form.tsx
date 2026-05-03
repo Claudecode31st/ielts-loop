@@ -54,7 +54,9 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [promptUsage, setPromptUsage] = useState<{ used: number; limit: number | null }>(initialPromptUsage);
   const [guideMode, setGuideMode] = useState(false);
-  const [guideSuggestions, setGuideSuggestions] = useState<GuideSuggestion[]>([]);
+  // Kept in separate state so analysis and continuation never overwrite each other
+  const [analysisSuggestions, setAnalysisSuggestions] = useState<GuideSuggestion[]>([]);
+  const [continuationSuggestion, setContinuationSuggestion] = useState<GuideSuggestion | null>(null);
   const [guideLoading, setGuideLoading] = useState(false);
   const [isProUser, setIsProUser] = useState(initialUsage.plan === "pro");
   const [knownErrors, setKnownErrors] = useState<string[]>(initialKnownErrors);
@@ -159,7 +161,7 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
       try {
         const res = await fetch("/api/guide", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ essay: essayText, prompt, taskType, ieltsMode, knownErrors }) });
         const data = await res.json();
-        if (res.ok && data.suggestions) { setGuideSuggestions(data.suggestions); if (data.bandScores) setBandScores(data.bandScores); lastAnalysedWordCount.current = words; }
+        if (res.ok && data.suggestions) { setAnalysisSuggestions(data.suggestions); if (data.bandScores) setBandScores(data.bandScores); lastAnalysedWordCount.current = words; }
       } catch { /* silent */ } finally { setGuideLoading(false); }
     }, 4000);
   }, [guideMode, prompt, taskType, ieltsMode, knownErrors]);
@@ -185,10 +187,7 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
         });
         const data = await res.json();
         if (res.ok && data.suggestions?.length) {
-          setGuideSuggestions(prev => {
-            const without = prev.filter((s: { type: string }) => s.type !== "continuation");
-            return [data.suggestions[0], ...without];
-          });
+          setContinuationSuggestion(data.suggestions[0]);
         }
       } catch { /* silent */ } finally { setIsContinuationLoading(false); }
     }, 3_000);
@@ -213,7 +212,7 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
       textarea.setSelectionRange(newCursorPos, newCursorPos);
     }, 0);
     // Remove the continuation suggestion since it was used
-    setGuideSuggestions(prev => prev.filter((s: { type: string }) => s.type !== "continuation"));
+    setContinuationSuggestion(null);
   }, [essay]);
 
   const handleSwitch = useCallback((newTaskType: TaskType, newIeltsMode: IeltsMode) => {
@@ -506,7 +505,7 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
             </span>
             {/* Guide mode */}
             <button type="button"
-              onClick={() => { setGuideMode(m => !m); setGuideSuggestions([]); setBandScores(null); lastAnalysedWordCount.current = 0; }}
+              onClick={() => { setGuideMode(m => !m); setAnalysisSuggestions([]); setContinuationSuggestion(null); setBandScores(null); lastAnalysedWordCount.current = 0; }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                 guideMode ? "bg-brand-600 text-white border-brand-600 shadow-sm" : "bg-white text-slate-600 border-slate-200 hover:border-brand-300 hover:text-brand-700"
               }`}>
@@ -559,7 +558,7 @@ export default function EssayForm({ initialUsage, initialPromptUsage, initialKno
           {guideMode && (
             <div className="w-72 shrink-0 bg-white rounded-xl border border-slate-200 shadow-sm p-3 self-stretch min-h-[320px] flex flex-col">
               <GuidePanel
-                suggestions={guideSuggestions}
+                suggestions={continuationSuggestion ? [continuationSuggestion, ...analysisSuggestions] : analysisSuggestions}
                 isLoading={guideLoading}
                 isContinuationLoading={isContinuationLoading}
                 wordCount={wordCount}
